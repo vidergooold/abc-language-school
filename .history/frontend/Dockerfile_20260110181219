@@ -1,0 +1,21 @@
+FROM node:20-alpine as build
+
+WORKDIR /app
+
+# Копируем package.json и уже установленные node_modules
+COPY package*.json ./
+COPY node_modules ./node_modules
+
+# Копируем остальной код
+COPY . .
+
+# Сборка фронтенда (без npm install)
+RUN npm run build
+
+FROM nginx:alpine
+
+# Копируем собранный фронт
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

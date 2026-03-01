@@ -1,0 +1,20 @@
+:root {
+  /* Цвета */
+  --bg-main: #fff7f0;
+  --bg-white: #ffffff;
+  --brand-orange: #ff6b2d;
+  --brand-red: #e53935;
+  --brand-purple: #d32f2f;
+
+  --text-main: #2b2b2b;
+  --text-secondary: #555555;
+
+  /* Типографика — увеличили все размеры */
+  --font-size-base: 20px;   /* было 18px */
+  --font-size-h1: 36px;     /* было 32px */
+  --font-size-h2: 30px;     /* было 26px */
+  --font-size-h3: 24px;     /* было 20px */
+
+  /* Прочее */
+  --border-radius: 16px;
+}

@@ -1,0 +1,18 @@
+:root {
+  /* Brand */
+  --brand-orange: #F97316;
+  --brand-red: #EF4444;
+  --brand-yellow: #FACC15;
+
+  /* Backgrounds */
+  --bg-main: #FFF7ED;
+  --bg-white: #ffffff;
+
+  /* Text */
+  --text-main: #111827;
+  --text-secondary: #4B5563;
+
+  /* UI */
+  --border-radius: 12px;
+  --transition: 0.2s ease-in-out;
+}

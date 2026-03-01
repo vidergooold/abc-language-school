@@ -1,0 +1,20 @@
+:root {
+  /* Цвета */
+  --bg-main: #fff7f0; /* тёплый фон страницы */
+  --bg-white: #ffffff;
+  --brand-orange: #ff6b2d; /* яркий оранжевый */
+  --brand-red: #e53935;    /* акцентный красный */
+  --brand-purple: #d32f2f; /* заменили фиолетовый на тёмно-красный */
+
+  --text-main: #2b2b2b;
+  --text-secondary: #555555;
+
+  /* Типографика */
+  --font-size-base: 18px;
+  --font-size-h1: 32px;
+  --font-size-h2: 26px;
+  --font-size-h3: 20px;
+
+  /* Прочее */
+  --border-radius: 16px;
+}
