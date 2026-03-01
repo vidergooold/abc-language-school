@@ -85,7 +85,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: '', component: Profile },
-        { path: 'schedule', component: Schedule },
       ],
     },
   ],

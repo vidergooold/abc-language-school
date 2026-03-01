@@ -378,9 +378,4 @@ const branches = ref([
 
 .branch__phone a {
   color: #ffffff;
-  text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
-  opacity: 0.8;
-}
-</style>
+  text-

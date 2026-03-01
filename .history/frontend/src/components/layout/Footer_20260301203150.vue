@@ -13,19 +13,13 @@
 
         <div class="footer__phones">
           <a href="tel:+79139121809" class="footer__phone">
-            (913) 912-18-09
+             (913) 912-18-09 
           </a>
         </div>
 
         <p class="footer__email">
-          <a href="mailto:info@abc-school.ru">info@abc-school.ru</a>
+           <a href="mailto:info@abc-school.ru">info@abc-school.ru</a>
         </p>
-
-        <div class="footer__schedule">
-          <p>Пн–Пт: 09:00–20:00</p>
-          <p>Сб: выходной</p>
-          <p>Вс: выходной</p>
-        </div>
 
         <button class="footer__btn" @click="scrollToFeedback">
           Обратная связь
@@ -55,11 +49,11 @@
       <div class="branches-grid">
         <div class="branch" v-for="branch in branches" :key="branch.id">
           <h4>{{ branch.name }}</h4>
-          <p class="branch__address">📍 {{ branch.address }}</p>
+          <p class="branch__address"> {{ branch.address }}</p>
           <p class="branch__phone">
-            <a :href="`tel:${branch.phone}`">{{ branch.phoneDisplay }}</a>
+             <a :href="`tel:${branch.phone}`">{{ branch.phoneDisplay }}</a>
           </p>
-          <p class="branch__schedule">🕐 {{ branch.schedule }}</p>
+          <p class="branch__schedule"> {{ branch.schedule }}</p>
         </div>
       </div>
     </details>
@@ -348,7 +342,6 @@ const branches = ref([
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
-  user-select: none;
 }
 
 .branches-grid {
@@ -378,9 +371,15 @@ const branches = ref([
 
 .branch__phone a {
   color: #ffffff;
+  text-decoration: none;
+}
+
+.footer__copyright {
   text-align: center;
   margin-top: 24px;
   font-size: 14px;
   opacity: 0.8;
 }
+
+
 </style>
