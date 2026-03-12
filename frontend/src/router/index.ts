@@ -8,7 +8,6 @@ import Enroll from '@/pages/Enroll.vue'
 import Testing from '@/pages/Testing.vue'
 import Jobs from '@/pages/Jobs.vue'
 
-// Organization layout и подстраницы
 import OrganizationLayout from '@/components/layout/OrganizationLayout.vue'
 import OrgMain from '@/pages/organization/Main.vue'
 import OrgStructure from '@/pages/organization/Structure.vue'
@@ -22,7 +21,6 @@ import OrgFinance from '@/pages/organization/Finance.vue'
 import OrgVacancies from '@/pages/organization/Vacancies.vue'
 import OrgInternational from '@/pages/organization/International.vue'
 
-// Clients layout и подстраницы
 import ClientsLayout from '@/components/layout/ClientsLayout.vue'
 import ClientsImportant from '@/pages/clients/Important.vue'
 import ClientsHolidays from '@/pages/clients/Holidays.vue'
@@ -30,8 +28,13 @@ import ClientsPayment from '@/pages/clients/Payment.vue'
 import ClientsTax from '@/pages/clients/Tax.vue'
 
 import AccountLayout from '@/components/layout/AccountLayout.vue'
-import Profile from '@/pages/account/Profile.vue'
-import Schedule from '@/pages/account/Schedule.vue'
+import AccountDashboard from '@/pages/account/Dashboard.vue'
+import AccountForms from '@/pages/account/Forms.vue'
+import AccountDocuments from '@/pages/account/Documents.vue'
+import AccountStudents from '@/pages/account/Students.vue'
+import AccountNews from '@/pages/account/News.vue'
+import AccountScheduleAdmin from '@/pages/account/ScheduleAdmin.vue'
+import AccountFeedback from '@/pages/account/Feedback.vue'
 
 import { useAuthStore } from '@/stores/auth'
 
@@ -46,7 +49,6 @@ const router = createRouter({
     { path: '/login', component: Login },
     { path: '/register', component: Register },
 
-    // Organization с вложенными маршрутами
     {
       path: '/organization',
       component: OrganizationLayout,
@@ -66,7 +68,6 @@ const router = createRouter({
       ],
     },
 
-    // Clients с вложенными маршрутами
     {
       path: '/clients',
       component: ClientsLayout,
@@ -82,10 +83,16 @@ const router = createRouter({
     {
       path: '/account',
       component: AccountLayout,
-      meta: { requiresAuth: true },
+      meta: { requiresStaff: true },
+      redirect: '/account/dashboard',
       children: [
-        { path: '', component: Profile },
-        { path: 'schedule', component: Schedule },
+        { path: 'dashboard', component: AccountDashboard },
+        { path: 'forms', component: AccountForms },
+        { path: 'documents', component: AccountDocuments },
+        { path: 'students', component: AccountStudents },
+        { path: 'news', component: AccountNews, meta: { requiresAdmin: true } },
+        { path: 'schedule', component: AccountScheduleAdmin },
+        { path: 'feedback', component: AccountFeedback },
       ],
     },
   ],
@@ -93,8 +100,11 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore()
-  if (to.meta.requiresAuth && !auth.token) {
+  if (to.meta.requiresStaff && !auth.isStaff) {
     return '/login'
+  }
+  if (to.meta.requiresAdmin && !auth.isAdmin) {
+    return '/account/dashboard'
   }
 })
 

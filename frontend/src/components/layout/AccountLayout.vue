@@ -1,10 +1,34 @@
 <template>
   <div class="account-layout">
     <aside class="sidebar">
-      <h3>Личный кабинет</h3>
+      <div class="sidebar__header">
+        <h3>Личный кабинет</h3>
+        <p class="sidebar__role" :class="roleClass">{{ roleLabel }}</p>
+        <p class="sidebar__name">{{ auth.user?.full_name || auth.user?.email }}</p>
+      </div>
       <nav>
-        <RouterLink to="/account" class="sidebar-link">Профиль</RouterLink>
-        <RouterLink to="/account/schedule" class="sidebar-link">Расписание</RouterLink>
+        <RouterLink to="/account/dashboard" class="sidebar-link">
+          📊 Главная
+        </RouterLink>
+        <RouterLink to="/account/forms" class="sidebar-link">
+          📝 Анкеты и формы
+        </RouterLink>
+        <RouterLink to="/account/feedback" class="sidebar-link">
+          💬 Обратная связь
+        </RouterLink>
+        <RouterLink to="/account/students" class="sidebar-link">
+          👥 Ученики
+        </RouterLink>
+        <RouterLink to="/account/schedule" class="sidebar-link">
+          🗓 Расписание
+        </RouterLink>
+        <RouterLink to="/account/documents" class="sidebar-link">
+          📂 Документы
+        </RouterLink>
+        <RouterLink v-if="auth.isAdmin" to="/account/news" class="sidebar-link">
+          📣 Новости
+        </RouterLink>
+        <div class="sidebar-divider"></div>
         <button @click="logout" class="sidebar-logout">Выйти</button>
       </nav>
     </aside>
@@ -15,11 +39,15 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter, RouterLink } from 'vue-router'
 
 const auth = useAuthStore()
 const router = useRouter()
+
+const roleLabel = computed(() => auth.isAdmin ? '🔑 Администратор' : '👨‍🏫 Учитель')
+const roleClass = computed(() => auth.isAdmin ? 'role-admin' : 'role-teacher')
 
 function logout() {
   auth.logout()
@@ -33,30 +61,46 @@ function logout() {
   min-height: calc(100vh - 80px);
 }
 .sidebar {
-  width: 220px;
-  padding: 24px 16px;
+  width: 240px;
+  padding: 20px 16px;
   background: var(--bg-white);
   border-right: 2px solid #ffe3cf;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }
-.sidebar h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--brand-purple);
-  margin-bottom: 12px;
-  padding-bottom: 12px;
+.sidebar__header {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
   border-bottom: 2px solid var(--brand-orange);
 }
-.sidebar nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.sidebar__header h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--brand-purple);
+  margin-bottom: 4px;
+}
+.sidebar__role {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.role-admin { background: #ffeaea; color: var(--brand-red); }
+.role-teacher { background: #ffe3cf; color: var(--brand-orange); }
+.sidebar__name {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .sidebar-link {
   display: block;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 500;
@@ -67,16 +111,20 @@ function logout() {
 .sidebar-link:hover {
   background: #ffe3cf;
   color: var(--brand-orange);
-  padding-left: 18px;
+  padding-left: 16px;
 }
 .sidebar-link.router-link-active {
   background: #ffe3cf;
   color: var(--brand-orange);
   font-weight: 700;
 }
+.sidebar-divider {
+  height: 1px;
+  background: #ffe3cf;
+  margin: 8px 0;
+}
 .sidebar-logout {
-  margin-top: 16px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border-radius: 10px;
   border: none;
   background: none;
@@ -86,8 +134,9 @@ function logout() {
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  width: 100%;
   transition: background 0.2s;
 }
 .sidebar-logout:hover { background: #ffeaea; }
-.content { flex: 1; padding: 32px; }
+.content { flex: 1; padding: 32px; overflow-x: auto; }
 </style>
