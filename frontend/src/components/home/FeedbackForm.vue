@@ -33,7 +33,13 @@
         <textarea v-model="message" rows="4" />
       </div>
 
-      <button class="submit-btn" type="submit">
+      <ConsentCheckboxes
+        v-model="consent"
+        :privacy-url="privacyUrl"
+        :consent-url="consentUrl"
+      />
+
+      <button class="submit-btn" type="submit" :disabled="!consent.privacy || !consent.personalData">
         Отправить
       </button>
     </form>
@@ -43,13 +49,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import http from '@/api/http'
+import ConsentCheckboxes from '@/components/ui/ConsentCheckboxes.vue'
 
 const name = ref('')
 const phone = ref('')
 const email = ref('')
 const message = ref('')
+const consent = ref({ privacy: false, personalData: false })
+
+const privacyUrl = '/docs/Politika_obrabotki_personalnykh_dannykh.docx'
+const consentUrl = '/docs/Soglasie_polzovatelia_saita_na_obrabotku_personalnykh_dannykh.docx'
 
 async function submit() {
+  if (!consent.value.privacy || !consent.value.personalData) {
+    alert('Пожалуйста, подтвердите согласие.')
+    return
+  }
   try {
     await http.post('/forms/feedback', {
       name: name.value,
@@ -58,12 +73,11 @@ async function submit() {
       message: message.value,
     })
     alert('Спасибо! Ваше сообщение отправлено. Мы свяжемся с вами.')
-    
-    // Очищаем форму
     name.value = ''
     phone.value = ''
     email.value = ''
     message.value = ''
+    consent.value = { privacy: false, personalData: false }
   } catch (error) {
     alert('Ошибка отправки. Попробуйте позже.')
     console.error(error)
@@ -81,9 +95,10 @@ async function submit() {
 }
 
 .feedback__title {
-  font-size: 24px;
+  font-size: 26px;
   margin-bottom: 12px;
   text-align: center;
+  font-weight: 700;
 }
 
 .feedback__org {
@@ -110,8 +125,9 @@ async function submit() {
 }
 
 .feedback__form label {
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 4px;
+  font-weight: 500;
 }
 
 .feedback__form input,
@@ -119,17 +135,23 @@ async function submit() {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .submit-btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   border-radius: 999px;
   border: none;
   background: var(--brand-orange);
   color: #fff;
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
+}
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>

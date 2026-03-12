@@ -21,10 +21,13 @@
           <a href="mailto:info@abc-school.ru">info@abc-school.ru</a>
         </p>
 
-        <div class="footer__schedule">
-          <p>Пн–Пт: 09:00–20:00</p>
-          <p>Сб: выходной</p>
-          <p>Вс: выходной</p>
+        <div class="footer__docs">
+          <a href="/docs/Politika_obrabotki_personalnykh_dannykh.docx" class="footer__doc-link" target="_blank">
+            Политика конфиденциальности
+          </a>
+          <a href="/docs/Soglasie_polzovatelia_saita_na_obrabotku_personalnykh_dannykh.docx" class="footer__doc-link" target="_blank">
+            Согласие на обработку персональных данных
+          </a>
         </div>
 
         <button class="footer__btn" @click="scrollToFeedback">
@@ -59,7 +62,7 @@
           <p class="branch__phone">
             <a :href="`tel:${branch.phone}`">{{ branch.phoneDisplay }}</a>
           </p>
-          <p class="branch__schedule">🕐 {{ branch.schedule }}</p>
+          <RouterLink :to="`/courses?branch=${branch.id}`" class="branch__more">Подробнее →</RouterLink>
         </div>
       </div>
     </details>
@@ -72,6 +75,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 function scrollToFeedback() {
   const el = document.getElementById('feedback')
@@ -79,182 +83,28 @@ function scrollToFeedback() {
 }
 
 const branches = ref([
-  {
-    id: 1,
-    name: 'Офис г. Новосибирск (главный)',
-    address: 'ул. Бориса Богаткова, 208/2, офис 4, 5',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Пт 9:00–20:00',
-  },
-  {
-    id: 2,
-    name: 'Филиал в МАОУ Гимназия 11 «Гармония»',
-    address: 'ул. Федосеева, д. 38',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Пт 9:50–18:30',
-  },
-  {
-    id: 3,
-    name: 'Филиал в МБОУ СОШ №56',
-    address: 'ул. Планировочная, д. 7',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн/Чт 11:30–15:30',
-  },
-  {
-    id: 4,
-    name: 'Филиал в МБОУ СОШ №188',
-    address: 'ул. Курганская, д. 36а',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Пт 11:00–19:30',
-  },
-  {
-    id: 5,
-    name: 'Филиал в МАОУ СОШ №218',
-    address: 'Красный проспект, д. 320/1',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Чт 10:30–16:00',
-  },
-  {
-    id: 6,
-    name: 'Филиал в МАОУ «Гимназия №7 «Сибирская»',
-    address: 'ул. Зорге, д. 42а',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн/Ср 9:30–15:30',
-  },
-  {
-    id: 7,
-    name: 'Филиал в МБОУ СОШ №186',
-    address: 'ул. Бориса Богаткова, д. 189',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Пт 10:30–18:30',
-  },
-  {
-    id: 8,
-    name: 'Филиал в МБОУ СОШ №11',
-    address: 'ул. Бориса Богаткова, д. 187',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн/Ср 11:00–12:30',
-  },
-  {
-    id: 9,
-    name: 'Филиал в МБОУ СОШ №2',
-    address: 'ул. Чехова, д. 271',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Вт/Чт/Пт 11:00–18:30',
-  },
-  {
-    id: 10,
-    name: 'Филиал в МБОУ СОШ №199',
-    address: 'ул. Лазурная, д. 27',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Чт 9:00–18:30',
-  },
-  {
-    id: 11,
-    name: 'Филиал в МБОУ СОШ №155',
-    address: 'Ключ-Камышенское Плато, д. 1А',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Вт/Чт/Пт 10:00–20:00',
-  },
-  {
-    id: 12,
-    name: 'Филиал в МАОУ ЛИТ',
-    address: 'ул. Римского-Корсакова, д. 13',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Вт/Чт 11:30–17:00',
-  },
-  {
-    id: 13,
-    name: 'Филиал в МБОУ СОШ №195',
-    address: 'ул. В. Высоцкого, д. 1',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн/Чт 12:10–14:00',
-  },
-  {
-    id: 14,
-    name: 'Филиал в МАОУ НГПЛ',
-    address: 'ул. Декабристов, д. 86',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Чт 13:15–16:30',
-  },
-  {
-    id: 15,
-    name: 'Филиал в МБОУ Гимназия №9',
-    address: 'ул. Калинина, д. 255',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Чт 11:00–19:15',
-  },
-  {
-    id: 16,
-    name: 'Филиал в МАОУ НЭЛ',
-    address: 'ул. Крылова, д. 44',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Чт 12:00–14:00',
-  },
-  {
-    id: 17,
-    name: 'Филиал в МАОУ СОШ №216',
-    address: 'ул. Виталия Потылицына, д. 9',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Чт 9:30–19:30',
-  },
-  {
-    id: 18,
-    name: 'Филиал в МАОУ СОШ №217',
-    address: 'ул. Виктора Шевелева, д. 3',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн–Пт 9:00–19:00',
-  },
-  {
-    id: 19,
-    name: 'Филиал в МБОУ Гимназия №5',
-    address: 'ул. Академическая, д. 9',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пн/Ср 11:00–13:00',
-  },
-  {
-    id: 20,
-    name: 'Филиал в МБОУ СОШ №121 «Академическая»',
-    address: 'ул. Тружеников, д. 10',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Вт/Чт 12:00–15:00',
-  },
-  {
-    id: 21,
-    name: 'Филиал в МБОУ СОШ №61 им. Н.М. Иванова',
-    address: 'ул. Иванова, д. 9',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'Пт 14:00–16:00',
-  },
-  {
-    id: 22,
-    name: 'Филиал в МАОУ СОШ №222',
-    address: 'ул. Кубовая, д. 100',
-    phone: '+79139121809',
-    phoneDisplay: '(913) 912-18-09',
-    schedule: 'устанавливается',
-  },
+  { id: 1, name: 'Офис г. Новосибирск (главный)', address: 'ул. Бориса Богаткова, 208/2, офис 4, 5', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 2, name: 'Филиал в МАОУ Гимназия 11 «Гармония»', address: 'ул. Федосеева, д. 38', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 3, name: 'Филиал в МБОУ СОШ №56', address: 'ул. Планировочная, д. 7', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 4, name: 'Филиал в МБОУ СОШ №188', address: 'ул. Курганская, д. 36а', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 5, name: 'Филиал в МАОУ СОШ №218', address: 'Красный проспект, д. 320/1', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 6, name: 'Филиал в МАОУ «Гимназия №7 «Сибирская»', address: 'ул. Зорге, д. 42а', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 7, name: 'Филиал в МБОУ СОШ №186', address: 'ул. Бориса Богаткова, д. 189', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 8, name: 'Филиал в МБОУ СОШ №11', address: 'ул. Бориса Богаткова, д. 187', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 9, name: 'Филиал в МБОУ СОШ №2', address: 'ул. Чехова, д. 271', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 10, name: 'Филиал в МБОУ СОШ №199', address: 'ул. Лазурная, д. 27', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 11, name: 'Филиал в МБОУ СОШ №155', address: 'Ключ-Камышенское Плато, д. 1А', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 12, name: 'Филиал в МАОУ ЛИТ', address: 'ул. Римского-Корсакова, д. 13', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 13, name: 'Филиал в МБОУ СОШ №195', address: 'ул. В. Высоцкого, д. 1', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 14, name: 'Филиал в МАОУ НГПЛ', address: 'ул. Декабристов, д. 86', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 15, name: 'Филиал в МБОУ Гимназия №9', address: 'ул. Калинина, д. 255', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 16, name: 'Филиал в МАОУ НЭЛ', address: 'ул. Крылова, д. 44', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 17, name: 'Филиал в МАОУ СОШ №216', address: 'ул. Виталия Потылицына, д. 9', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 18, name: 'Филиал в МАОУ СОШ №217', address: 'ул. Виктора Шевелева, д. 3', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 19, name: 'Филиал в МБОУ Гимназия №5', address: 'ул. Академическая, д. 9', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 20, name: 'Филиал в МБОУ СОШ №121 «Академическая»', address: 'ул. Тружеников, д. 10', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 21, name: 'Филиал в МБОУ СОШ №61 им. Н.М. Иванова', address: 'ул. Иванова, д. 9', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 22, name: 'Филиал в МАОУ СОШ №222', address: 'ул. Кубовая, д. 100', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
 ])
 </script>
 
@@ -264,6 +114,7 @@ const branches = ref([
   color: #ffffff;
   padding: 32px 24px;
   margin-top: 40px;
+  font-size: 16px;
 }
 
 .footer__content {
@@ -299,9 +150,21 @@ const branches = ref([
   text-decoration: none;
 }
 
-.footer__schedule {
-  margin: 16px 0;
-  font-size: 16px;
+.footer__docs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 14px 0;
+}
+
+.footer__doc-link {
+  color: #ffe3cf;
+  font-size: 14px;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.footer__doc-link:hover {
+  color: #ffffff;
 }
 
 .footer__btn {
@@ -370,14 +233,29 @@ const branches = ref([
 }
 
 .branch__address,
-.branch__phone,
-.branch__schedule {
+.branch__phone {
   font-size: 14px;
   margin: 4px 0;
 }
 
 .branch__phone a {
   color: #ffffff;
+  text-decoration: none;
+}
+
+.branch__more {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #ffe3cf;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.branch__more:hover {
+  color: #ffffff;
+}
+
+.footer__copyright {
   text-align: center;
   margin-top: 24px;
   font-size: 14px;

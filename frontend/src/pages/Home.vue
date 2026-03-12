@@ -4,7 +4,7 @@
     <section class="hero">
       <div class="hero__content">
         <h1 class="hero__title">
-          Добро пожаловать в ABC Language School!
+          Добро пожаловать<br/>в ABC Language School!
         </h1>
         <p class="hero__text">
           Помогаем школьникам и взрослым уверенно заговорить
@@ -22,7 +22,12 @@
       </div>
     </section>
 
-    <!-- Превью курсов (убрали повторный заголовок) -->
+    <!-- Новости -->
+    <section class="section">
+      <NewsSection />
+    </section>
+
+    <!-- Превью курсов -->
     <section class="section">
       <CoursesPreview />
     </section>
@@ -43,7 +48,7 @@
 import CoursesPreview from '@/components/home/CoursesPreview.vue'
 import StatsBlock from '@/components/home/StatsBlock.vue'
 import FeedbackForm from '@/components/home/FeedbackForm.vue'
-
+import NewsSection from '@/components/home/NewsSection.vue'
 </script>
 
 <style scoped>
@@ -58,19 +63,20 @@ import FeedbackForm from '@/components/home/FeedbackForm.vue'
   background: linear-gradient(135deg, var(--brand-red), var(--brand-orange));
   color: #ffffff;
   border-radius: 24px;
-  padding: 36px 24px;
+  padding: 48px 32px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
 }
 
 .hero__title {
-  font-size: var(--font-size-h1);
+  font-size: clamp(32px, 5vw, 52px);
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  line-height: 1.2;
 }
 
 .hero__text {
-  font-size: 18px;
-  margin-bottom: 24px;
+  font-size: 20px;
+  margin-bottom: 28px;
   max-width: 520px;
 }
 
@@ -84,11 +90,12 @@ import FeedbackForm from '@/components/home/FeedbackForm.vue'
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 22px;
+  padding: 14px 26px;
   border-radius: 999px;
-  font-size: 16px;
+  font-size: 17px;
   text-decoration: none;
   cursor: pointer;
+  font-weight: 600;
 }
 
 .btn-primary {
@@ -102,7 +109,7 @@ import FeedbackForm from '@/components/home/FeedbackForm.vue'
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Оранжевые секции */
+/* Секции */
 .section {
   background: #ffe3cf;
   border-radius: 20px;
