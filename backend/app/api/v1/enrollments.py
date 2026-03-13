@@ -1,3 +1,4 @@
+from typing import Optional, List
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,18 +20,17 @@ router = APIRouter(prefix="/enrollments", tags=["Enrollments"])
 async def create_enrollment(
     data: EnrollmentCreate,
     db: AsyncSession = Depends(get_db),
-    token: str | None = None,
+    token: Optional[str] = None,
 ):
     enrollment = Enrollment(**data.dict())
 
-    # позже можно будет, если token есть, привязать user_id
     db.add(enrollment)
     await db.commit()
     await db.refresh(enrollment)
     return enrollment
 
 
-@router.get("/my", response_model=list[EnrollmentOut])
+@router.get("/my", response_model=List[EnrollmentOut])
 async def get_my_enrollments(
     token: str,
     db: AsyncSession = Depends(get_db),
