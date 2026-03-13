@@ -8,30 +8,42 @@
       <RouterLink to="/" class="nav-link">Главная</RouterLink>
       <RouterLink to="/courses" class="nav-link">Курсы</RouterLink>
 
-      <div class="nav-item nav-dropdown">
-        <span class="nav-dropdown__trigger">Сведения об организации ▾</span>
-        <div class="nav-dropdown__menu">
-          <RouterLink to="/organization/main">Основные сведения</RouterLink>
-          <RouterLink to="/organization/structure">Структура и управление</RouterLink>
-          <RouterLink to="/organization/docs">Документы</RouterLink>
-          <RouterLink to="/organization/education">Образование</RouterLink>
-          <RouterLink to="/organization/management">Руководство</RouterLink>
-          <RouterLink to="/organization/staff">Педагогический состав</RouterLink>
-          <RouterLink to="/organization/facilities">Материально-техническое обеспечение</RouterLink>
-          <RouterLink to="/organization/services">Платные образовательные услуги</RouterLink>
-          <RouterLink to="/organization/finance">Финансово-хозяйственная деятельность</RouterLink>
-          <RouterLink to="/organization/vacancies">Вакансии</RouterLink>
-          <RouterLink to="/organization/international">Международное сотрудничество</RouterLink>
+      <div
+        class="nav-item nav-dropdown"
+        @mouseenter="openMenu('org')"
+        @mouseleave="closeMenu('org')"
+      >
+        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'org' }">
+          Сведения об организации ▾
+        </span>
+        <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
+          <RouterLink to="/organization/main" @click="closeAll">Основные сведения</RouterLink>
+          <RouterLink to="/organization/structure" @click="closeAll">Структура и управление</RouterLink>
+          <RouterLink to="/organization/docs" @click="closeAll">Документы</RouterLink>
+          <RouterLink to="/organization/education" @click="closeAll">Образование</RouterLink>
+          <RouterLink to="/organization/management" @click="closeAll">Руководство</RouterLink>
+          <RouterLink to="/organization/staff" @click="closeAll">Педагогический состав</RouterLink>
+          <RouterLink to="/organization/facilities" @click="closeAll">Материально-техническое обеспечение</RouterLink>
+          <RouterLink to="/organization/services" @click="closeAll">Платные образовательные услуги</RouterLink>
+          <RouterLink to="/organization/finance" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
+          <RouterLink to="/organization/vacancies" @click="closeAll">Вакансии</RouterLink>
+          <RouterLink to="/organization/international" @click="closeAll">Международное сотрудничество</RouterLink>
         </div>
       </div>
 
-      <div class="nav-item nav-dropdown">
-        <span class="nav-dropdown__trigger">Клиентам ▾</span>
-        <div class="nav-dropdown__menu">
-          <RouterLink to="/clients/important">Важная информация</RouterLink>
-          <RouterLink to="/clients/holidays">Праздники</RouterLink>
-          <RouterLink to="/clients/payment">Оплата</RouterLink>
-          <RouterLink to="/clients/tax">Налоговый вычет</RouterLink>
+      <div
+        class="nav-item nav-dropdown"
+        @mouseenter="openMenu('clients')"
+        @mouseleave="closeMenu('clients')"
+      >
+        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'clients' }">
+          Клиентам ▾
+        </span>
+        <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
+          <RouterLink to="/clients/important" @click="closeAll">Важная информация</RouterLink>
+          <RouterLink to="/clients/holidays" @click="closeAll">Праздники</RouterLink>
+          <RouterLink to="/clients/payment" @click="closeAll">Оплата</RouterLink>
+          <RouterLink to="/clients/tax" @click="closeAll">Налоговый вычет</RouterLink>
         </div>
       </div>
 
@@ -46,10 +58,28 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+
+const openMenuName = ref<string | null>(null)
+
+function openMenu(name: string) {
+  openMenuName.value = name
+}
+
+function closeMenu(name: string) {
+  if (openMenuName.value === name) {
+    openMenuName.value = null
+  }
+}
+
+function closeAll() {
+  openMenuName.value = null
+}
 
 function scrollToFeedback(e: Event) {
   e.preventDefault()
+  closeAll()
   const el = document.getElementById('feedback')
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
@@ -120,16 +150,17 @@ function scrollToFeedback(e: Event) {
   user-select: none;
   display: block;
 }
-.nav-dropdown:hover .nav-dropdown__trigger {
+.nav-dropdown__trigger.active,
+.nav-dropdown__trigger:hover {
   background: #ffe3cf;
   color: var(--brand-orange);
 }
 
 .nav-dropdown__menu {
-  display: none;
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
+  display: flex;
   flex-direction: column;
   background: #fff7f0;
   padding: 8px 0;
@@ -138,9 +169,6 @@ function scrollToFeedback(e: Event) {
   min-width: 290px;
   z-index: 200;
   border: 1px solid #ffe3cf;
-}
-.nav-dropdown:hover .nav-dropdown__menu {
-  display: flex;
   animation: dropIn 0.15s ease;
 }
 
