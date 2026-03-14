@@ -18,7 +18,7 @@
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
           <RouterLink to="/organization/main" @click="closeAll">Основные сведения</RouterLink>
-          <RouterLink to="/organization/structure" @click="closeAll">Структура и управление</RouterLink>
+          <RouterLink to="/organization/structure" @click="closeAll">Структура и филиалы</RouterLink>
           <RouterLink to="/organization/docs" @click="closeAll">Документы</RouterLink>
           <RouterLink to="/organization/education" @click="closeAll">Образование</RouterLink>
           <RouterLink to="/organization/management" @click="closeAll">Руководство</RouterLink>
@@ -50,9 +50,7 @@
       <RouterLink to="/enroll" class="nav-link">Запись</RouterLink>
       <RouterLink to="/testing" class="nav-link">Тестирование</RouterLink>
       <RouterLink to="/jobs" class="nav-link">Вакансии</RouterLink>
-
       <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
-      <RouterLink to="/account" class="nav-feedback">Личный кабинет</RouterLink>
     </nav>
   </header>
 </template>
@@ -110,7 +108,7 @@ function scrollToFeedback(e: Event) {
   transition: opacity 0.2s;
 }
 .logo:hover { opacity: 0.8; }
-.logo-img { height: 50px; width: auto; object-fit: contain; }
+.logo-img { height: 70px; width: auto; object-fit: contain; }
 
 .nav {
   display: flex;
@@ -137,7 +135,6 @@ function scrollToFeedback(e: Event) {
   background: #fff0e6;
 }
 
-/* Dropdown */
 .nav-item { position: relative; cursor: pointer; }
 
 .nav-dropdown__trigger {
@@ -197,7 +194,6 @@ function scrollToFeedback(e: Event) {
   font-weight: 700;
 }
 
-/* CTA кнопки */
 .nav-feedback {
   padding: 8px 16px;
   border-radius: 999px;
@@ -207,6 +203,7 @@ function scrollToFeedback(e: Event) {
   font-weight: 600;
   font-size: 15px;
   transition: background 0.2s, transform 0.15s;
+  cursor: pointer;
 }
 .nav-feedback:hover {
   background: var(--brand-red);
