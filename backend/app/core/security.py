@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,16 +14,15 @@ SECRET_KEY = "super-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 hours
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    return pwd_context.verify(password, hashed)
+    return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
 
 def create_access_token(data: dict) -> str:
@@ -59,14 +58,12 @@ async def get_current_user(
 
 
 async def require_staff(current_user: User = Depends(get_current_user)) -> User:
-    """Only admin or teacher can access."""
     if current_user.role not in (UserRole.admin, UserRole.teacher):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     return current_user
 
 
 async def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    """Only admin can access."""
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
     return current_user
