@@ -115,8 +115,8 @@ import { ref } from 'vue'
 import http from '@/api/http'
 import ConsentCheckboxes from '@/components/ui/ConsentCheckboxes.vue'
 
-const privacyUrl = '/docs/Politika_obrabotki_personalnykh_dannykh.docx'
-const consentUrl = '/docs/Soglasie_polzovatelia_saita_na_obrabotku_personalnykh_dannykh.docx'
+const privacyUrl = '/privacy'
+const consentUrl = '/consent'
 
 const activeTab = ref('child')
 
@@ -146,7 +146,7 @@ async function submitAdult() {
     alert('Анкета взрослого успешно отправлена! Мы свяжемся с вами.')
     Object.keys(adultForm.value).forEach((key: string) => { (adultForm.value as any)[key] = '' })
     adultConsent.value = { privacy: false, personalData: false }
-  } catch { alert('Ошибка отправки анкеты. Попробуйте позже.') }
+  } catch { alert('Ошибка отправки анкеты. Попробуйте поже.') }
 }
 
 async function submitPreschool() {
@@ -155,7 +155,7 @@ async function submitPreschool() {
     alert('Анкета дошкольника успешно отправлена! Мы свяжемся с вами.')
     Object.keys(preschoolForm.value).forEach((key: string) => { (preschoolForm.value as any)[key] = '' })
     preschoolConsent.value = { privacy: false, personalData: false }
-  } catch { alert('Ошибка отправки анкеты. Попробуйте позже.') }
+  } catch { alert('Ошибка отправки анкеты. Попробуйте поже.') }
 }
 </script>
 

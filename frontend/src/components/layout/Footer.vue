@@ -22,12 +22,12 @@
         </p>
 
         <div class="footer__docs">
-          <a href="/docs/Politika_obrabotki_personalnykh_dannykh.docx" class="footer__doc-link" target="_blank">
+          <RouterLink to="/privacy" class="footer__doc-link">
             Политика конфиденциальности
-          </a>
-          <a href="/docs/Soglasie_polzovatelia_saita_na_obrabotku_personalnykh_dannykh.docx" class="footer__doc-link" target="_blank">
+          </RouterLink>
+          <RouterLink to="/consent" class="footer__doc-link">
             Согласие на обработку персональных данных
-          </a>
+          </RouterLink>
         </div>
 
         <button class="footer__btn" @click="scrollToFeedback">
@@ -35,7 +35,7 @@
         </button>
       </div>
 
-      <!-- Правая колонка: карта с филиалами -->
+      <!-- Правая колонка: карта -->
       <div class="footer__right">
         <iframe
           class="footer__map"
@@ -62,7 +62,7 @@
           <p class="branch__phone">
             <a :href="`tel:${branch.phone}`">{{ branch.phoneDisplay }}</a>
           </p>
-          <RouterLink :to="`/courses?branch=${branch.id}`" class="branch__more">Подробнее →</RouterLink>
+          <RouterLink :to="`/organization/structure`" class="branch__more">Подробнее →</RouterLink>
         </div>
       </div>
     </details>
@@ -85,7 +85,7 @@ function scrollToFeedback() {
 const branches = ref([
   { id: 1, name: 'Офис г. Новосибирск (главный)', address: 'ул. Бориса Богаткова, 208/2, офис 4, 5', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
   { id: 2, name: 'Филиал в МАОУ Гимназия 11 «Гармония»', address: 'ул. Федосеева, д. 38', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
-  { id: 3, name: 'Филиал в МБОУ СОШ №56', address: 'ул. Планировочная, д. 7', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
+  { id: 3, name: 'Филиал в МБОУ СОШ №6', address: 'ул. Планировочная, д. 7', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
   { id: 4, name: 'Филиал в МБОУ СОШ №188', address: 'ул. Курганская, д. 36а', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
   { id: 5, name: 'Филиал в МАОУ СОШ №218', address: 'Красный проспект, д. 320/1', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
   { id: 6, name: 'Филиал в МАОУ «Гимназия №7 «Сибирская»', address: 'ул. Зорге, д. 42а', phone: '+79139121809', phoneDisplay: '(913) 912-18-09' },
