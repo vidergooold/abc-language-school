@@ -64,18 +64,63 @@
     </p>
 
     <h3>Лицензия на осуществление образовательной деятельности</h3>
-    <p>
-      Лицензия на осуществление образовательной деятельности ЧУДО Лингвоцентр
-      "Эй Би Си"
-    </p>
-    <p class="doc-link">
-      📄 <a href="#" target="_blank">Лицензия</a>
-    </p>
+    <p>Лицензия на осуществление образовательной деятельности ЧУДО Лингвоцентр "Эй Би Си"</p>
+
+    <div class="license-gallery">
+      <div
+        v-for="(img, i) in licenseImages"
+        :key="i"
+        class="license-thumb"
+        @click="openLightbox(i)"
+      >
+        <img :src="img" :alt="'Лицензия, стр. ' + (i + 1)" />
+        <span class="license-page">Стр. {{ i + 1 }}</span>
+      </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div v-if="lightboxIndex !== null" class="lightbox" @click.self="closeLightbox">
+      <button class="lightbox__close" @click="closeLightbox">×</button>
+      <button class="lightbox__prev" @click="prevImage" v-if="lightboxIndex > 0">‹</button>
+      <img class="lightbox__img" :src="licenseImages[lightboxIndex]" :alt="'Лицензия, стр. ' + (lightboxIndex + 1)" />
+      <button class="lightbox__next" @click="nextImage" v-if="lightboxIndex < licenseImages.length - 1">›</button>
+    </div>
 
     <h3>Государственная аккредитация</h3>
     <p>Государственная аккредитация не требуется.</p>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const licenseImages = [
+  '/docs/license/l1.jpg',
+  '/docs/license/l2.jpg',
+  '/docs/license/l3.jpg',
+  '/docs/license/l4.jpg',
+]
+
+const lightboxIndex = ref<number | null>(null)
+
+function openLightbox(i: number) {
+  lightboxIndex.value = i
+  document.body.style.overflow = 'hidden'
+}
+
+function closeLightbox() {
+  lightboxIndex.value = null
+  document.body.style.overflow = ''
+}
+
+function prevImage() {
+  if (lightboxIndex.value !== null && lightboxIndex.value > 0) lightboxIndex.value--
+}
+
+function nextImage() {
+  if (lightboxIndex.value !== null && lightboxIndex.value < licenseImages.length - 1) lightboxIndex.value++
+}
+</script>
 
 <style scoped>
 .org-section {
@@ -105,10 +150,7 @@ a {
   color: var(--brand-orange);
   text-decoration: none;
 }
-
-a:hover {
-  text-decoration: underline;
-}
+a:hover { text-decoration: underline; }
 
 .map-container {
   margin: 24px 0;
@@ -116,7 +158,92 @@ a:hover {
   overflow: hidden;
 }
 
-.doc-link {
-  font-size: 16px;
+/* License gallery */
+.license-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
 }
+
+.license-thumb {
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #ffe3cf;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  background: #fff;
+}
+
+.license-thumb:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.license-thumb img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 3/4;
+}
+
+.license-page {
+  display: block;
+  text-align: center;
+  padding: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-purple);
+  background: #fff7f0;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox__img {
+  max-height: 90vh;
+  max-width: 90vw;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 40px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.lightbox__prev,
+.lightbox__next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  font-size: 48px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.lightbox__prev { left: 20px; }
+.lightbox__next { right: 20px; }
+.lightbox__prev:hover,
+.lightbox__next:hover { background: rgba(255,255,255,0.3); }
 </style>
