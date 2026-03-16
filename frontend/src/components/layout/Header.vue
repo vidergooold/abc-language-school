@@ -17,17 +17,19 @@
           Сведения об организации ▾
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
-          <RouterLink to="/organization/main" @click="closeAll">Основные сведения</RouterLink>
-          <RouterLink to="/organization/structure" @click="closeAll">Структура и филиалы</RouterLink>
-          <RouterLink to="/organization/docs" @click="closeAll">Документы</RouterLink>
-          <RouterLink to="/organization/education" @click="closeAll">Образование</RouterLink>
-          <RouterLink to="/organization/management" @click="closeAll">Руководство</RouterLink>
-          <RouterLink to="/organization/staff" @click="closeAll">Педагогический состав</RouterLink>
-          <RouterLink to="/organization/facilities" @click="closeAll">Материально-техническое обеспечение</RouterLink>
-          <RouterLink to="/organization/services" @click="closeAll">Платные образовательные услуги</RouterLink>
-          <RouterLink to="/organization/finance" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
-          <RouterLink to="/organization/vacancies" @click="closeAll">Вакансии</RouterLink>
-          <RouterLink to="/organization/international" @click="closeAll">Международное сотрудничество</RouterLink>
+          <div class="nav-dropdown__inner">
+            <RouterLink to="/organization/main" @click="closeAll">Основные сведения</RouterLink>
+            <RouterLink to="/organization/structure" @click="closeAll">Структура и филиалы</RouterLink>
+            <RouterLink to="/organization/docs" @click="closeAll">Документы</RouterLink>
+            <RouterLink to="/organization/education" @click="closeAll">Образование</RouterLink>
+            <RouterLink to="/organization/management" @click="closeAll">Руководство</RouterLink>
+            <RouterLink to="/organization/staff" @click="closeAll">Педагогический состав</RouterLink>
+            <RouterLink to="/organization/facilities" @click="closeAll">Материально-техническое обеспечение</RouterLink>
+            <RouterLink to="/organization/services" @click="closeAll">Платные образовательные услуги</RouterLink>
+            <RouterLink to="/organization/finance" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
+            <RouterLink to="/organization/vacancies" @click="closeAll">Вакансии</RouterLink>
+            <RouterLink to="/organization/international" @click="closeAll">Международное сотрудничество</RouterLink>
+          </div>
         </div>
       </div>
 
@@ -40,9 +42,11 @@
           Клиентам ▾
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
-          <RouterLink to="/clients/holidays" @click="closeAll">Праздники</RouterLink>
-          <RouterLink to="/clients/payment" @click="closeAll">Оплата</RouterLink>
-          <RouterLink to="/clients/tax" @click="closeAll">Налоговый вычет</RouterLink>
+          <div class="nav-dropdown__inner">
+            <RouterLink to="/clients/holidays" @click="closeAll">Праздники</RouterLink>
+            <RouterLink to="/clients/payment" @click="closeAll">Оплата</RouterLink>
+            <RouterLink to="/clients/tax" @click="closeAll">Налоговый вычет</RouterLink>
+          </div>
         </div>
       </div>
 
@@ -152,10 +156,17 @@ function scrollToFeedback(e: Event) {
   color: var(--brand-orange);
 }
 
+/* Меню начинается сразу под триггером (без gap),
+   прозрачный padding-top закрывает визуальный отступ */
 .nav-dropdown__menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: 100%;
   left: 0;
+  padding-top: 6px;
+  z-index: 200;
+}
+
+.nav-dropdown__inner {
   display: flex;
   flex-direction: column;
   background: #fff7f0;
@@ -163,7 +174,6 @@ function scrollToFeedback(e: Event) {
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   min-width: 290px;
-  z-index: 200;
   border: 1px solid #ffe3cf;
   animation: dropIn 0.15s ease;
 }
@@ -173,7 +183,7 @@ function scrollToFeedback(e: Event) {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.nav-dropdown__menu a {
+.nav-dropdown__inner a {
   padding: 10px 18px;
   white-space: nowrap;
   font-size: 15px;
@@ -182,12 +192,12 @@ function scrollToFeedback(e: Event) {
   text-decoration: none;
   transition: background 0.15s, padding-left 0.15s;
 }
-.nav-dropdown__menu a:hover {
+.nav-dropdown__inner a:hover {
   background: #ffe3cf;
   color: var(--brand-orange);
   padding-left: 24px;
 }
-.nav-dropdown__menu a.router-link-active {
+.nav-dropdown__inner a.router-link-active {
   background: #ffe3cf;
   color: var(--brand-orange);
   font-weight: 700;

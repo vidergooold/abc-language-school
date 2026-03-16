@@ -11,7 +11,7 @@
         </div>
 
         <div class="footer__phones">
-          <a href="tel:+79139121809" class="footer__phone">(913) 912-18-09</a>
+          <a href="tel:+79139121809" class="footer__phone">+7 (913) 912-18-09</a>
         </div>
 
         <p class="footer__email">
