@@ -1,9 +1,7 @@
 <template>
   <div class="jobs-page">
     <h1 class="page-title">Стать преподавателем</h1>
-    <p class="page-subtitle">
-      Заполните анкету, и мы рассмотрим вашу кандидатуру
-    </p>
+    <p class="page-subtitle">Заполните анкету, и мы рассмотрим вашу кандидатуру</p>
 
     <form class="form" @submit.prevent="submit">
       <div class="field">
@@ -71,13 +69,32 @@
         </div>
       </div>
 
-      <button class="submit-btn" type="submit">Отправить</button>
+      <div class="consent-block">
+        <div class="field checkbox-field">
+          <label>
+            <input v-model="consent.privacy" type="checkbox" required />
+            Я ознакомился(-ась) с
+            <RouterLink to="/privacy" target="_blank">Политикой конфиденциальности</RouterLink>
+            и принимаю её условия
+          </label>
+        </div>
+        <div class="field checkbox-field">
+          <label>
+            <input v-model="consent.personalData" type="checkbox" required />
+            Я даю
+            <RouterLink to="/consent" target="_blank">согласие на обработку персональных данных</RouterLink>
+          </label>
+        </div>
+      </div>
+
+      <button class="submit-btn" type="submit" :disabled="!consent.privacy || !consent.personalData">Отправить</button>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 
 const form = ref({
   fio: '',
@@ -94,7 +111,8 @@ const form = ref({
   captcha: '',
 })
 
-// Генерация простого кода капчи
+const consent = ref({ privacy: false, personalData: false })
+
 const captchaCode = computed(() => {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
 })
@@ -105,7 +123,6 @@ function submit() {
     return
   }
   alert('Анкета преподавателя отправлена! Мы свяжемся с вами.')
-  console.log('Данные преподавателя:', form.value)
 }
 </script>
 
@@ -182,6 +199,36 @@ function submit() {
   text-decoration-color: #999;
 }
 
+.consent-block {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0 8px;
+}
+
+.checkbox-field {
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.checkbox-field input[type='checkbox'] {
+  margin-right: 8px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.checkbox-field label {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.5;
+}
+
+.checkbox-field a {
+  color: var(--brand-orange);
+  text-decoration: underline;
+}
+
 .submit-btn {
   width: auto;
   padding: 12px 32px;
@@ -193,9 +240,15 @@ function submit() {
   font-weight: 600;
   cursor: pointer;
   margin-top: 16px;
+  transition: background 0.2s;
 }
 
-.submit-btn:hover {
+.submit-btn:hover:not(:disabled) {
   background: #e55a10;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>

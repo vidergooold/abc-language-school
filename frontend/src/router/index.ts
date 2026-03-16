@@ -24,7 +24,6 @@ import OrgVacancies from '@/pages/organization/Vacancies.vue'
 import OrgInternational from '@/pages/organization/International.vue'
 
 import ClientsLayout from '@/components/layout/ClientsLayout.vue'
-import ClientsImportant from '@/pages/clients/Important.vue'
 import ClientsHolidays from '@/pages/clients/Holidays.vue'
 import ClientsPayment from '@/pages/clients/Payment.vue'
 import ClientsTax from '@/pages/clients/Tax.vue'
@@ -42,6 +41,9 @@ import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior() {
+    return { top: 0, behavior: 'smooth' }
+  },
   routes: [
     { path: '/', component: Home },
     { path: '/courses', component: Courses },
@@ -75,9 +77,8 @@ const router = createRouter({
     {
       path: '/clients',
       component: ClientsLayout,
-      redirect: '/clients/important',
+      redirect: '/clients/holidays',
       children: [
-        { path: 'important', component: ClientsImportant },
         { path: 'holidays', component: ClientsHolidays },
         { path: 'payment', component: ClientsPayment },
         { path: 'tax', component: ClientsTax },

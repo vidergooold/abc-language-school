@@ -3,82 +3,29 @@
     <h2 class="section-title">Оформление налогового вычета</h2>
 
     <h3 class="notice-title">Уважаемые родители!</h3>
-    <p>
-      Для оформления налогового вычета и получения от нас справки об оплате Вам
-      необходимо оставить заявку (форма заявки ниже)
-      <strong
-        >не менее чем за 30 календарных дней до подачи документов в Налоговый
-        Орган</strong
-      >.
-    </p>
-
-    <p>
-      <strong>Обращаем особое внимание</strong> на то, что в летние и зимние
-      каникулы мы не работаем, соответственно
-      <strong>справки не выпускаются</strong>.
-    </p>
-
-    <p>
-      В период <strong>с 25 мая по 15 октября</strong>, справки не выпускаются, в
-      связи с занятостью сотрудников при окончании/запуске учебного года.
-    </p>
-
-    <p>
-      <strong>С 15 октября</strong> справки выпускаются по мере возможности
-      <strong>(до 30 календарных дней ожидания)</strong>.
-    </p>
+    <p>Для оформления налогового вычета и получения от нас справки об оплате Вам необходимо оставить заявку (форма заявки ниже) <strong>не менее чем за 30 календарных дней до подачи документов в Налоговый Орган</strong>.</p>
+    <p><strong>Обращаем особое внимание</strong> на то, что в летние и зимние каникулы мы не работаем, соответственно <strong>справки не выпускаются</strong>.</p>
+    <p>В период <strong>с 25 мая по 15 октября</strong>, справки не выпускаются, в связи с занятостью сотрудников при окончании/запуске учебного года.</p>
+    <p><strong>С 15 октября</strong> справки выпускаются по мере возможности <strong>(до 30 календарных дней ожидания)</strong>.</p>
 
     <h3>Заявка на получение справки</h3>
     <form class="tax-form" @submit.prevent="submitTaxForm">
       <h4>Данные плательщика</h4>
-      <div class="field">
-        <label>ФИО *</label>
-        <input v-model="form.payerFio" type="text" required />
-      </div>
-      <div class="field">
-        <label>ИНН *</label>
-        <input v-model="form.payerInn" type="text" required />
-      </div>
-      <div class="field">
-        <label>Дата рождения *</label>
-        <input v-model="form.payerBirthdate" type="date" required />
-      </div>
+      <div class="field"><label>ФИО *</label><input v-model="form.payerFio" type="text" required /></div>
+      <div class="field"><label>ИНН *</label><input v-model="form.payerInn" type="text" required /></div>
+      <div class="field"><label>Дата рождения *</label><input v-model="form.payerBirthdate" type="date" required /></div>
       <div class="field-row">
-        <div class="field">
-          <label>Серия паспорта *</label>
-          <input v-model="form.payerPassportSeries" type="text" required />
-        </div>
-        <div class="field">
-          <label>Номер паспорта *</label>
-          <input v-model="form.payerPassportNumber" type="text" required />
-        </div>
+        <div class="field"><label>Серия паспорта *</label><input v-model="form.payerPassportSeries" type="text" required /></div>
+        <div class="field"><label>Номер паспорта *</label><input v-model="form.payerPassportNumber" type="text" required /></div>
       </div>
-      <div class="field">
-        <label>Дата выдачи паспорта *</label>
-        <input v-model="form.payerPassportDate" type="date" required />
-      </div>
-      <div class="field">
-        <label>Код подразделения *</label>
-        <input v-model="form.payerDepartmentCode" type="text" required />
-      </div>
-      <div class="field">
-        <label>Контактный телефон *</label>
-        <input v-model="form.payerPhone" type="tel" required />
-      </div>
+      <div class="field"><label>Дата выдачи паспорта *</label><input v-model="form.payerPassportDate" type="date" required /></div>
+      <div class="field"><label>Код подразделения *</label><input v-model="form.payerDepartmentCode" type="text" required /></div>
+      <div class="field"><label>Контактный телефон *</label><input v-model="form.payerPhone" type="tel" required /></div>
 
       <h4>Данные обучающегося</h4>
-      <div class="field">
-        <label>ФИО *</label>
-        <input v-model="form.studentFio" type="text" required />
-      </div>
-      <div class="field">
-        <label>ИНН (при наличии)</label>
-        <input v-model="form.studentInn" type="text" />
-      </div>
-      <div class="field">
-        <label>Дата рождения *</label>
-        <input v-model="form.studentBirthdate" type="date" required />
-      </div>
+      <div class="field"><label>ФИО *</label><input v-model="form.studentFio" type="text" required /></div>
+      <div class="field"><label>ИНН (при наличии)</label><input v-model="form.studentInn" type="text" /></div>
+      <div class="field"><label>Дата рождения *</label><input v-model="form.studentBirthdate" type="date" required /></div>
       <div class="field">
         <label>Документ *</label>
         <select v-model="form.studentDocType" required>
@@ -88,19 +35,10 @@
         </select>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Серия документа *</label>
-          <input v-model="form.studentDocSeries" type="text" required />
-        </div>
-        <div class="field">
-          <label>Номер документа *</label>
-          <input v-model="form.studentDocNumber" type="text" required />
-        </div>
+        <div class="field"><label>Серия документа *</label><input v-model="form.studentDocSeries" type="text" required /></div>
+        <div class="field"><label>Номер документа *</label><input v-model="form.studentDocNumber" type="text" required /></div>
       </div>
-      <div class="field">
-        <label>Дата выдачи документа *</label>
-        <input v-model="form.studentDocDate" type="date" required />
-      </div>
+      <div class="field"><label>Дата выдачи документа *</label><input v-model="form.studentDocDate" type="date" required /></div>
 
       <h4>Период и стоимость обучения</h4>
       <div class="field-row">
@@ -112,30 +50,18 @@
             <option value="2025-2026">2025 - 2026</option>
           </select>
         </div>
-        <div class="field">
-          <label>Стоимость</label>
-          <input v-model="form.cost" type="text" />
-        </div>
+        <div class="field"><label>Стоимость</label><input v-model="form.cost" type="text" /></div>
       </div>
 
       <div class="field checkbox-group">
         <label>У меня есть договоры на указанные периоды обучения</label>
         <div>
-          <label>
-            <input v-model="form.hasContracts" type="radio" value="yes" />
-            Да
-          </label>
-          <label>
-            <input v-model="form.hasContracts" type="radio" value="no" />
-            Нет
-          </label>
+          <label><input v-model="form.hasContracts" type="radio" value="yes" /> Да</label>
+          <label><input v-model="form.hasContracts" type="radio" value="no" /> Нет</label>
         </div>
       </div>
 
-      <div class="field">
-        <label>Прикрепить квитанции/чеки</label>
-        <input type="file" accept=".png,.jpg,.jpeg,.pdf" multiple />
-      </div>
+      <div class="field"><label>Прикрепить квитанции/чеки</label><input type="file" accept=".png,.jpg,.jpeg,.pdf" multiple /></div>
 
       <h4>Получение справки</h4>
       <div class="field">
@@ -150,8 +76,7 @@
       <div class="field checkbox-field">
         <label>
           <input v-model="form.consent1" type="checkbox" required />
-          Подписывая настоящее заявление, я даю согласие на обработку
-          персональных данных третьих лиц
+          Подписывая настоящее заявление, я даю согласие на обработку персональных данных третьих лиц
         </label>
       </div>
 
@@ -162,7 +87,25 @@
         </label>
       </div>
 
-      <button class="submit-btn" type="submit">Отправить</button>
+      <div class="consent-block">
+        <div class="field checkbox-field">
+          <label>
+            <input v-model="form.consentPrivacy" type="checkbox" required />
+            Я ознакомился(-ась) с
+            <RouterLink to="/privacy" target="_blank">Политикой конфиденциальности</RouterLink>
+            и принимаю её условия
+          </label>
+        </div>
+        <div class="field checkbox-field">
+          <label>
+            <input v-model="form.consentPersonalData" type="checkbox" required />
+            Я даю
+            <RouterLink to="/consent" target="_blank">согласие на обработку персональных данных</RouterLink>
+          </label>
+        </div>
+      </div>
+
+      <button class="submit-btn" type="submit" :disabled="!form.consentPrivacy || !form.consentPersonalData">Отправить</button>
       <p class="note">* - обязательное для заполнения поле</p>
     </form>
   </div>
@@ -170,6 +113,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 const form = ref({
   payerFio: '',
@@ -193,11 +137,12 @@ const form = ref({
   deliveryMethod: '',
   consent1: false,
   consent2: false,
+  consentPrivacy: false,
+  consentPersonalData: false,
 })
 
 function submitTaxForm() {
   alert('Заявка на получение справки отправлена!')
-  console.log('Данные:', form.value)
 }
 </script>
 
@@ -236,28 +181,7 @@ h4 {
   margin-bottom: 12px;
 }
 
-p {
-  margin-bottom: 16px;
-}
-
-ul,
-ol {
-  margin-left: 24px;
-  margin-bottom: 16px;
-}
-
-li {
-  margin-bottom: 8px;
-}
-
-a {
-  color: var(--brand-orange);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
+p { margin-bottom: 16px; }
 
 .tax-form {
   background: #ffe3cf;
@@ -293,18 +217,12 @@ a:hover {
   margin-bottom: 14px;
 }
 
-.checkbox-group label {
-  margin-bottom: 8px;
-}
-
-.checkbox-group input[type='radio'] {
-  margin-right: 6px;
-  margin-left: 12px;
-}
+.checkbox-group label { margin-bottom: 8px; }
+.checkbox-group input[type='radio'] { margin-right: 6px; margin-left: 12px; }
 
 .checkbox-field {
   flex-direction: row;
-  align-items: start;
+  align-items: flex-start;
   margin-bottom: 16px;
 }
 
@@ -318,6 +236,18 @@ a:hover {
   font-weight: normal;
 }
 
+.consent-block {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0 8px;
+}
+
+.consent-block a {
+  color: var(--brand-orange);
+  text-decoration: underline;
+}
+
 .submit-btn {
   width: auto;
   padding: 12px 32px;
@@ -329,11 +259,11 @@ a:hover {
   font-weight: 600;
   cursor: pointer;
   margin-top: 16px;
+  transition: background 0.2s;
 }
 
-.submit-btn:hover {
-  background: #e55a10;
-}
+.submit-btn:hover:not(:disabled) { background: #e55a10; }
+.submit-btn:disabled { background: #ccc; cursor: not-allowed; }
 
 .note {
   margin-top: 12px;

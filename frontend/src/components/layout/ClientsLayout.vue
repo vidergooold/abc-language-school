@@ -1,23 +1,12 @@
 <template>
   <div class="clients-layout">
     <h1 class="page-title">Действующим клиентам</h1>
-    <p class="page-subtitle">
-      Вся необходимая информация для наших учеников и родителей
-    </p>
+    <p class="page-subtitle">Вся необходимая информация для наших учеников и родителей</p>
 
     <nav class="sections-nav">
-      <RouterLink to="/clients/important" class="nav-link">
-        Важная информация
-      </RouterLink>
-      <RouterLink to="/clients/holidays" class="nav-link">
-        Каникулы и выходные
-      </RouterLink>
-      <RouterLink to="/clients/payment" class="nav-link">
-        Оплата и возврат
-      </RouterLink>
-      <RouterLink to="/clients/tax" class="nav-link">
-        Налоговый вычет
-      </RouterLink>
+      <RouterLink to="/clients/holidays" class="nav-link">Каникулы и выходные</RouterLink>
+      <RouterLink to="/clients/payment" class="nav-link">Оплата и возврат</RouterLink>
+      <RouterLink to="/clients/tax" class="nav-link">Налоговый вычет</RouterLink>
     </nav>
 
     <div class="clients-content">
