@@ -8,7 +8,7 @@
 import asyncio
 import os
 from sqlalchemy import select
-from app.core.database import async_session
+from app.core.database import AsyncSessionLocal, init_db
 from app.core.security import hash_password
 from app.models.user import User, UserRole
 
@@ -18,7 +18,9 @@ async def create_admin():
     password = os.getenv("ADMIN_PASSWORD", "admin123")
     full_name = os.getenv("ADMIN_NAME", "Администратор")
 
-    async with async_session() as db:
+    await init_db()
+
+    async with AsyncSessionLocal() as db:
         result = await db.execute(select(User).where(User.email == email))
         existing = result.scalar_one_or_none()
         if existing:
