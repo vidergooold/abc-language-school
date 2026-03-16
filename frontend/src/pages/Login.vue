@@ -1,35 +1,46 @@
 <template>
   <main class="login-page">
-    <form class="login-form" @submit.prevent="submit">
-      <h1 class="login-title">Вход для сотрудников</h1>
-      <p class="login-notice">Личный кабинет доступен только для администраторов и преподавателей. Если вы являетесь сотрудником школы и у вас нет аккаунта, обратитесь к администратору.</p>
+    <div class="login-card">
+      <div class="login-card__icon">🔐</div>
+      <h1 class="login-title">Личный кабинет</h1>
+      <p class="login-subtitle">Вход только для администратора</p>
 
-      <div class="field">
-        <label>Email</label>
-        <input
-          v-model="email"
-          type="email"
-          placeholder="staff@abc-school.ru"
-          required
-        />
-      </div>
+      <form @submit.prevent="submit">
+        <div class="field">
+          <label>Email</label>
+          <input
+            v-model="email"
+            type="email"
+            placeholder="admin@abc-school.ru"
+            autocomplete="username"
+            required
+          />
+        </div>
 
-      <div class="field">
-        <label>Пароль</label>
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Введите пароль"
-          required
-        />
-      </div>
+        <div class="field">
+          <label>Пароль</label>
+          <div class="password-wrap">
+            <input
+              v-model="password"
+              :type="showPass ? 'text' : 'password'"
+              placeholder="Введите пароль"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" class="toggle-pass" @click="showPass = !showPass">
+              {{ showPass ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
 
-      <button class="login-btn" type="submit" :disabled="loading">
-        {{ loading ? 'Вход...' : 'Войти' }}
-      </button>
+        <p v-if="error" class="error">⚠️ {{ error }}</p>
 
-      <p v-if="error" class="error">{{ error }}</p>
-    </form>
+        <button class="login-btn" type="submit" :disabled="loading">
+          <span v-if="loading" class="spinner"></span>
+          {{ loading ? 'Вхожу...' : 'Войти' }}
+        </button>
+      </form>
+    </div>
   </main>
 </template>
 
@@ -40,6 +51,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const email = ref('')
 const password = ref('')
+const showPass = ref(false)
 const error = ref<string | null>(null)
 const loading = ref(false)
 
@@ -62,75 +74,139 @@ async function submit() {
 
 <style scoped>
 .login-page {
-  min-height: 60vh;
+  min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #f5f0ff 0%, #fff7f0 100%);
 }
 
-.login-form {
+.login-card {
   width: 100%;
   max-width: 400px;
-  background: var(--bg-white);
-  padding: 32px;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  background: #fff;
+  padding: 40px 36px;
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-card__icon {
+  font-size: 48px;
+  margin-bottom: 12px;
 }
 
 .login-title {
-  font-size: 24px;
-  margin-bottom: 8px;
-  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
   color: var(--brand-purple);
+  margin-bottom: 4px;
 }
 
-.login-notice {
-  font-size: 13px;
-  color: #888;
-  text-align: center;
-  margin-bottom: 20px;
-  line-height: 1.5;
+.login-subtitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 28px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  text-align: left;
+  margin-bottom: 18px;
 }
 
 .field label {
-  font-size: 15px;
-  margin-bottom: 4px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--brand-purple);
 }
 
 .field input {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e0d5ff;
   font-size: 15px;
+  transition: border-color 0.2s;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field input:focus {
+  border-color: var(--brand-orange);
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  padding-right: 44px;
+}
+
+.toggle-pass {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  line-height: 1;
 }
 
 .login-btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   background: var(--brand-orange);
   color: #fff;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 999px;
   font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s;
+  margin-top: 8px;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
-.login-btn:hover { background: var(--brand-red); }
-.login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-btn:hover:not(:disabled) {
+  background: var(--brand-red);
+  transform: translateY(-1px);
+}
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 .error {
-  margin-top: 12px;
   color: var(--brand-red);
   font-size: 14px;
-  text-align: center;
+  text-align: left;
+  margin-bottom: 8px;
+  background: #fff0f0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--brand-red);
 }
 </style>

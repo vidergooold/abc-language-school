@@ -37,8 +37,9 @@
       </div>
     </div>
 
-    <div class="footer__copyright">
-      <p>© 2026 ABC Language School. Все права защищены.</p>
+    <div class="footer__bottom">
+      <p class="footer__copyright">© 2026 ABC Language School. Все права защищены.</p>
+      <RouterLink to="/login" class="footer__admin-link">вход для администратора</RouterLink>
     </div>
   </footer>
 </template>
@@ -56,7 +57,7 @@ function scrollToFeedback() {
 .footer {
   background: linear-gradient(135deg, var(--brand-dark-red), var(--brand-red));
   color: #ffffff;
-  padding: 32px 24px;
+  padding: 32px 24px 20px;
   margin-top: 40px;
   font-size: 16px;
 }
@@ -107,9 +108,7 @@ function scrollToFeedback() {
   text-decoration: underline;
   transition: color 0.2s;
 }
-.footer__doc-link:hover {
-  color: #ffffff;
-}
+.footer__doc-link:hover { color: #ffffff; }
 
 .footer__btn {
   background: #ffffff;
@@ -144,10 +143,29 @@ function scrollToFeedback() {
   opacity: 0.9;
 }
 
+.footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 14px;
+  margin-top: 8px;
+}
+
 .footer__copyright {
-  text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
-  opacity: 0.8;
+  font-size: 13px;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.footer__admin-link {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+  letter-spacing: 0.3px;
+}
+.footer__admin-link:hover {
+  color: rgba(255,255,255,0.7);
 }
 </style>
