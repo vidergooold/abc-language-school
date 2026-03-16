@@ -1,62 +1,48 @@
 <template>
   <div class="forms-page">
-    <h1>📝 Анкеты и формы</h1>
-
-    <div class="filters">
-      <select v-model="filterType">
-        <option value="">Все типы</option>
-        <option value="child">Школьник</option>
-        <option value="adult">Взрослый</option>
-        <option value="preschool">Дошкольник</option>
-      </select>
-      <input v-model="search" type="text" placeholder="Поиск по имени / телефону" />
+    <div class="page-header">
+      <h1>📝 Анкеты и формы</h1>
+      <a href="/enroll" target="_blank" class="btn-public">🔗 Форма записи для посетителей ↗</a>
     </div>
 
     <div v-if="loading" class="loading">Загрузка...</div>
 
-    <div v-else-if="filtered.length" class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>ФИО</th>
-            <th>Тип</th>
-            <th>Телефон</th>
-            <th>Школа / Место работы</th>
-            <th>Дата</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="f in filtered" :key="f.id">
-            <td>{{ f.id }}</td>
-            <td>{{ f.fio }}</td>
-            <td><span :class="['badge', f.type]">{{ typeLabel(f.type) }}</span></td>
-            <td>{{ f.phone }}</td>
-            <td>{{ f.school || f.work || '—' }}</td>
-            <td>{{ f.created_at }}</td>
-            <td>
-              <button class="btn-view" @click="openDetail(f)">Подробнее</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p v-else class="empty">Нет анкет.</p>
-
-    <!-- Модальное окно -->
-    <div v-if="selected" class="modal-overlay" @click.self="selected = null">
-      <div class="modal">
-        <button class="modal-close" @click="selected = null">×</button>
-        <h2>Анкета #{{ selected.id }}</h2>
-        <table class="detail-table">
-          <tr v-for="(val, key) in selected" :key="key">
-            <td class="detail-key">{{ key }}</td>
-            <td>{{ val }}</td>
-          </tr>
-        </table>
+    <div v-else>
+      <div class="filters">
+        <input v-model="search" placeholder="Поиск по имени" />
+        <select v-model="filterType">
+          <option value="">Все типы</option>
+          <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+        </select>
+        <select v-model="filterStatus">
+          <option value="">Все статусы</option>
+          <option value="new">🟡 Новые</option>
+          <option value="processed">✅ Обработаны</option>
+        </select>
       </div>
+
+      <div v-if="filtered.length" class="forms-list">
+        <div class="form-card" v-for="f in filtered" :key="f.id" :class="{ 'form-card--new': f.status === 'new' }">
+          <div class="form-card__header">
+            <span class="form-card__name">{{ f.fio }}</span>
+            <span class="form-tag">{{ f.type }}</span>
+            <span class="form-date">{{ f.created_at }}</span>
+            <span class="status-badge" :class="f.status === 'new' ? 'status-new' : 'status-done'">
+              {{ f.status === 'new' ? '🟡 Новая' : '✅ Обработана' }}
+            </span>
+          </div>
+          <div class="form-card__body">
+            <p>📞 {{ f.phone }}</p>
+            <p v-if="f.email">📧 {{ f.email }}</p>
+            <p v-if="f.comment">💬 {{ f.comment }}</p>
+          </div>
+          <div class="form-card__actions">
+            <button v-if="f.status === 'new'" class="btn-process" @click="markProcessed(f.id)">✅ Отметить обработанной</button>
+            <button class="btn-del" @click="deleteForm(f.id)">🗑️ Удалить</button>
+          </div>
+        </div>
+      </div>
+      <p v-else class="empty">Анкет нет.</p>
     </div>
   </div>
 </template>
@@ -67,52 +53,56 @@ import http from '@/api/http'
 
 const loading = ref(true)
 const forms = ref<any[]>([])
-const filterType = ref('')
 const search = ref('')
-const selected = ref<any>(null)
+const filterType = ref('')
+const filterStatus = ref('')
+
+const types = computed(() => [...new Set(forms.value.map((f: any) => f.type).filter(Boolean))])
 
 const filtered = computed(() =>
   forms.value
+    .filter(f => !search.value || f.fio?.toLowerCase().includes(search.value.toLowerCase()))
     .filter(f => !filterType.value || f.type === filterType.value)
-    .filter(f => !search.value || f.fio?.toLowerCase().includes(search.value.toLowerCase()) || f.phone?.includes(search.value))
+    .filter(f => !filterStatus.value || f.status === filterStatus.value)
 )
 
-function typeLabel(t: string) {
-  return { child: 'Школьник', adult: 'Взрослый', preschool: 'Дошкольник' }[t] || t
+async function load() {
+  try { const r = await http.get('/admin/forms'); forms.value = r.data } catch {}
+  finally { loading.value = false }
 }
 
-function openDetail(f: any) { selected.value = f }
+async function markProcessed(id: number) {
+  try { await http.patch(`/admin/forms/${id}`, { status: 'processed' }); await load() } catch {}
+}
 
-onMounted(async () => {
-  try {
-    const res = await http.get('/admin/forms')
-    forms.value = res.data
-  } catch { /* silent */ } finally { loading.value = false }
-})
+async function deleteForm(id: number) {
+  if (!confirm('Удалить анкету?')) return
+  try { await http.delete(`/admin/forms/${id}`); await load() } catch {}
+}
+
+onMounted(load)
 </script>
 
 <style scoped>
-.forms-page h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); margin-bottom: 20px; }
+.forms-page h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.btn-public { background: #f5f0ff; color: var(--brand-purple); border: 1.5px solid #e8deff; padding: 9px 18px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 600; transition: background 0.2s; }
+.btn-public:hover { background: #e8deff; }
 .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.filters select, .filters input { padding: 9px 14px; border-radius: 10px; border: 1.5px solid #ffe3cf; font-size: 15px; min-width: 180px; }
-.table-wrap { overflow-x: auto; border-radius: 14px; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.data-table th { background: var(--brand-orange); color: #fff; padding: 10px 12px; text-align: left; font-weight: 600; white-space: nowrap; }
-.data-table td { padding: 10px 12px; border-bottom: 1px solid #ffe3cf; vertical-align: middle; }
-.data-table tr:hover td { background: #fff7f0; }
-.badge { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-.badge.child { background: #ffe3cf; color: var(--brand-orange); }
-.badge.adult { background: #e8e0ff; color: var(--brand-purple); }
-.badge.preschool { background: #d4f7e8; color: #2a9d5c; }
-.btn-view { padding: 5px 14px; background: var(--brand-orange); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
-.empty { color: #aaa; font-size: 15px; padding: 24px 0; }
-.loading { color: #aaa; padding: 24px 0; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; display: flex; align-items: center; justify-content: center; }
-.modal { background: #fff; border-radius: 18px; padding: 28px; max-width: 560px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
-.modal h2 { font-size: 20px; font-weight: 700; color: var(--brand-purple); margin-bottom: 16px; }
-.modal-close { position: absolute; top: 14px; right: 18px; font-size: 22px; border: none; background: none; cursor: pointer; color: #888; }
-.detail-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.detail-table tr { border-bottom: 1px solid #ffe3cf; }
-.detail-table td { padding: 8px 10px; }
-.detail-key { font-weight: 700; color: var(--brand-purple); width: 40%; white-space: nowrap; }
+.filters input, .filters select { padding: 9px 14px; border-radius: 10px; border: 1.5px solid #ffe3cf; font-size: 15px; min-width: 160px; }
+.forms-list { display: flex; flex-direction: column; gap: 14px; }
+.form-card { background: #fff7f0; border-radius: 14px; padding: 16px 20px; border: 2px solid #ffe3cf; }
+.form-card--new { border-color: #ffb347; background: #fffbf0; }
+.form-card__header { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.form-card__name { font-size: 16px; font-weight: 700; color: #333; }
+.form-tag { background: var(--brand-orange); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.form-date { font-size: 12px; color: #aaa; margin-left: auto; }
+.status-badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+.status-new { background: #fff3cd; color: #856404; }
+.status-done { background: #d4edda; color: #155724; }
+.form-card__body p { font-size: 14px; color: #555; margin: 3px 0; }
+.form-card__actions { display: flex; gap: 10px; margin-top: 12px; }
+.btn-process { background: #d4edda; color: #155724; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
+.btn-del { background: #ffeaea; color: var(--brand-red); border: none; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
+.empty, .loading { color: #aaa; padding: 24px 0; font-size: 15px; }
 </style>

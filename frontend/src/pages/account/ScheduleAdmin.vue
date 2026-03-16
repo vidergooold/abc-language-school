@@ -1,6 +1,9 @@
 <template>
   <div class="schedule-admin">
-    <h1>🗓 Расписание</h1>
+    <div class="page-header">
+      <h1>🗓 Расписание</h1>
+      <a href="/courses" target="_blank" class="btn-public">🔗 Публичное расписание ↗</a>
+    </div>
 
     <div class="filters">
       <input v-model="search" type="text" placeholder="Поиск по школе / учителю" />
@@ -76,7 +79,10 @@ const filtered = computed(() =>
 </script>
 
 <style scoped>
-.schedule-admin h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); margin-bottom: 20px; }
+.schedule-admin h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.btn-public { background: #f5f0ff; color: var(--brand-purple); border: 1.5px solid #e8deff; padding: 9px 18px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 600; transition: background 0.2s; }
+.btn-public:hover { background: #e8deff; }
 .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 .filters input, .filters select { padding: 9px 14px; border-radius: 10px; border: 1.5px solid #ffe3cf; font-size: 15px; min-width: 180px; }
 .table-wrap { overflow-x: auto; border-radius: 14px; }

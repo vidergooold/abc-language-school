@@ -1,10 +1,9 @@
 <template>
-  <div class="floating-cta">
+  <div v-if="!isAccount" class="floating-cta">
     <RouterLink to="/enroll" class="cta-btn cta-btn--enroll">
       <span class="cta-btn__title">Запишись</span>
       <span class="cta-btn__subtitle">на первое занятие</span>
     </RouterLink>
-
     <RouterLink to="/testing" class="cta-btn cta-btn--level">
       <span class="cta-btn__title">Узнай свой</span>
       <span class="cta-btn__subtitle">уровень</span>
@@ -13,7 +12,11 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, RouterLink } from 'vue-router'
+
+const route = useRoute()
+const isAccount = computed(() => route.path.startsWith('/account') || route.path.startsWith('/login'))
 </script>
 
 <style scoped>
@@ -24,11 +27,9 @@ import { RouterLink } from 'vue-router'
   right: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
   z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
 }
-
 .cta-btn {
   padding: 16px 20px;
   text-align: center;
@@ -39,34 +40,17 @@ import { RouterLink } from 'vue-router'
   justify-content: center;
   transition: transform 0.2s;
 }
-
-.cta-btn:hover {
-  transform: translateY(-4px);
-}
-
+.cta-btn:hover { transform: translateY(-4px); }
 .cta-btn--enroll {
   background: linear-gradient(135deg, var(--brand-red), var(--brand-orange));
-  color: #ffffff;
+  color: #fff;
 }
-
 .cta-btn--level {
-  background: #ffffff;
-  color: var(--brand-red); /* было purple */
+  background: #fff;
+  color: var(--brand-red);
   border-left: 1px solid #e0e0e0;
 }
-
-.cta-btn__title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-
-.cta-btn__subtitle {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.cta-btn--level .cta-btn__subtitle {
-  color: var(--brand-orange);
-}
+.cta-btn__title { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+.cta-btn__subtitle { font-size: 16px; font-weight: 600; }
+.cta-btn--level .cta-btn__subtitle { color: var(--brand-orange); }
 </style>
