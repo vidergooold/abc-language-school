@@ -1,44 +1,46 @@
 """
-Скрипт для создания администратора.
-Запуск: python create_admin.py
+Скрипт для создания админа в базе данных
 
-Можно передать email, пароль и имя через переменные окружения:
-  ADMIN_EMAIL=admin@abc-school.ru ADMIN_PASSWORD=secret123 python create_admin.py
+Использование:
+    cd backend
+    python create_admin.py
+Или с параметрами:
+    ADMIN_EMAIL=my@mail.ru ADMIN_PASSWORD=mypass python create_admin.py
 """
 import asyncio
 import os
-from sqlalchemy import select
+import sys
+
+sys.path.insert(0, os.path.dirname(__file__))
+
 from app.core.database import AsyncSessionLocal, init_db
-from app.core.security import hash_password
 from app.models.user import User, UserRole
+from app.models import user as _u, news as _n  # noqa чтобы таблицы регистрировались
+from app.core.security import hash_password
+from sqlalchemy import select
+
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@abc-school.ru")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 
 
-async def create_admin():
-    email = os.getenv("ADMIN_EMAIL", "admin@abc-school.ru")
-    password = os.getenv("ADMIN_PASSWORD", "admin123")
-    full_name = os.getenv("ADMIN_NAME", "Администратор")
-
+async def main():
     await init_db()
-
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == email))
+        result = await db.execute(select(User).where(User.email == ADMIN_EMAIL))
         existing = result.scalar_one_or_none()
         if existing:
-            print(f"ℹ️  Пользователь {email} уже существует.")
+            print(f"ℹ️  Админ {ADMIN_EMAIL} уже существует")
             return
-
         admin = User(
-            email=email,
-            hashed_password=hash_password(password),
-            full_name=full_name,
+            email=ADMIN_EMAIL,
+            hashed_password=hash_password(ADMIN_PASSWORD),
+            full_name="Администратор",
             role=UserRole.admin,
         )
         db.add(admin)
         await db.commit()
-        print(f"✅  Администратор создан.")
-        print(f"   Email:    {email}")
-        print(f"   Пароль:   {password}")
-        print(f"⚠️  Не забудьте сменить пароль после первого входа!")
+        print(f"✅ Админ создан: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
 
 
-asyncio.run(create_admin())
+if __name__ == "__main__":
+    asyncio.run(main())

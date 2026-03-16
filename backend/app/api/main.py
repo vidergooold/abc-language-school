@@ -2,7 +2,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import init_db
-from app.api.v1 import auth, users, courses, news, enrollments, forms
+
+# Импортируем все модели чтобы Base.metadata знал о всех таблицах
+from app.models import user, news  # noqa: F401
+from app.models.forms import ApplicationForm, StudentProfile  # noqa: F401
+from app.models.enrollment import Enrollment  # noqa: F401
+
+from app.api.v1 import auth, users, courses, news as news_router, enrollments, forms
 
 
 @asynccontextmanager
@@ -42,7 +48,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(courses.router, prefix="/api/v1")
-app.include_router(news.router, prefix="/api/v1")
+app.include_router(news_router.router, prefix="/api/v1")
 app.include_router(enrollments.router, prefix="/api/v1")
 app.include_router(forms.router, prefix="/api/v1")
 
