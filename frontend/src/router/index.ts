@@ -7,6 +7,8 @@ import Register from '@/pages/Register.vue'
 import Enroll from '@/pages/Enroll.vue'
 import Testing from '@/pages/Testing.vue'
 import Jobs from '@/pages/Jobs.vue'
+import Privacy from '@/pages/Privacy.vue'
+import Consent from '@/pages/Consent.vue'
 
 import OrganizationLayout from '@/components/layout/OrganizationLayout.vue'
 import OrgMain from '@/pages/organization/Main.vue'
@@ -48,6 +50,8 @@ const router = createRouter({
     { path: '/jobs', component: Jobs },
     { path: '/login', component: Login },
     { path: '/register', component: Register },
+    { path: '/privacy', component: Privacy },
+    { path: '/consent', component: Consent },
 
     {
       path: '/organization',
