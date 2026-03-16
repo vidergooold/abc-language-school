@@ -37,6 +37,10 @@ import AccountNews from '@/pages/account/News.vue'
 import AccountScheduleAdmin from '@/pages/account/ScheduleAdmin.vue'
 import AccountFeedback from '@/pages/account/Feedback.vue'
 
+import AnketaShkolnik from '@/pages/blanks/AnketaShkolnik.vue'
+import AnketaVzrosly from '@/pages/blanks/AnketaVzrosly.vue'
+import AnketaDoshkolnik from '@/pages/blanks/AnketaDoshkolnik.vue'
+
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
@@ -54,6 +58,10 @@ const router = createRouter({
     { path: '/register', component: Register },
     { path: '/privacy', component: Privacy },
     { path: '/consent', component: Consent },
+
+    { path: '/blanks/shkolnik', component: AnketaShkolnik, meta: { requiresStaff: true } },
+    { path: '/blanks/vzrosly', component: AnketaVzrosly, meta: { requiresStaff: true } },
+    { path: '/blanks/doshkolnik', component: AnketaDoshkolnik, meta: { requiresStaff: true } },
 
     {
       path: '/organization',
