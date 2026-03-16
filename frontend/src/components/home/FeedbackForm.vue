@@ -57,8 +57,8 @@ const email = ref('')
 const message = ref('')
 const consent = ref({ privacy: false, personalData: false })
 
-const privacyUrl = '/docs/Politika_obrabotki_personalnykh_dannykh.docx'
-const consentUrl = '/docs/Soglasie_polzovatelia_saita_na_obrabotku_personalnykh_dannykh.docx'
+const privacyUrl = '/privacy'
+const consentUrl = '/consent'
 
 async function submit() {
   if (!consent.value.privacy || !consent.value.personalData) {
