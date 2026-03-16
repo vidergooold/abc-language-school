@@ -40,7 +40,6 @@
           Клиентам ▾
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
-          <RouterLink to="/clients/important" @click="closeAll">Важная информация</RouterLink>
           <RouterLink to="/clients/holidays" @click="closeAll">Праздники</RouterLink>
           <RouterLink to="/clients/payment" @click="closeAll">Оплата</RouterLink>
           <RouterLink to="/clients/tax" @click="closeAll">Налоговый вычет</RouterLink>

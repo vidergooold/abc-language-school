@@ -73,39 +73,28 @@
         </select>
       </div>
 
-      <div class="field checkbox-field">
-        <label>
-          <input v-model="form.consent1" type="checkbox" required />
-          Подписывая настоящее заявление, я даю согласие на обработку персональных данных третьих лиц
-        </label>
-      </div>
-
-      <div class="field checkbox-field">
-        <label>
-          <input v-model="form.consent2" type="checkbox" required />
-          Достоверность сведений, указанных в настоящем заявлении подтверждаю
-        </label>
-      </div>
-
       <div class="consent-block">
         <div class="field checkbox-field">
           <label>
+            <input v-model="form.consent2" type="checkbox" required />
+            Достоверность сведений, указанных в настоящем заявлении, подтверждаю
+          </label>
+        </div>
+        <div class="field checkbox-field">
+          <label>
             <input v-model="form.consentPrivacy" type="checkbox" required />
-            Я ознакомился(-ась) с
-            <RouterLink to="/privacy" target="_blank">Политикой конфиденциальности</RouterLink>
-            и принимаю её условия
+            Я ознакомился(-ась) с <RouterLink to="/privacy" target="_blank">Политикой конфиденциальности</RouterLink> и принимаю её условия
           </label>
         </div>
         <div class="field checkbox-field">
           <label>
             <input v-model="form.consentPersonalData" type="checkbox" required />
-            Я даю
-            <RouterLink to="/consent" target="_blank">согласие на обработку персональных данных</RouterLink>
+            Я даю <RouterLink to="/consent" target="_blank">согласие на обработку персональных данных</RouterLink>
           </label>
         </div>
       </div>
 
-      <button class="submit-btn" type="submit" :disabled="!form.consentPrivacy || !form.consentPersonalData">Отправить</button>
+      <button class="submit-btn" type="submit" :disabled="!form.consent2 || !form.consentPrivacy || !form.consentPersonalData">Отправить</button>
       <p class="note">* - обязательное для заполнения поле</p>
     </form>
   </div>
@@ -135,7 +124,6 @@ const form = ref({
   cost: '',
   hasContracts: 'yes',
   deliveryMethod: '',
-  consent1: false,
   consent2: false,
   consentPrivacy: false,
   consentPersonalData: false,
@@ -223,17 +211,19 @@ p { margin-bottom: 16px; }
 .checkbox-field {
   flex-direction: row;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .checkbox-field input[type='checkbox'] {
   margin-right: 8px;
   margin-top: 4px;
+  flex-shrink: 0;
 }
 
 .checkbox-field label {
   font-size: 14px;
   font-weight: normal;
+  line-height: 1.5;
 }
 
 .consent-block {
