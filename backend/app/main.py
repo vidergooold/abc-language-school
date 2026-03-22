@@ -29,13 +29,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключаем все роутеры
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(forms.router)
-app.include_router(courses.router)
-app.include_router(enrollments.router)
-app.include_router(news.router)
+# Подключаем все роутеры с префиксом /api/v1
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
+app.include_router(forms.router, prefix="/api/v1")
+app.include_router(courses.router, prefix="/api/v1")
+app.include_router(enrollments.router, prefix="/api/v1")
+app.include_router(news.router, prefix="/api/v1")
 
 
 @app.get("/")
