@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,8 +11,6 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/me", response_model=UserOut)
 async def get_me(
-    token: str,
-    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    user: User = await get_current_user(token=token, db=db)
-    return user
+    return current_user
