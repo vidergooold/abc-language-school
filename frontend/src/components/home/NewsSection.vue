@@ -2,136 +2,68 @@
   <section class="news-section">
     <h2 class="news-title">📣 Новости</h2>
 
-    <div class="slider">
-      <button class="slider__btn slider__btn--prev" @click="prev" aria-label="Назад">&#8592;</button>
+    <div v-if="loading" class="news-loading">Загрузка...</div>
 
-      <transition name="slide" mode="out-in">
-        <article class="news-card" :key="current">
-          <div class="news-card__header">
-            <span class="news-card__date">{{ news[current].date }}</span>
-            <span class="news-card__tag">{{ news[current].tag }}</span>
-          </div>
-          <h3 class="news-card__title">{{ news[current].title }}</h3>
-          <div class="news-card__body" v-html="news[current].body"></div>
-        </article>
-      </transition>
+    <div v-else-if="news.length === 0" class="news-empty">Новостей пока нет.</div>
 
-      <button class="slider__btn slider__btn--next" @click="next" aria-label="Вперёд">&#8594;</button>
-    </div>
+    <template v-else>
+      <div class="slider">
+        <button class="slider__btn slider__btn--prev" @click="prev" aria-label="Назад">&#8592;</button>
 
-    <div class="slider__dots">
-      <button
-        v-for="(_, i) in news"
-        :key="i"
-        class="dot"
-        :class="{ active: i === current }"
-        @click="goTo(i)"
-      />
-    </div>
+        <transition name="slide" mode="out-in">
+          <article class="news-card" :key="current">
+            <div class="news-card__header">
+              <span class="news-card__date">{{ news[current].date }}</span>
+              <span class="news-card__tag">{{ news[current].tag }}</span>
+            </div>
+            <h3 class="news-card__title">{{ news[current].title }}</h3>
+            <div class="news-card__body" v-html="news[current].body"></div>
+          </article>
+        </transition>
+
+        <button class="slider__btn slider__btn--next" @click="next" aria-label="Вперёд">&#8594;</button>
+      </div>
+
+      <div class="slider__dots">
+        <button
+          v-for="(_, i) in news"
+          :key="i"
+          class="dot"
+          :class="{ active: i === current }"
+          @click="goTo(i)"
+        />
+      </div>
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import http from '@/api/http'
 
-const news = ref([
-  {
-    id: 1,
-    date: '03 апреля 2026',
-    tag: 'Лагерь',
-    title: '🏕 Лагерь-заезд выходного дня 03–05 апреля 2026',
-    body: `
-      <p>Приглашаем ребят с 1 по 6 класс в лагерь-заезд выходного дня!</p>
-      <ul>
-        <li>🔹 Выезд: 03.04.2026 в 10:00</li>
-        <li>🔹 Возвращение: 05.04.2026 в 12:00</li>
-        <li>🏘 Место: Детский оздоровительный лагерь <strong>ПИОНЕР</strong></li>
-      </ul>
-      <p><strong>В поездку входит:</strong></p>
-      <ul>
-        <li>✅ Транспорт в обе стороны 🚌</li>
-        <li>✅ 5-разовое питание 🥘🍪</li>
-        <li>✅ Программа на английском языке с играми и мастер-классами 🖼🪄</li>
-        <li>✅ Денежная эстафета 💵🤸</li>
-        <li>✅ Игры на свежем воздухе в эко-зоне 🌳🏡</li>
-        <li>✅ Зажигательная дискотека 🪩🕺💃</li>
-        <li>✅ Отрядные яркие выступления 👯🎷</li>
-        <li>✅ Гадалка на предсказание будущего 🧿🔮📿</li>
-        <li>✅ Тату-салон и стойка с аквагримом 🎨</li>
-        <li>✅ Йога и медитации для достижения дзена 🔆🎎🪬</li>
-      </ul>
-      <p>👶 <strong>Возраст:</strong> с 1 по 6 класс</p>
-    `,
-  },
-  {
-    id: 2,
-    date: '07 мая 2025',
-    tag: 'Объявление',
-    title: 'График работы офиса',
-    body: `
-      <p>Уважаемые родители и обучающие 9, 10, 11 мая офис не работает.</p>
-      <p>Поздравляем Вас с Наступающим Праздником Великой Победы и желаем отличного отдыха!</p>
-    `,
-  },
-  {
-    id: 3,
-    date: '04 сентября 2024',
-    tag: 'Обучение',
-    title: 'Заявки на обучение и заключение договоров на новый учебный год',
-    body: `
-      <p>Уважаемые родители и обучающиеся! Если Вы или Ваши дети планируете обучаться у нас в новом учебном году (2024/2025), то Вам необходимо заполнить заявку на обучение на нашем сайте. И мы обязательно свяжемся с Вами!</p>
-      <p>Напоминаем Вам, что для заключения договора на новый учебный 2024/2025 год требуется паспорт, а также необходимо оставить комментарии о занятости Вашего ребенка.</p>
-      <p><strong>Расписание формируется в первых числах СЕНТЯБРЯ!</strong> (с учетом школьных смен и расписания)</p>
-    `,
-  },
-  {
-    id: 4,
-    date: '25 декабря 2023',
-    tag: 'Объявление',
-    title: 'График работы офиса в Новогодние праздники',
-    body: `
-      <p>Уважаемые родители и обучающиеся! Поздравляем Вас С Наступающим Новым 2024 годом! Желаем Вам успехов и всего самого наилучшего!</p>
-      <p><strong>График работы Лингвоцентра в праздничные дни:</strong></p>
-      <ul>
-        <li>30.12.2023 – 07.01.2024 — занятия проводиться не будут, офис закрыт.</li>
-        <li>Занятия продолжатся с 08.01.2024 (понедельник) по расписанию.</li>
-        <li>Для приема оплат офис работает 25.12.2023 – 29.12.2023 с 09:00 до 20:00.</li>
-      </ul>
-      <p>С уважением, Администрация Лингвоцентра</p>
-    `,
-  },
-  {
-    id: 5,
-    date: '01 июня 2022',
-    tag: 'Каникулы',
-    title: 'Приятных летних каникул!!!',
-    body: `
-      <p>Дорогие наши учащиеся! Уважаемые родители! Мы с радостью поздравляем Вас всех с долгожданными летними каникулами!</p>
-      <p>У вас столько впереди интересного! Пусть каникулы принесут вам наслаждение, пусть новые знакомства прибавят надежных друзей. Отдыхайте и набирайтесь новых сил на новый учебный год.</p>
-      <p>До встречи в Новом 2022-2023 учебном году!</p>
-      <p>Напоминаем Вам, что в период с 01.06.22 по 15.08.2022 года Лингвоцентр не работает. Вопросы по телефону: 214-18-09 (Марина Викторовна)</p>
-    `,
-  },
-  {
-    id: 6,
-    date: '03 ноября 2021',
-    tag: 'Объявление',
-    title: 'График работы офиса',
-    body: `
-      <p>Уважаемые родители и обучающиеся! 04.11.2021 офис Лингвоцентра не работает.</p>
-      <p>Поздравляем с Днем народного единства!</p>
-    `,
-  },
-])
-
+const news = ref<any[]>([])
+const loading = ref(true)
 const current = ref(0)
 let timer: ReturnType<typeof setInterval> | null = null
 
+async function loadNews() {
+  try {
+    const r = await http.get('/news')
+    news.value = r.data
+  } catch {
+    news.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
 function next() {
+  if (news.value.length === 0) return
   current.value = (current.value + 1) % news.value.length
   resetTimer()
 }
 function prev() {
+  if (news.value.length === 0) return
   current.value = (current.value - 1 + news.value.length) % news.value.length
   resetTimer()
 }
@@ -140,6 +72,7 @@ function goTo(i: number) {
   resetTimer()
 }
 function startTimer() {
+  if (news.value.length < 2) return
   timer = setInterval(() => {
     current.value = (current.value + 1) % news.value.length
   }, 5000)
@@ -148,7 +81,11 @@ function resetTimer() {
   if (timer) clearInterval(timer)
   startTimer()
 }
-onMounted(startTimer)
+
+onMounted(async () => {
+  await loadNews()
+  startTimer()
+})
 onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
 
@@ -163,6 +100,12 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   font-weight: 700;
   color: var(--brand-purple);
   margin-bottom: 20px;
+}
+.news-loading,
+.news-empty {
+  font-size: 16px;
+  color: #888;
+  padding: 20px 0;
 }
 .slider {
   display: flex;
