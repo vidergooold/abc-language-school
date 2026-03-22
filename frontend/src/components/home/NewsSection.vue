@@ -63,6 +63,65 @@ const news = ref([
       <p>👶 <strong>Возраст:</strong> с 1 по 6 класс</p>
     `,
   },
+  {
+    id: 2,
+    date: '07 мая 2025',
+    tag: 'Объявление',
+    title: 'График работы офиса',
+    body: `
+      <p>Уважаемые родители и обучающие 9, 10, 11 мая офис не работает.</p>
+      <p>Поздравляем Вас с Наступающим Праздником Великой Победы и желаем отличного отдыха!</p>
+    `,
+  },
+  {
+    id: 3,
+    date: '04 сентября 2024',
+    tag: 'Обучение',
+    title: 'Заявки на обучение и заключение договоров на новый учебный год',
+    body: `
+      <p>Уважаемые родители и обучающиеся! Если Вы или Ваши дети планируете обучаться у нас в новом учебном году (2024/2025), то Вам необходимо заполнить заявку на обучение на нашем сайте. И мы обязательно свяжемся с Вами!</p>
+      <p>Напоминаем Вам, что для заключения договора на новый учебный 2024/2025 год требуется паспорт, а также необходимо оставить комментарии о занятости Вашего ребенка.</p>
+      <p><strong>Расписание формируется в первых числах СЕНТЯБРЯ!</strong> (с учетом школьных смен и расписания)</p>
+    `,
+  },
+  {
+    id: 4,
+    date: '25 декабря 2023',
+    tag: 'Объявление',
+    title: 'График работы офиса в Новогодние праздники',
+    body: `
+      <p>Уважаемые родители и обучающиеся! Поздравляем Вас С Наступающим Новым 2024 годом! Желаем Вам успехов и всего самого наилучшего!</p>
+      <p><strong>График работы Лингвоцентра в праздничные дни:</strong></p>
+      <ul>
+        <li>30.12.2023 – 07.01.2024 — занятия проводиться не будут, офис закрыт.</li>
+        <li>Занятия продолжатся с 08.01.2024 (понедельник) по расписанию.</li>
+        <li>Для приема оплат офис работает 25.12.2023 – 29.12.2023 с 09:00 до 20:00.</li>
+      </ul>
+      <p>С уважением, Администрация Лингвоцентра</p>
+    `,
+  },
+  {
+    id: 5,
+    date: '01 июня 2022',
+    tag: 'Каникулы',
+    title: 'Приятных летних каникул!!!',
+    body: `
+      <p>Дорогие наши учащиеся! Уважаемые родители! Мы с радостью поздравляем Вас всех с долгожданными летними каникулами!</p>
+      <p>У вас столько впереди интересного! Пусть каникулы принесут вам наслаждение, пусть новые знакомства прибавят надежных друзей. Отдыхайте и набирайтесь новых сил на новый учебный год.</p>
+      <p>До встречи в Новом 2022-2023 учебном году!</p>
+      <p>Напоминаем Вам, что в период с 01.06.22 по 15.08.2022 года Лингвоцентр не работает. Вопросы по телефону: 214-18-09 (Марина Викторовна)</p>
+    `,
+  },
+  {
+    id: 6,
+    date: '03 ноября 2021',
+    tag: 'Объявление',
+    title: 'График работы офиса',
+    body: `
+      <p>Уважаемые родители и обучающиеся! 04.11.2021 офис Лингвоцентра не работает.</p>
+      <p>Поздравляем с Днем народного единства!</p>
+    `,
+  },
 ])
 
 const current = ref(0)
@@ -72,28 +131,23 @@ function next() {
   current.value = (current.value + 1) % news.value.length
   resetTimer()
 }
-
 function prev() {
   current.value = (current.value - 1 + news.value.length) % news.value.length
   resetTimer()
 }
-
 function goTo(i: number) {
   current.value = i
   resetTimer()
 }
-
 function startTimer() {
   timer = setInterval(() => {
     current.value = (current.value + 1) % news.value.length
   }, 5000)
 }
-
 function resetTimer() {
   if (timer) clearInterval(timer)
   startTimer()
 }
-
 onMounted(startTimer)
 onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
@@ -104,20 +158,17 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   border-radius: 20px;
   padding: 28px 24px;
 }
-
 .news-title {
   font-size: 26px;
   font-weight: 700;
   color: var(--brand-purple);
   margin-bottom: 20px;
 }
-
 .slider {
   display: flex;
   align-items: flex-start;
   gap: 12px;
 }
-
 .slider__btn {
   flex-shrink: 0;
   background: var(--brand-orange);
@@ -131,11 +182,9 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   margin-top: 16px;
   transition: background 0.2s;
 }
-
 .slider__btn:hover {
   background: #e55a10;
 }
-
 .news-card {
   flex: 1;
   background: #ffffff;
@@ -145,19 +194,16 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
   min-height: 120px;
 }
-
 .news-card__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
-
 .news-card__date {
   font-size: 13px;
   color: var(--text-secondary, #888);
 }
-
 .news-card__tag {
   font-size: 12px;
   font-weight: 700;
@@ -166,36 +212,30 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   padding: 2px 10px;
   border-radius: 999px;
 }
-
 .news-card__title {
   font-size: 18px;
   font-weight: 700;
   color: var(--brand-purple);
   margin: 0 0 10px;
 }
-
 .news-card__body {
   font-size: 15px;
   color: #333;
   line-height: 1.6;
 }
-
 .news-card__body ul {
   padding-left: 18px;
   margin: 8px 0;
 }
-
 .news-card__body li {
   margin-bottom: 4px;
 }
-
 .slider__dots {
   display: flex;
   justify-content: center;
   gap: 8px;
   margin-top: 16px;
 }
-
 .dot {
   width: 10px;
   height: 10px;
@@ -206,21 +246,17 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   transition: background 0.2s;
   padding: 0;
 }
-
 .dot.active {
   background: var(--brand-orange);
 }
-
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.35s ease;
 }
-
 .slide-enter-from {
   opacity: 0;
   transform: translateX(40px);
 }
-
 .slide-leave-to {
   opacity: 0;
   transform: translateX(-40px);
