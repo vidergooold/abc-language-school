@@ -12,7 +12,16 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/register")
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
-    user = User(email=data.email, hashed_password=hash_password(data.password))
+    # Проверяем, нет ли уже пользователя с таким email
+    result = await db.execute(select(User).where(User.email == data.email))
+    existing = result.scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
+    user = User(
+        email=data.email,
+        hashed_password=hash_password(data.password),
+        full_name=data.name,
+    )
     db.add(user)
     await db.commit()
     return {"status": "registered"}
@@ -23,7 +32,7 @@ async def login(data: UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Неверный email или пароль")
     token = create_access_token({"sub": str(user.id)})
     return {
         "access_token": token,
