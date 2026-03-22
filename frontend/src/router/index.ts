@@ -21,6 +21,8 @@ import OrgFacilities from '@/pages/organization/Facilities.vue'
 import OrgServices from '@/pages/organization/Services.vue'
 import OrgFinance from '@/pages/organization/Finance.vue'
 import OrgVacancies from '@/pages/organization/Vacancies.vue'
+import OrgGrants from '@/pages/organization/Grants.vue'
+import OrgAccessibility from '@/pages/organization/Accessibility.vue'
 import OrgInternational from '@/pages/organization/International.vue'
 
 import ClientsLayout from '@/components/layout/ClientsLayout.vue'
@@ -58,11 +60,9 @@ const router = createRouter({
     { path: '/register', component: Register },
     { path: '/privacy', component: Privacy },
     { path: '/consent', component: Consent },
-
     { path: '/blanks/shkolnik', component: AnketaShkolnik, meta: { requiresStaff: true } },
     { path: '/blanks/vzrosly', component: AnketaVzrosly, meta: { requiresStaff: true } },
     { path: '/blanks/doshkolnik', component: AnketaDoshkolnik, meta: { requiresStaff: true } },
-
     {
       path: '/organization',
       component: OrganizationLayout,
@@ -78,10 +78,11 @@ const router = createRouter({
         { path: 'services', component: OrgServices },
         { path: 'finance', component: OrgFinance },
         { path: 'vacancies', component: OrgVacancies },
+        { path: 'grants', component: OrgGrants },
+        { path: 'accessibility', component: OrgAccessibility },
         { path: 'international', component: OrgInternational },
       ],
     },
-
     {
       path: '/clients',
       component: ClientsLayout,
@@ -92,7 +93,6 @@ const router = createRouter({
         { path: 'tax', component: ClientsTax },
       ],
     },
-
     {
       path: '/account',
       component: AccountLayout,
