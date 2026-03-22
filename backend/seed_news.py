@@ -1,10 +1,10 @@
 import asyncio
 from datetime import datetime
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from app.core.config import settings
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 from app.models.news import News
-
 # Все 6 новостей из оригинального массива
 NEWS_DATA = [
     {
@@ -47,9 +47,12 @@ NEWS_DATA = [
 
 async def seed_news():
     """Заполняет базу данных исходными новостями"""
-    engine = create_async_engine(settings.DATABASE_URL, echo=True)
-    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+asyncpg://abc_user:yourpassword123@localhost:5432/abc_school"
+    )
+        engine = create_async_engine(DATABASE_URL, echo=True)
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)    
     async with async_session() as session:
         # Проверяем, есть ли уже новости в базе
         from sqlalchemy import select
