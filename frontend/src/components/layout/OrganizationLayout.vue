@@ -33,6 +33,12 @@
       <RouterLink to="/organization/vacancies" class="nav-link">
         Вакантные места
       </RouterLink>
+      <RouterLink to="/organization/grants" class="nav-link">
+        Стипендии и поддержка
+      </RouterLink>
+      <RouterLink to="/organization/accessibility" class="nav-link">
+        Доступная среда
+      </RouterLink>
       <RouterLink to="/organization/international" class="nav-link">
         Международное сотрудничество
       </RouterLink>
@@ -47,56 +53,3 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 </script>
-
-<style scoped>
-.org-layout {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-
-.sections-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 32px;
-  padding: 16px;
-  background: #ffe3cf;
-  border-radius: 12px;
-}
-
-.nav-link {
-  padding: 8px 16px;
-  background: var(--bg-white);
-  color: var(--brand-purple);
-  text-decoration: none;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 600;
-  transition: all 0.2s;
-  border: 2px solid transparent;
-}
-
-.nav-link:hover {
-  background: var(--brand-orange);
-  color: #ffffff;
-}
-
-.nav-link.router-link-active {
-  background: var(--brand-orange);
-  color: #ffffff;
-}
-
-.org-content {
-  background: #ffffff;
-  padding: 32px;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-</style>
