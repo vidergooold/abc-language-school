@@ -146,7 +146,7 @@ async function submitAdult() {
     alert('Анкета взрослого успешно отправлена! Мы свяжемся с вами.')
     Object.keys(adultForm.value).forEach((key: string) => { (adultForm.value as any)[key] = '' })
     adultConsent.value = { privacy: false, personalData: false }
-  } catch { alert('Ошибка отправки анкеты. Попробуйте поже.') }
+  } catch { alert('Ошибка отправки анкеты. Попробуйте позже.') }
 }
 
 async function submitPreschool() {
@@ -155,7 +155,7 @@ async function submitPreschool() {
     alert('Анкета дошкольника успешно отправлена! Мы свяжемся с вами.')
     Object.keys(preschoolForm.value).forEach((key: string) => { (preschoolForm.value as any)[key] = '' })
     preschoolConsent.value = { privacy: false, personalData: false }
-  } catch { alert('Ошибка отправки анкеты. Попробуйте поже.') }
+  } catch { alert('Ошибка отправки анкеты. Попробуйте позже.') }
 }
 </script>
 
