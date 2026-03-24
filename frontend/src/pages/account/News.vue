@@ -3,8 +3,7 @@
     <h1>📣 Управление новостями</h1>
     <p class="subtitle">Доступно только администратору.</p>
 
-    <button class="btn-add" @click="addNews">➥ Добавить новость</button>
-    <!-- Форма добавления/редактирования -->
+    <button class="btn-add" @click="addNews">+ Добавить новость</button>    <!-- Форма добавления/редактирования -->
     <div v-if="showForm" class="news-form">
       <h2>{{ editing ? 'Редактировать' : 'Новая новость' }}</h2>
       <div class="field"><label>Заголовок</label><input v-model="form.title" type="text" /></div>
