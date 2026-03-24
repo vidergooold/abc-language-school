@@ -43,8 +43,8 @@ import http from '@/api/http'
 
 const showForm = ref(false)
 const editing = ref<number | null>(null)
-const form = ref({ title: '', tag: '', date: '', body: '' })const newsList = ref<any[]>([])
-
+const form = ref({ title: '', tag: '', date: '', body: '' })
+  const newsList = ref<any[]>([])
 async function load() {
   try {
     const r = await http.get('/admin/news')
