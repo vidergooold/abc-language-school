@@ -3,8 +3,8 @@
     <h1>📣 Управление новостями</h1>
     <p class="subtitle">Доступно только администратору.</p>
 
-    <button class="btn-add" @click="addNews">+ Добавить новость</button>    <!-- Форма добавления/редактирования -->
-    <div v-if="showForm" class="news-form">
+    <button class="btn-add" @click="addNews">+ Добавить новость</button>
+        <!-- Форма добавления/редактирования --><div v-if="showForm" class="news-form">
       <h2>{{ editing ? 'Редактировать' : 'Новая новость' }}</h2>
       <div class="field"><label>Заголовок</label><input v-model="form.title" type="text" /></div>
       <div class="field"><label>Тег</label><input v-model="form.tag" type="text" placeholder="Лагерь, Новость и т.⁠п." /></div>
