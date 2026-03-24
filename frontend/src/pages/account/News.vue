@@ -3,8 +3,7 @@
     <h1>📣 Управление новостями</h1>
     <p class="subtitle">Доступно только администратору.</p>
 
-    <button class="btn-add" @click="showForm = true">➕ Добавить новость</button>
-
+    <button class="btn-add" @click="addNews">➥ Добавить новость</button>
     <!-- Форма добавления/редактирования -->
     <div v-if="showForm" class="news-form">
       <h2>{{ editing ? 'Редактировать' : 'Новая новость' }}</h2>
@@ -45,8 +44,7 @@ import http from '@/api/http'
 
 const showForm = ref(false)
 const editing = ref<number | null>(null)
-const form = ref({ title: '', tag: '', body: '' })
-const newsList = ref<any[]>([])
+const form = ref({ title: '', tag: '', date: '', body: '' })const newsList = ref<any[]>([])
 
 async function load() {
   try {
@@ -55,16 +53,24 @@ async function load() {
   } catch {}
 }
 
+  function addNews() {
+  // Устанавливаем текущую дату в формате YYYY-MM-DD
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  form.value.date = `${year}-${month}-${day}`
+  showForm.value = true
+}
+
 function cancelForm() {
   showForm.value = false
   editing.value = null
-  form.value = { title: '', tag: '', body: '' }
-}
+  form.value = { title: '', tag: '', date: '', body: '' }}
 
 function editNews(n: any) {
   editing.value = n.id
-  form.value = { title: n.title, tag: n.tag, body: n.body }
-  showForm.value = true
+  form.value = { title: n.title, tag: n.tag, date: n.date, body: n.body }  showForm.value = true
 }
 
 async function saveNews() {
