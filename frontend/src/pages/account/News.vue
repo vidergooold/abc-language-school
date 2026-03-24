@@ -69,9 +69,9 @@ function cancelForm() {
 
 function editNews(n: any) {
   editing.value = n.id
-  form.value = { title: n.title, tag: n.tag, date: n.date, body: n.body }  showForm.value = true
-}
+  form.value = { title: n.title, tag: n.tag, date: n.date, body: n.body }
 
+      showForm.value = true
 async function saveNews() {
   try {
     if (editing.value) {
