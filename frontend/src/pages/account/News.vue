@@ -8,7 +8,7 @@
       <h2>{{ editing ? 'Редактировать' : 'Новая новость' }}</h2>
       <div class="field"><label>Заголовок</label><input v-model="form.title" type="text" /></div>
       <div class="field"><label>Тег</label><input v-model="form.tag" type="text" placeholder="Лагерь, Новость и т.⁠п." /></div
-                                                                                                                                 <div class="field"><label>Дата</label><input v-model="form.date" type="date" /></div>>
+       <div class="field"><label>Дата</label><input v-model="form.date" type="date" /></div>                                                                                                                                <div class="field"><label>Дата</label><input v-model="form.date" type="date" /></div>
       <div class="field"><label>Текст</label><textarea v-model="form.body" rows="8"></textarea></div>
       <div class="form-actions">
         <button class="btn-save" @click="saveNews">Сохранить</button>
