@@ -72,6 +72,7 @@ function editNews(n: any) {
   form.value = { title: n.title, tag: n.tag, date: n.date, body: n.body }
 
       showForm.value = true
+  }
 async function saveNews() {
   try {
     if (editing.value) {
