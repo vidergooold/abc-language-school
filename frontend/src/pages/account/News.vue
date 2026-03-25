@@ -100,8 +100,9 @@ function getPreview(html: string): string {
   return text.length > 100 ? text.substring(0, 100) + '...' : text
 }
 
-onMounted(load)
-  
+onMounted(() => {
+  load()
+}  
 </script>
 
 <style scoped>
