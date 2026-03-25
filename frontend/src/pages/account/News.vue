@@ -101,6 +101,7 @@ function getPreview(html: string): string {
 }
 
 onMounted(load)
+  
 </script>
 
 <style scoped>
