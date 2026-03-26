@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.core.database import get_db
 from app.models.forms import (
@@ -157,3 +158,24 @@ async def create_feedback_form(
     await db.commit()
     await db.refresh(form)
     return form
+
+
+# GET endpoints to retrieve submitted forms
+@router.get("/")
+async def get_all_forms(db: AsyncSession = Depends(get_db)):
+    """Get all forms grouped by type"""
+    child_forms = (await db.execute(select(ChildForm))).scalars().all()
+    adult_forms = (await db.execute(select(AdultForm))).scalars().all()
+    preschool_forms = (await db.execute(select(PreschoolForm))).scalars().all()
+    teacher_forms = (await db.execute(select(TeacherForm))).scalars().all()
+    testing_forms = (await db.execute(select(TestingForm))).scalars().all()
+    feedback_forms = (await db.execute(select(FeedbackForm))).scalars().all()
+    
+    return {
+        "child": child_forms,
+        "adult": adult_forms,
+        "preschool": preschool_forms,
+        "teacher": teacher_forms,
+        "testing": testing_forms,
+        "feedback": feedback_forms
+    }
