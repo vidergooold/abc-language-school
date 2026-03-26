@@ -25,8 +25,8 @@ class AdultFormCreate(BaseModel):
     age: Optional[str] = None
     birthdate: Optional[str] = None
     work: Optional[str] = None
-    phone: str
-    address: str
+        phone: Optional[str] = None 
+    address: Optional[str] = None
     email: Optional[str] = None
     studiedBefore: Optional[str] = None
     whereHow: Optional[str] = None
