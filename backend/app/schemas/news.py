@@ -6,7 +6,7 @@ class NewsCreate(BaseModel):
     title: str
     tag: Optional[str] = None
     body: str
-        date: Optional[str] = None
+    date: Optional[str] = None
 
 
 class NewsUpdate(BaseModel):
