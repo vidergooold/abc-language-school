@@ -35,7 +35,6 @@
         <p class="news-card-preview">{{ getPreview(n.body) }}</p>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
