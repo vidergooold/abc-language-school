@@ -1,21 +1,18 @@
 <template>
   <header class="header">
     <RouterLink to="/" class="logo">
-      <img src="/vite.svg" alt="ABC School" class="logo-img" />
+      <img src="/logo.png" alt="ABC Лингвоцентр" class="logo-img" />
     </RouterLink>
 
     <nav class="nav">
       <RouterLink to="/" class="nav-link">Главная</RouterLink>
-      <RouterLink to="/courses" class="nav-link">Курсы</RouterLink>
 
       <div
         class="nav-item nav-dropdown"
         @mouseenter="openMenu('org')"
         @mouseleave="closeMenu('org')"
       >
-        <span class="nav-dropdown__trigger" :class="{
-          active: openMenuName === 'org'
-        }">
+        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'org' }">
           Сведения об организации
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
@@ -37,7 +34,29 @@
         </div>
       </div>
 
-      <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Записаться</a>
+      <div
+        class="nav-item nav-dropdown"
+        @mouseenter="openMenu('clients')"
+        @mouseleave="closeMenu('clients')"
+      >
+        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'clients' }">
+          Действующим клиентам
+        </span>
+        <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
+          <div class="nav-dropdown__inner">
+            <RouterLink to="/clients/schedule" @click="closeAll">Расписание</RouterLink>
+            <RouterLink to="/clients/materials" @click="closeAll">Материалы</RouterLink>
+            <RouterLink to="/clients/news" @click="closeAll">Новости</RouterLink>
+          </div>
+        </div>
+      </div>
+
+      <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
+      <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
+      <RouterLink to="/account" class="nav-link">Личный кабинет</RouterLink>
+      <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
+
+      <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
     </nav>
   </header>
 </template>
