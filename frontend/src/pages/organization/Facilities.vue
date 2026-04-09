@@ -13,7 +13,7 @@
       <p><strong>Площадь:</strong> 86.7 м²</p>
       <p class="doc-link">
         <p>
-          <a href="/docs/registration/reg.pdf" target="_blank">
+          <a href="/docs/contract/reg.pdf" target="_blank">
             Свидетельство о государственной регистрации права
           </a>
         </p>
@@ -27,7 +27,7 @@
         <strong>Адрес:</strong> г.Новосибирск, ул. Бориса Богаткова, д. 208/2,
         офис 4 и 5
       </p>
-      <p><strong>Общее количество:</strong> 4</p>
+      <p><strong>Общее количество:</strong> 5</p>
     </div>
 
     <div class="facility-card">
@@ -36,7 +36,7 @@
         <strong>Адрес:</strong> г.Новосибирск, ул. Бориса Богаткова, д. 208/2,
         офис 4 и 5
       </p>
-      <p><strong>Общее количество:</strong> 4</p>
+      <p><strong>Общее количество:</strong> 5</p>
     </div>
 
     <div class="classrooms-gallery">
@@ -76,6 +76,15 @@
         </div>
         <p class="classroom-caption">Кабинет №4</p>
       </div>
+      <div class="classroom-item">
+        <div class="classroom-image">
+          <img
+            src="/images/classrooms/room5.jpg"
+            alt="Кабинет №5"
+          />
+        </div>
+        <p class="classroom-caption">Кабинет №5</p>
+      </div>
     </div>
 
     <h3>О наличии объектов для проведения практических занятий</h3>
@@ -91,13 +100,26 @@
     <h3>Об условиях охраны здоровья</h3>
     <p>Помещения соответствуют санитарным и противопожарным нормам, требованиям охраны труда. Условия для доступности для инвалидов и лиц с ОВЗ: есть.</p>
 
-    <h3>О библиотеке</h3>
-    <div class="library-image">
-      <img
-        src="/images/classrooms/library.jpg"
-        alt="Библиотека"
-      />
-      <p class="image-caption">Библиотека</p>
+    <h3>Дополнительные помещения</h3>
+    <div class="classrooms-gallery">
+      <div class="classroom-item">
+        <div class="classroom-image">
+          <img
+            src="/images/classrooms/hall.jpg"
+            alt="Холл"
+          />
+        </div>
+        <p class="classroom-caption">Холл</p>
+      </div>
+      <div class="classroom-item">
+        <div class="classroom-image">
+          <img
+            src="/images/classrooms/wardrobe.jpg"
+            alt="Гардероб"
+          />
+        </div>
+        <p class="classroom-caption">Гардероб</p>
+      </div>
     </div>
   </div>
 </template>
@@ -169,21 +191,6 @@ p {
 .classroom-caption {
   padding: 12px;
   text-align: center;
-  font-weight: 600;
-  color: var(--brand-purple);
-}
-.library-image {
-  margin-top: 24px;
-  text-align: center;
-}
-.library-image img {
-  max-width: 600px;
-  width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.image-caption {
-  margin-top: 12px;
   font-weight: 600;
   color: var(--brand-purple);
 }
