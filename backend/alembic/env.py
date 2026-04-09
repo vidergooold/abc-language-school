@@ -28,7 +28,7 @@ config = context.config
 # URL базы данных из переменной окружения
 config.set_main_option(
     "sqlalchemy.url",
-    os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5432/abcschool")
+    os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5432/abc_school")
 )
 
 if config.config_file_name is not None:
