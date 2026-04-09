@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <RouterLink to="/" class="logo">
-      <img src="/logo.png" alt="ABC School" class="logo-img" />
+      <img src="/vite.svg" alt="ABC School" class="logo-img" />
     </RouterLink>
 
     <nav class="nav">
@@ -13,8 +13,10 @@
         @mouseenter="openMenu('org')"
         @mouseleave="closeMenu('org')"
       >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'org' }">
-          Сведения об организации ▾
+        <span class="nav-dropdown__trigger" :class="{
+          active: openMenuName === 'org'
+        }">
+          Сведения об организации
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
           <div class="nav-dropdown__inner">
@@ -22,38 +24,20 @@
             <RouterLink to="/organization/structure" @click="closeAll">Структура и филиалы</RouterLink>
             <RouterLink to="/organization/docs" @click="closeAll">Документы</RouterLink>
             <RouterLink to="/organization/education" @click="closeAll">Образование</RouterLink>
-            <RouterLink to="/organization/management" @click="closeAll">Руководство</RouterLink>
-            <RouterLink to="/organization/staff" @click="closeAll">Педагогический состав</RouterLink>
-            <RouterLink to="/organization/facilities" @click="closeAll">Материально-техническое обеспечение</RouterLink>
-            <RouterLink to="/organization/services" @click="closeAll">Платные образовательные услуги</RouterLink>
-            <RouterLink to="/organization/finance" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
-            <RouterLink to="/organization/vacancies" @click="closeAll">Вакансии</RouterLink>
+            <RouterLink to="/organization/standards" @click="closeAll">Образовательные стандарты</RouterLink>
+            <RouterLink to="/organization/staff" @click="closeAll">Руководство и педсостав</RouterLink>
+            <RouterLink to="/organization/mto" @click="closeAll">Материально-техническое обеспечение</RouterLink>
+            <RouterLink to="/organization/grants" @click="closeAll">Стипендии и гранты</RouterLink>
+            <RouterLink to="/organization/paid" @click="closeAll">Платные услуги</RouterLink>
+            <RouterLink to="/organization/budget" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
+            <RouterLink to="/organization/vacancy" @click="closeAll">Вакантные места</RouterLink>
+            <RouterLink to="/organization/accessible" @click="closeAll">Доступная среда</RouterLink>
             <RouterLink to="/organization/international" @click="closeAll">Международное сотрудничество</RouterLink>
           </div>
         </div>
       </div>
 
-      <div
-        class="nav-item nav-dropdown"
-        @mouseenter="openMenu('clients')"
-        @mouseleave="closeMenu('clients')"
-      >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'clients' }">
-          Клиентам ▾
-        </span>
-        <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
-          <div class="nav-dropdown__inner">
-            <RouterLink to="/clients/holidays" @click="closeAll">Праздники</RouterLink>
-            <RouterLink to="/clients/payment" @click="closeAll">Оплата</RouterLink>
-            <RouterLink to="/clients/tax" @click="closeAll">Налоговый вычет</RouterLink>
-          </div>
-        </div>
-      </div>
-
-      <RouterLink to="/enroll" class="nav-link">Запись</RouterLink>
-      <RouterLink to="/testing" class="nav-link">Тестирование</RouterLink>
-      <RouterLink to="/jobs" class="nav-link">Вакансии</RouterLink>
-      <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
+      <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Записаться</a>
     </nav>
   </header>
 </template>
@@ -102,7 +86,6 @@ function scrollToFeedback(e: Event) {
   top: 0;
   z-index: 100;
 }
-
 .logo {
   display: flex;
   align-items: center;
@@ -110,16 +93,20 @@ function scrollToFeedback(e: Event) {
   cursor: pointer;
   transition: opacity 0.2s;
 }
-.logo:hover { opacity: 0.8; }
-.logo-img { height: 70px; width: auto; object-fit: contain; }
-
+.logo:hover {
+  opacity: 0.8;
+}
+.logo-img {
+  height: 70px;
+  width: auto;
+  object-fit: contain;
+}
 .nav {
   display: flex;
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
 }
-
 .nav-link {
   font-size: 16px;
   font-weight: 600;
@@ -137,9 +124,10 @@ function scrollToFeedback(e: Event) {
   color: var(--brand-orange);
   background: #fff0e6;
 }
-
-.nav-item { position: relative; cursor: pointer; }
-
+.nav-item {
+  position: relative;
+  cursor: pointer;
+}
 .nav-dropdown__trigger {
   font-size: 16px;
   font-weight: 600;
@@ -155,9 +143,6 @@ function scrollToFeedback(e: Event) {
   background: #ffe3cf;
   color: var(--brand-orange);
 }
-
-/* Меню начинается сразу под триггером (без gap),
-   прозрачный padding-top закрывает визуальный отступ */
 .nav-dropdown__menu {
   position: absolute;
   top: 100%;
@@ -165,7 +150,6 @@ function scrollToFeedback(e: Event) {
   padding-top: 6px;
   z-index: 200;
 }
-
 .nav-dropdown__inner {
   display: flex;
   flex-direction: column;
@@ -177,12 +161,10 @@ function scrollToFeedback(e: Event) {
   border: 1px solid #ffe3cf;
   animation: dropIn 0.15s ease;
 }
-
 @keyframes dropIn {
   from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 .nav-dropdown__inner a {
   padding: 10px 18px;
   white-space: nowrap;
@@ -202,7 +184,6 @@ function scrollToFeedback(e: Event) {
   color: var(--brand-orange);
   font-weight: 700;
 }
-
 .nav-feedback {
   padding: 8px 16px;
   border-radius: 999px;
