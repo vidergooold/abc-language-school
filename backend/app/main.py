@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.core.database import init_db
 from app.core.scheduler import setup_scheduler, scheduler
+from app.core.audit_middleware import AuditMiddleware
 from app.api.v1 import (
     auth, users, forms, courses, enrollments,
     news, teachers, groups, schedule,
@@ -28,12 +29,14 @@ app = FastAPI(
         "расписание (проверка конфликтов), группы и курсы, "
         "посещаемость, финансы и аналитика, "
         "лист ожидания, отчёты с кэшированием, "
-        "уведомления и очередь рассылок, планировщик APScheduler, аудит."
+        "уведомления и очередь рассылок, планировщик APScheduler (7 задач), "
+        "автоматический аудит всех изменений через Middleware."
     ),
-    version="3.0.0",
+    version="4.0.0",
     lifespan=lifespan,
 )
 
+# ─── Middleware ────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -41,51 +44,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Аудит после CORS (чтобы CORS-preflight OPTIONS не логировался)
+app.add_middleware(AuditMiddleware)
 
-# ─── Базовые роуты ───────────────────────────────────────────────────
-app.include_router(auth.router,        prefix="/api/v1")
-app.include_router(users.router,       prefix="/api/v1")
-app.include_router(forms.router,       prefix="/api/v1")
-app.include_router(courses.router,     prefix="/api/v1")
-app.include_router(enrollments.router, prefix="/api/v1")
-
-# ─── Новости с логикой статусов и отложенной публикацией ─────────────
-app.include_router(news.router,        prefix="/api/v1")
-
-# ─── Преподаватели ───────────────────────────────────────────────────
-app.include_router(teachers.router,    prefix="/api/v1")
-
-# ─── Курсы, группы, студенты в группах ──────────────────────────────
-app.include_router(groups.router,      prefix="/api/v1")
-
-# ─── Расписание с проверкой трёх видов конфликтов ───────────────────
-app.include_router(schedule.router,    prefix="/api/v1")
-
-# ─── Финансы: счета, оплаты, аналитика ──────────────────────────────
-app.include_router(payments.router,    prefix="/api/v1")
-
-# ─── Посещаемость ────────────────────────────────────────────────────
-app.include_router(attendance.router,  prefix="/api/v1")
-
-# ─── Уведомления и очередь рассылок ─────────────────────────────────
+# ─── Роутеры ─────────────────────────────────────────────────────────────────
+app.include_router(auth.router,          prefix="/api/v1")
+app.include_router(users.router,         prefix="/api/v1")
+app.include_router(forms.router,         prefix="/api/v1")
+app.include_router(courses.router,       prefix="/api/v1")
+app.include_router(enrollments.router,   prefix="/api/v1")
+app.include_router(news.router,          prefix="/api/v1")
+app.include_router(teachers.router,      prefix="/api/v1")
+app.include_router(groups.router,        prefix="/api/v1")
+app.include_router(schedule.router,      prefix="/api/v1")
+app.include_router(payments.router,      prefix="/api/v1")
+app.include_router(attendance.router,    prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
-
-# ─── Журнал действий (аудит) ─────────────────────────────────────────
-app.include_router(audit.router,       prefix="/api/v1")
-
-# ─── Лист ожидания ───────────────────────────────────────────────────
-app.include_router(waitlist.router,    prefix="/api/v1")
-
-# ─── Расширенная аналитика: unit-economics, BEP, сценарии ───────────
-app.include_router(analytics.router,   prefix="/api/v1")
-
-# ─── Отчёты с кэшированием ───────────────────────────────────────────
-app.include_router(reports.router,     prefix="/api/v1")
+app.include_router(audit.router,         prefix="/api/v1")
+app.include_router(waitlist.router,      prefix="/api/v1")
+app.include_router(analytics.router,     prefix="/api/v1")
+app.include_router(reports.router,       prefix="/api/v1")
 
 
 @app.get("/")
 async def root():
-    return {"message": "ABC Language School API v3.0 работает"}
+    return {"message": "ABC Language School API v4.0 работает"}
 
 
 @app.get("/api/v1/scheduler/status")
