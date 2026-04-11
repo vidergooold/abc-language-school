@@ -13,9 +13,9 @@ from app.models.notification import Notification
 from app.models.waitlist import WaitlistEntry, WaitlistStatus
 from app.models.forms import ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm, FeedbackForm
 from app.models.discount import Discount, DiscountType, DiscountReason
-from app.models.room_booking import RoomBooking
+from app.models.room_booking import RoomBooking, BookingStatus, BookingPurpose
 from app.models.audit import AuditLog
-from app.models.report import Report
+from app.models.report import ReportCache
 
 __all__ = [
     "User",
@@ -42,6 +42,8 @@ __all__ = [
     "DiscountType",
     "DiscountReason",
     "RoomBooking",
+    "BookingStatus",
+    "BookingPurpose",
     "AuditLog",
-    "Report",
+    "ReportCache",
 ]
