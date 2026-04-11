@@ -8,10 +8,13 @@ import asyncio
 import os
 import sys
 
-# Добавляем путь к app
+# Путь к backend/
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+# Base — единственный источник метаданных
 from app.core.database import Base
+
+# Импортируем ВСЕ модели, чтобы их таблицы попали в Base.metadata
 from app.models.user import User
 from app.models.enrollment import Enrollment
 from app.models.forms import (
@@ -22,14 +25,27 @@ from app.models.forms import (
     TestingForm,
     FeedbackForm,
 )
+from app.models.news import News, NewsTag, NewsImage
+from app.models.audit import AuditLog
+from app.models.attendance import Attendance
+from app.models.discount import Discount
+from app.models.group import Group
+from app.models.notification import Notification
+from app.models.payment import Payment
+from app.models.report import Report
+from app.models.room_booking import RoomBooking
+from app.models.schedule import Schedule
+from app.models.teacher import Teacher
+from app.models.waitlist import Waitlist
 
 config = context.config
 
-# URL базы данных из переменной окружения
-config.set_main_option(
-    "sqlalchemy.url",
-    os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5432/abc_school")
+# URL из .env (или дефолт совпадающий с .env проекта)
+db_url = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://abc_user:yourpassword123@localhost:5432/abc_school"
 )
+config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -45,14 +61,12 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
 
 def do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
-
     with context.begin_transaction():
         context.run_migrations()
 
@@ -63,10 +77,8 @@ async def run_async_migrations() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-
     await connectable.dispose()
 
 

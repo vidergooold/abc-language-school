@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum as SAEnum
+from sqlalchemy import Column, Integer, String, Boolean, Enum as SAEnum
 from app.core.database import Base
 import enum
 
@@ -16,3 +16,4 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
     role = Column(SAEnum(UserRole), nullable=False, default=UserRole.teacher)
+    is_active = Column(Boolean, nullable=False, default=True)
