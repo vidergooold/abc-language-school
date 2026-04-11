@@ -11,15 +11,11 @@ import sys
 # Путь к backend/
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Импортируем всё из одного файла app/models.py
-# (именно он содержит все 15 таблиц и единственный Base)
-from app.models import (
-    Base,
-    User, Course, Group, Lesson, Room,
-    Enrollment, Payment, Attendance,
-    News, Notification, Waitlist,
-    Review, Material, Expense, RevenueAnalytics,
-)
+# Base находится в app.core.database
+from app.core.database import Base  # noqa: E402
+
+# Импортируем все модели, чтобы они зарегистрировались в Base.metadata
+import app.models  # noqa: F401, E402
 
 config = context.config
 
