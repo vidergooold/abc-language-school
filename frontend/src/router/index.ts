@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { checkAuth, checkRole, checkStaff, checkAdmin, redirectAuthenticated } from './guards'
 
 import Home from '@/pages/Home.vue'
 import Courses from '@/pages/Courses.vue'
@@ -34,91 +35,177 @@ import AccountLayout from '@/components/layout/AccountLayout.vue'
 import AccountDashboard from '@/pages/account/Dashboard.vue'
 import AccountForms from '@/pages/account/Forms.vue'
 import AccountDocuments from '@/pages/account/Documents.vue'
-import AccountStudents from '@/pages/account/Students.vue'
-import AccountNews from '@/pages/account/News.vue'
-import AccountScheduleAdmin from '@/pages/account/ScheduleAdmin.vue'
-import AccountFeedback from '@/pages/account/Feedback.vue'
-
-import AnketaShkolnik from '@/pages/blanks/AnketaShkolnik.vue'
-import AnketaVzrosly from '@/pages/blanks/AnketaVzrosly.vue'
-import AnketaDoshkolnik from '@/pages/blanks/AnketaDoshkolnik.vue'
-
-import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
-  history: createWebHistory(),
-  scrollBehavior() {
-    return { top: 0, behavior: 'smooth' }
-  },
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', component: Home },
-    { path: '/courses', component: Courses },
-    { path: '/enroll', component: Enroll },
-    { path: '/testing', component: Testing },
-    { path: '/jobs', component: Jobs },
-    { path: '/login', component: Login },
-    { path: '/register', component: Register },
-    { path: '/privacy', component: Privacy },
-    { path: '/consent', component: Consent },
-    { path: '/blanks/shkolnik', component: AnketaShkolnik, meta: { requiresStaff: true } },
-    { path: '/blanks/vzrosly', component: AnketaVzrosly, meta: { requiresStaff: true } },
-    { path: '/blanks/doshkolnik', component: AnketaDoshkolnik, meta: { requiresStaff: true } },
+    {
+      path: '/',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/courses',
+      name: 'courses',
+      component: Courses
+    },
+    {
+      path: '/enroll',
+      name: 'enroll',
+      component: Enroll
+    },
+    {
+      path: '/testing',
+      name: 'testing',
+      component: Testing
+    },
+    {
+      path: '/jobs',
+      name: 'jobs',
+      component: Jobs
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: Privacy
+    },
+    {
+      path: '/consent',
+      name: 'consent',
+      component: Consent
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login,
+      beforeEnter: redirectAuthenticated
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register,
+      beforeEnter: redirectAuthenticated
+    },
     {
       path: '/organization',
       component: OrganizationLayout,
-      redirect: '/organization/main',
       children: [
-        { path: 'main', component: OrgMain },
-        { path: 'structure', component: OrgStructure },
-        { path: 'docs', component: OrgDocs },
-        { path: 'education', component: OrgEducation },
-        { path: 'management', component: OrgManagement },
-        { path: 'staff', component: OrgStaff },
-        { path: 'facilities', component: OrgFacilities },
-        { path: 'services', component: OrgServices },
-        { path: 'finance', component: OrgFinance },
-        { path: 'vacancies', component: OrgVacancies },
-        { path: 'grants', component: OrgGrants },
-        { path: 'accessibility', component: OrgAccessibility },
-        { path: 'international', component: OrgInternational },
-      ],
+        {
+          path: '',
+          name: 'organization',
+          component: OrgMain
+        },
+        {
+          path: 'structure',
+          name: 'org-structure',
+          component: OrgStructure
+        },
+        {
+          path: 'docs',
+          name: 'org-docs',
+          component: OrgDocs
+        },
+        {
+          path: 'education',
+          name: 'org-education',
+          component: OrgEducation
+        },
+        {
+          path: 'management',
+          name: 'org-management',
+          component: OrgManagement
+        },
+        {
+          path: 'staff',
+          name: 'org-staff',
+          component: OrgStaff
+        },
+        {
+          path: 'facilities',
+          name: 'org-facilities',
+          component: OrgFacilities
+        },
+        {
+          path: 'services',
+          name: 'org-services',
+          component: OrgServices
+        },
+        {
+          path: 'finance',
+          name: 'org-finance',
+          component: OrgFinance
+        },
+        {
+          path: 'vacancies',
+          name: 'org-vacancies',
+          component: OrgVacancies
+        },
+        {
+          path: 'grants',
+          name: 'org-grants',
+          component: OrgGrants
+        },
+        {
+          path: 'accessibility',
+          name: 'org-accessibility',
+          component: OrgAccessibility
+        },
+        {
+          path: 'international',
+          name: 'org-international',
+          component: OrgInternational
+        }
+      ]
     },
     {
       path: '/clients',
       component: ClientsLayout,
-      redirect: '/clients/holidays',
+      meta: { requiresAuth: true, allowedRoles: ['admin', 'staff', 'student'] },
+      beforeEnter: checkRole(['admin', 'staff', 'student']),
       children: [
-        { path: 'holidays', component: ClientsHolidays },
-        { path: 'payment', component: ClientsPayment },
-        { path: 'tax', component: ClientsTax },
-      ],
+        {
+          path: 'holidays',
+          name: 'clients-holidays',
+          component: ClientsHolidays
+        },
+        {
+          path: 'payment',
+          name: 'clients-payment',
+          component: ClientsPayment
+        },
+        {
+          path: 'tax',
+          name: 'clients-tax',
+          component: ClientsTax
+        }
+      ]
     },
     {
       path: '/account',
       component: AccountLayout,
-      meta: { requiresStaff: true },
-      redirect: '/account/dashboard',
+      meta: { requiresAuth: true },
+      beforeEnter: checkAuth,
       children: [
-        { path: 'dashboard', component: AccountDashboard },
-        { path: 'forms', component: AccountForms },
-        { path: 'documents', component: AccountDocuments },
-        { path: 'students', component: AccountStudents },
-        { path: 'news', component: AccountNews, meta: { requiresAdmin: true } },
-        { path: 'schedule', component: AccountScheduleAdmin },
-        { path: 'feedback', component: AccountFeedback },
-      ],
-    },
-  ],
-})
-
-router.beforeEach((to) => {
-  const auth = useAuthStore()
-  if (to.meta.requiresStaff && !auth.isStaff) {
-    return '/login'
-  }
-  if (to.meta.requiresAdmin && !auth.isAdmin) {
-    return '/account/dashboard'
-  }
+        {
+          path: '',
+          name: 'account',
+          component: AccountDashboard
+        },
+        {
+          path: 'forms',
+          name: 'account-forms',
+          component: AccountForms,
+          meta: { requiresStaff: true },
+          beforeEnter: checkStaff
+        },
+        {
+          path: 'documents',
+          name: 'account-documents',
+          component: AccountDocuments
+        }
+      ]
+    }
+  ]
 })
 
 export default router
