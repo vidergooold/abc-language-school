@@ -53,21 +53,7 @@
 
       <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
       <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
-      <div
-        class="nav-item nav-dropdown"
-        @mouseenter="openMenu('login')"
-        @mouseleave="closeMenu('login')"
-      >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'login' }">
-          Вход
-        </span>
-        <div class="nav-dropdown__menu" v-show="openMenuName === 'login'">
-          <div class="nav-dropdown__inner">
-            <RouterLink to="/register" @click="closeAll">Регистрация</RouterLink>
-            <RouterLink to="/account" @click="closeAll">Личный кабинет</RouterLink>
-          </div>
-        </div>
-      </div>
+      <RouterLink to="/register" class="nav-link">Личный кабинет</RouterLink>
       <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
       <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
     </nav>
