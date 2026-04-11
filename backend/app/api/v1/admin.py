@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
 
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.models.forms import (
     ChildForm,
     AdultForm,
@@ -13,7 +13,6 @@ from app.models.forms import (
     FeedbackForm,
 )
 from app.models.group import Group
-from app.api.v1.users import get_current_admin
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -32,7 +31,7 @@ def _fmt_dt(dt):
 async def get_all_forms(
     limit: int = Query(None),
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
     """Получить все формы заявок"""
     forms = []
@@ -71,13 +70,9 @@ async def update_form(
     form_id: int,
     payload: dict,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
-    """Обновить статус или комментарий анкеты.
-
-    Фронтенд передаёт { "status": "processed" }.
-    Эндпоинт ищет запись во всех таблицах поочерёдно.
-    """
+    """Обновить статус или комментарий анкеты."""
     models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm]
 
     async with db as session:
@@ -100,7 +95,7 @@ async def update_form(
 async def delete_form(
     form_id: int,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
     """Удалить анкету по ID во всех типах."""
     models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm]
@@ -123,7 +118,7 @@ async def delete_form(
 async def get_all_feedback(
     limit: int = Query(None),
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
     """Получить все сообщения обратной связи"""
     async with db as session:
@@ -155,7 +150,7 @@ async def get_all_feedback(
 async def mark_feedback_read(
     feedback_id: int,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
     """Отметить сообщение как прочитанное."""
     async with db as session:
@@ -173,41 +168,36 @@ async def mark_feedback_read(
 @router.get("/stats")
 async def get_stats(
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
     """Статистика для дашборда.
 
-    Фронтенд ожидает поля:
-      - total_forms      — всего анкет за всё время
-      - total_students   — анкеты учеников (child + adult + preschool)
-      - total_feedback   — всего обращений
-      - schedule_groups  — групп в расписании (модель Group)
+    Фронтенд ожидает:
+      total_forms, total_students, total_feedback, schedule_groups
     """
     async with db as session:
-        child_count = await session.scalar(select(func.count()).select_from(ChildForm))
-        adult_count = await session.scalar(select(func.count()).select_from(AdultForm))
+        child_count     = await session.scalar(select(func.count()).select_from(ChildForm))
+        adult_count     = await session.scalar(select(func.count()).select_from(AdultForm))
         preschool_count = await session.scalar(select(func.count()).select_from(PreschoolForm))
-        teacher_count = await session.scalar(select(func.count()).select_from(TeacherForm))
-        testing_count = await session.scalar(select(func.count()).select_from(TestingForm))
-        feedback_count = await session.scalar(select(func.count()).select_from(FeedbackForm))
-        groups_count = await session.scalar(select(func.count()).select_from(Group))
+        teacher_count   = await session.scalar(select(func.count()).select_from(TeacherForm))
+        testing_count   = await session.scalar(select(func.count()).select_from(TestingForm))
+        feedback_count  = await session.scalar(select(func.count()).select_from(FeedbackForm))
+        groups_count    = await session.scalar(select(func.count()).select_from(Group))
 
-        total_forms = child_count + adult_count + preschool_count + teacher_count + testing_count
+        total_forms    = child_count + adult_count + preschool_count + teacher_count + testing_count
         total_students = child_count + adult_count + preschool_count
 
         return {
-            # Ключи, которые ожидает Dashboard.vue
-            "total_forms": total_forms,
-            "total_students": total_students,
-            "total_feedback": feedback_count,
+            "total_forms":     total_forms,
+            "total_students":  total_students,
+            "total_feedback":  feedback_count,
             "schedule_groups": groups_count,
-            # Дополнительная разбивка по типам
             "forms_by_type": {
-                "child": child_count,
-                "adult": adult_count,
+                "child":     child_count,
+                "adult":     adult_count,
                 "preschool": preschool_count,
-                "teacher": teacher_count,
-                "testing": testing_count,
+                "teacher":   teacher_count,
+                "testing":   testing_count,
             },
         }
 
@@ -218,7 +208,7 @@ async def get_stats(
 @router.get("/students")
 async def get_all_students(
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_admin),
+    _=Depends(require_admin),
 ):
     """Получить всех студентов (школьники + дошкольники + взрослые)"""
     students = []
@@ -232,13 +222,13 @@ async def get_all_students(
             result = await session.execute(select(model).order_by(model.id.desc()))
             for row in result.scalars().all():
                 students.append({
-                    "id": row.id,
-                    "type": type_label,
-                    "fio": row.fio,
-                    "age": getattr(row, "age", None),
-                    "phone": row.phone,
-                    "email": getattr(row, "email", None),
-                    "status": getattr(row, "status", "new"),
+                    "id":         row.id,
+                    "type":       type_label,
+                    "fio":        row.fio,
+                    "age":        getattr(row, "age", None),
+                    "phone":      row.phone,
+                    "email":      getattr(row, "email", None),
+                    "status":     getattr(row, "status", "new"),
                     "created_at": _fmt_dt(getattr(row, "created_at", None)),
                 })
 
