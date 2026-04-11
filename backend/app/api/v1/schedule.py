@@ -1,29 +1,32 @@
 """Schedule router.
 
 Матрица доступа:
-  GET  /classrooms          — require_staff  (учитель видит аудитории)
-  POST /classrooms          — require_admin
-  GET  /schedule            — require_staff  (учитель видит расписание)
-  POST /schedule            — require_admin
-  PUT  /schedule/{id}       — require_admin
-  DELETE /schedule/{id}     — require_admin
-  POST /schedule/check      — require_staff  (проверка конфликтов без сохранения)
+  GET  /schedule/my         — require_student (студент видит своё расписание)
+  GET  /schedule             — require_staff  (учитель видит всё расписание)
+  POST /schedule             — require_admin
+  PUT  /schedule/{id}        — require_admin
+  DELETE /schedule/{id}      — require_admin
+  POST /schedule/check       — require_staff
+  GET  /classrooms           — require_staff
+  POST /classrooms           — require_admin
 """
-from typing import List
+from typing import List, Optional
 from datetime import time
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin, require_staff
+from app.core.security import require_admin, require_staff, require_student
 from app.models.schedule import Lesson, Classroom, LessonStatus
+from app.models.group_student import GroupStudent
 from app.schemas.schedule import LessonCreate, LessonOut, ClassroomCreate, ClassroomOut
+from app.models.user import User
 
 router = APIRouter(tags=["Schedule"])
 
 
-# ─── Вспомогательная функция: проверка конфликтов ─────────────────────────────
+# ─── Вспомогательная функция: проверка конфликтов ───────────────────────────────
 async def check_schedule_conflicts(
     db: AsyncSession,
     group_id: int,
@@ -34,15 +37,6 @@ async def check_schedule_conflicts(
     time_end: time,
     exclude_lesson_id: int = None,
 ) -> list[dict]:
-    """
-    Проверяет три типа конфликтов в расписании:
-      1. Группа: нельзя назначить группу на два занятия одновременно
-      2. Преподаватель: нельзя поставить преподавателя в два места одновременно
-      3. Аудитория: нельзя занять один кабинет двумя группами одновременно
-
-    Два занятия конфликтуют по времени если:
-      new.time_start < existing.time_end AND new.time_end > existing.time_start
-    """
     conflicts = []
     active_statuses = [LessonStatus.scheduled, LessonStatus.rescheduled]
 
@@ -56,7 +50,6 @@ async def check_schedule_conflicts(
     if exclude_lesson_id:
         base_filter = and_(base_filter, Lesson.id != exclude_lesson_id)
 
-    # 1. Конфликт группы
     group_result = await db.execute(
         select(Lesson).where(and_(base_filter, Lesson.group_id == group_id))
     )
@@ -68,7 +61,6 @@ async def check_schedule_conflicts(
                 "conflicting_lesson_id": lesson.id,
             })
 
-    # 2. Конфликт преподавателя
     teacher_result = await db.execute(
         select(Lesson).where(and_(base_filter, Lesson.teacher_id == teacher_id))
     )
@@ -80,7 +72,6 @@ async def check_schedule_conflicts(
                 "conflicting_lesson_id": lesson.id,
             })
 
-    # 3. Конфликт аудитории
     classroom_result = await db.execute(
         select(Lesson).where(and_(base_filter, Lesson.classroom_id == classroom_id))
     )
@@ -95,11 +86,38 @@ async def check_schedule_conflicts(
     return conflicts
 
 
-# ─── Аудитории ────────────────────────────────────────────────────────────────────
+# ─── Расписание студента ───────────────────────────────────────────────────────────────
+@router.get("/schedule/my", response_model=List[LessonOut])
+async def get_my_schedule(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_student),
+):
+    """Расписание текущего студента: выбирается через его группы."""
+    # Находим все group_id студента
+    gs_result = await db.execute(
+        select(GroupStudent.group_id).where(GroupStudent.student_id == current_user.id)
+    )
+    group_ids = [row[0] for row in gs_result.all()]
+
+    if not group_ids:
+        return []
+
+    result = await db.execute(
+        select(Lesson).where(
+            and_(
+                Lesson.group_id.in_(group_ids),
+                Lesson.status.in_([LessonStatus.scheduled, LessonStatus.rescheduled]),
+            )
+        ).order_by(Lesson.day_of_week, Lesson.time_start)
+    )
+    return result.scalars().all()
+
+
+# ─── Аудитории ───────────────────────────────────────────────────────────────────────────
 @router.get("/classrooms", response_model=List[ClassroomOut])
 async def get_classrooms(
     db: AsyncSession = Depends(get_db),
-    _: None = Depends(require_staff),  # Учитель должен видеть аудитории
+    _: None = Depends(require_staff),
 ):
     result = await db.execute(
         select(Classroom).where(Classroom.is_active == True).order_by(Classroom.name)
@@ -120,15 +138,14 @@ async def create_classroom(
     return classroom
 
 
-# ─── Занятия ────────────────────────────────────────────────────────────────────
+# ─── Занятия ──────────────────────────────────────────────────────────────────────────────
 @router.get("/schedule", response_model=List[LessonOut])
 async def get_schedule(
-    group_id: int = None,
-    teacher_id: int = None,
+    group_id: Optional[int] = None,
+    teacher_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
-    _: None = Depends(require_staff),  # Учитель должен видеть расписание
+    _: None = Depends(require_staff),
 ):
-    """Получить расписание. Можно фильтровать по группе или преподавателю."""
     query = select(Lesson).where(
         Lesson.status.in_([LessonStatus.scheduled, LessonStatus.rescheduled])
     )
@@ -146,14 +163,6 @@ async def create_lesson(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_admin),
 ):
-    """
-    Создать занятие в расписании.
-    ПЕРЕД сохранением выполняется проверка трёх видов конфликтов:
-    - группа уже занята в это время
-    - преподаватель уже занят в это время
-    - аудитория уже занята в это время
-    Если найден хотя бы один конфликт — возвращается 409 с подробным описанием.
-    """
     conflicts = await check_schedule_conflicts(
         db=db,
         group_id=data.group_id,
@@ -182,7 +191,6 @@ async def update_lesson(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_admin),
 ):
-    """Обновить занятие с повторной проверкой конфликтов (исключая само занятие)"""
     result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
@@ -228,9 +236,8 @@ async def cancel_lesson(
 async def check_conflicts_only(
     data: LessonCreate,
     db: AsyncSession = Depends(get_db),
-    _: None = Depends(require_staff),  # Учитель может проверять конфликты
+    _: None = Depends(require_staff),
 ):
-    """Предварительная проверка конфликтов без сохранения занятия"""
     conflicts = await check_schedule_conflicts(
         db=db,
         group_id=data.group_id,
