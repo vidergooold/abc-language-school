@@ -13,7 +13,7 @@ class BookingStatus(str, enum.Enum):
 
 
 class BookingPurpose(str, enum.Enum):
-    lesson = "lesson"             # реuлярное занятие
+    lesson = "lesson"             # регулярное занятие
     exam = "exam"                 # экзамен / тестирование
     event = "event"               # мероприятие / вечеринка
     consultation = "consultation" # индивидуальная консультация
@@ -30,7 +30,7 @@ class RoomBooking(Base):
     - Перед созданием брони СЕРВИС проверяет конфликты в таблице lessons
     - Статус pending — до подтверждения администратором
     - Статус confirmed — комната занята, никто другой не может забронировать
-    - Автоматическая отмена если бронь не подтверждена за 24ч 
+    - Автоматическая отмена если бронь не подтверждена за 24ч
     """
     __tablename__ = "room_bookings"
 
@@ -62,4 +62,17 @@ class RoomBooking(Base):
     # Связи
     classroom = relationship("Classroom", backref="bookings")
     teacher = relationship("Teacher", backref="room_bookings")
-    children = relationship("RoomBooking", backref="parent", foreign_keys=[parent_booking_id])
+
+    # Самоссылочная связь: родительская бронь → дочерние брони
+    # remote_side=[id] указывает «этот id — сторона родителя»
+    parent = relationship(
+        "RoomBooking",
+        back_populates="children",
+        foreign_keys=[parent_booking_id],
+        remote_side="RoomBooking.id",
+    )
+    children = relationship(
+        "RoomBooking",
+        back_populates="parent",
+        foreign_keys=[parent_booking_id],
+    )
