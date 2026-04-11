@@ -13,16 +13,18 @@
       </div>
 
       <table class="anketa__table">
-        <tr><td class="label">ФИО</td><td class="value"></td></tr>
-        <tr><td class="label">Дата рождения</td><td class="value"></td></tr>
-        <tr><td class="label">Место работы / учёбы</td><td class="value"></td></tr>
-        <tr><td class="label">Домашний адрес</td><td class="value"></td></tr>
-        <tr><td class="label">Телефон</td><td class="value"></td></tr>
-        <tr><td class="label">Email</td><td class="value"></td></tr>
-        <tr><td class="label">Уровень английского</td><td class="value"></td></tr>
-        <tr><td class="label">Цель изучения</td><td class="value"></td></tr>
-        <tr><td class="label">Откуда узнали о центре</td><td class="value"></td></tr>
-        <tr><td class="label">Пожелания / примечания</td><td class="value tall"></td></tr>
+        <tbody>
+          <tr><td class="label">ФИО</td><td class="value"></td></tr>
+          <tr><td class="label">Дата рождения</td><td class="value"></td></tr>
+          <tr><td class="label">Место работы / учёбы</td><td class="value"></td></tr>
+          <tr><td class="label">Домашний адрес</td><td class="value"></td></tr>
+          <tr><td class="label">Телефон</td><td class="value"></td></tr>
+          <tr><td class="label">Email</td><td class="value"></td></tr>
+          <tr><td class="label">Уровень английского</td><td class="value"></td></tr>
+          <tr><td class="label">Цель изучения</td><td class="value"></td></tr>
+          <tr><td class="label">Откуда узнали о центре</td><td class="value"></td></tr>
+          <tr><td class="label">Пожелания / примечания</td><td class="value tall"></td></tr>
+        </tbody>
       </table>
 
       <div class="anketa__consent">

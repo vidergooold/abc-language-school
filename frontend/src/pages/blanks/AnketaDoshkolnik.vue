@@ -13,16 +13,18 @@
       </div>
 
       <table class="anketa__table">
-        <tr><td class="label">ФИО ребёнка</td><td class="value"></td></tr>
-        <tr><td class="label">Дата рождения</td><td class="value"></td></tr>
-        <tr><td class="label">Детский сад / группа</td><td class="value"></td></tr>
-        <tr><td class="label">Домашний адрес</td><td class="value"></td></tr>
-        <tr><td class="label">ФИО родителя</td><td class="value"></td></tr>
-        <tr><td class="label">Телефон родителя</td><td class="value"></td></tr>
-        <tr><td class="label">Email родителя</td><td class="value"></td></tr>
-        <tr><td class="label">Знает ли ребёнок английский</td><td class="value"></td></tr>
-        <tr><td class="label">Откуда узнали о центре</td><td class="value"></td></tr>
-        <tr><td class="label">Пожелания / примечания</td><td class="value tall"></td></tr>
+        <tbody>
+          <tr><td class="label">ФИО ребёнка</td><td class="value"></td></tr>
+          <tr><td class="label">Дата рождения</td><td class="value"></td></tr>
+          <tr><td class="label">Детский сад / группа</td><td class="value"></td></tr>
+          <tr><td class="label">Домашний адрес</td><td class="value"></td></tr>
+          <tr><td class="label">ФИО родителя</td><td class="value"></td></tr>
+          <tr><td class="label">Телефон родителя</td><td class="value"></td></tr>
+          <tr><td class="label">Email родителя</td><td class="value"></td></tr>
+          <tr><td class="label">Знает ли ребёнок английский</td><td class="value"></td></tr>
+          <tr><td class="label">Откуда узнали о центре</td><td class="value"></td></tr>
+          <tr><td class="label">Пожелания / примечания</td><td class="value tall"></td></tr>
+        </tbody>
       </table>
 
       <div class="anketa__consent">
