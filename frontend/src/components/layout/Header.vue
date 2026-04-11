@@ -44,7 +44,6 @@
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
           <div class="nav-dropdown__inner">
-            <RouterLink to="/clients/info" @click="closeAll">Важная информация</RouterLink>
             <RouterLink to="/clients/holidays" @click="closeAll">Каникулы и выходные дни</RouterLink>
             <RouterLink to="/clients/payment" @click="closeAll">Оплата обучения, перерасчет, возврат</RouterLink>
             <RouterLink to="/clients/tax" @click="closeAll">Оформление налогового вычета</RouterLink>

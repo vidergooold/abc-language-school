@@ -4,7 +4,6 @@
     <p class="page-subtitle">Вся необходимая информация для наших учеников и родителей</p>
 
     <nav class="sections-nav">
-      <RouterLink to="/clients/info" class="nav-link">Важная информация</RouterLink>
       <RouterLink to="/clients/holidays" class="nav-link">Каникулы и выходные дни</RouterLink>
       <RouterLink to="/clients/payment" class="nav-link">Оплата обучения, перерасчет, возврат</RouterLink>
       <RouterLink to="/clients/tax" class="nav-link">Оформление налогового вычета</RouterLink>
