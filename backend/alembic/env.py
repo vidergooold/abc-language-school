@@ -11,36 +11,19 @@ import sys
 # Путь к backend/
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Base — единственный источник метаданных
-from app.core.database import Base
-
-# Импортируем ВСЕ модели, чтобы их таблицы попали в Base.metadata
-from app.models.user import User
-from app.models.enrollment import Enrollment
-from app.models.forms import (
-    ChildForm,
-    AdultForm,
-    PreschoolForm,
-    TeacherForm,
-    TestingForm,
-    FeedbackForm,
+# Импортируем всё из одного файла app/models.py
+# (именно он содержит все 15 таблиц и единственный Base)
+from app.models import (
+    Base,
+    User, Course, Group, Lesson, Room,
+    Enrollment, Payment, Attendance,
+    News, Notification, Waitlist,
+    Review, Material, Expense, RevenueAnalytics,
 )
-from app.models.news import News, NewsTag, NewsImage
-from app.models.audit import AuditLog
-from app.models.attendance import Attendance
-from app.models.discount import Discount
-from app.models.group import Group
-from app.models.notification import Notification
-from app.models.payment import Payment
-from app.models.report import Report
-from app.models.room_booking import RoomBooking
-from app.models.schedule import Schedule
-from app.models.teacher import Teacher
-from app.models.waitlist import Waitlist
 
 config = context.config
 
-# URL из .env (или дефолт совпадающий с .env проекта)
+# URL из .env (или дефолт)
 db_url = os.getenv(
     "DATABASE_URL",
     "postgresql+asyncpg://abc_user:yourpassword123@localhost:5432/abc_school"
