@@ -1,19 +1,29 @@
+"""Schedule router.
+
+Матрица доступа:
+  GET  /classrooms          — require_staff  (учитель видит аудитории)
+  POST /classrooms          — require_admin
+  GET  /schedule            — require_staff  (учитель видит расписание)
+  POST /schedule            — require_admin
+  PUT  /schedule/{id}       — require_admin
+  DELETE /schedule/{id}     — require_admin
+  POST /schedule/check      — require_staff  (проверка конфликтов без сохранения)
+"""
 from typing import List
 from datetime import time
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin
+from app.core.security import require_admin, require_staff
 from app.models.schedule import Lesson, Classroom, LessonStatus
 from app.schemas.schedule import LessonCreate, LessonOut, ClassroomCreate, ClassroomOut
 
 router = APIRouter(tags=["Schedule"])
 
 
-# ─── Вспомогательная функция: проверка конфликтов ───────────────────
-
+# ─── Вспомогательная функция: проверка конфликтов ─────────────────────────────
 async def check_schedule_conflicts(
     db: AsyncSession,
     group_id: int,
@@ -39,7 +49,6 @@ async def check_schedule_conflicts(
     def time_overlaps(s1: time, e1: time, s2: time, e2: time) -> bool:
         return s1 < e2 and e1 > s2
 
-    # Базовый фильтр: тот же день недели и активные занятия
     base_filter = and_(
         Lesson.day_of_week == day_of_week,
         Lesson.status.in_(active_statuses),
@@ -86,10 +95,12 @@ async def check_schedule_conflicts(
     return conflicts
 
 
-# ─── Аудитории ───────────────────────────────────────────────────────
-
+# ─── Аудитории ────────────────────────────────────────────────────────────────────
 @router.get("/classrooms", response_model=List[ClassroomOut])
-async def get_classrooms(db: AsyncSession = Depends(get_db)):
+async def get_classrooms(
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(require_staff),  # Учитель должен видеть аудитории
+):
     result = await db.execute(
         select(Classroom).where(Classroom.is_active == True).order_by(Classroom.name)
     )
@@ -100,7 +111,7 @@ async def get_classrooms(db: AsyncSession = Depends(get_db)):
 async def create_classroom(
     data: ClassroomCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _: None = Depends(require_admin),
 ):
     classroom = Classroom(**data.model_dump())
     db.add(classroom)
@@ -109,13 +120,13 @@ async def create_classroom(
     return classroom
 
 
-# ─── Занятия ────────────────────────────────────────────────────────
-
+# ─── Занятия ────────────────────────────────────────────────────────────────────
 @router.get("/schedule", response_model=List[LessonOut])
 async def get_schedule(
     group_id: int = None,
     teacher_id: int = None,
     db: AsyncSession = Depends(get_db),
+    _: None = Depends(require_staff),  # Учитель должен видеть расписание
 ):
     """Получить расписание. Можно фильтровать по группе или преподавателю."""
     query = select(Lesson).where(
@@ -133,7 +144,7 @@ async def get_schedule(
 async def create_lesson(
     data: LessonCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _: None = Depends(require_admin),
 ):
     """
     Создать занятие в расписании.
@@ -152,16 +163,11 @@ async def create_lesson(
         time_start=data.time_start,
         time_end=data.time_end,
     )
-
     if conflicts:
         raise HTTPException(
             status_code=409,
-            detail={
-                "message": "Обнаружены конфликты расписания",
-                "conflicts": conflicts,
-            }
+            detail={"message": "Обнаружены конфликты расписания", "conflicts": conflicts},
         )
-
     lesson = Lesson(**data.model_dump())
     db.add(lesson)
     await db.commit()
@@ -174,14 +180,13 @@ async def update_lesson(
     lesson_id: int,
     data: LessonCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _: None = Depends(require_admin),
 ):
     """Обновить занятие с повторной проверкой конфликтов (исключая само занятие)"""
     result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
         raise HTTPException(status_code=404, detail="Занятие не найдено")
-
     conflicts = await check_schedule_conflicts(
         db=db,
         group_id=data.group_id,
@@ -192,16 +197,11 @@ async def update_lesson(
         time_end=data.time_end,
         exclude_lesson_id=lesson_id,
     )
-
     if conflicts:
         raise HTTPException(
             status_code=409,
-            detail={
-                "message": "Обнаружены конфликты расписания",
-                "conflicts": conflicts,
-            }
+            detail={"message": "Обнаружены конфликты расписания", "conflicts": conflicts},
         )
-
     for field, value in data.model_dump().items():
         setattr(lesson, field, value)
     await db.commit()
@@ -213,7 +213,7 @@ async def update_lesson(
 async def cancel_lesson(
     lesson_id: int,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _: None = Depends(require_admin),
 ):
     result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
@@ -228,7 +228,7 @@ async def cancel_lesson(
 async def check_conflicts_only(
     data: LessonCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _: None = Depends(require_staff),  # Учитель может проверять конфликты
 ):
     """Предварительная проверка конфликтов без сохранения занятия"""
     conflicts = await check_schedule_conflicts(
