@@ -155,7 +155,6 @@ function scrollToFeedback(e: Event) {
   color: var(--brand-orange);
   background: #fff0e6;
 }
-}
 .nav-item {
   position: relative;
   cursor: pointer;
