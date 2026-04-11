@@ -53,9 +53,22 @@
 
       <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
       <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
-      <RouterLink to="/register" class="nav-register">Регистрация</RouterLink>
-      <RouterLink to="/account" class="nav-link">Личный кабинет</RouterLink>
-      <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
+            <div
+        class="nav-item nav-dropdown"
+        @mouseenter="openMenu('login')"
+        @mouseleave="closeMenu('login')"
+      >
+        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'login' }">
+          Вход
+        </span>
+        <div class="nav-dropdown__menu" v-show="openMenuName === 'login'">
+          <div class="nav-dropdown__inner">
+            <RouterLink to="/register" @click="closeAll">Регистрация</RouterLink>
+            <RouterLink to="/account" @click="closeAll">Личный кабинет</RouterLink>
+          </div>
+        </div>
+      </div>
+<RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
       <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
     </nav>
   </header>
@@ -142,20 +155,6 @@ function scrollToFeedback(e: Event) {
   color: var(--brand-orange);
   background: #fff0e6;
 }
-.nav-register {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  text-decoration: none;
-  padding: 6px 13px;
-  border-radius: 999px;
-  background: var(--brand-purple);
-  transition: background 0.2s, transform 0.15s;
-  white-space: nowrap;
-}
-.nav-register:hover {
-  background: #5a2d8a;
-  transform: translateY(-1px);
 }
 .nav-item {
   position: relative;
