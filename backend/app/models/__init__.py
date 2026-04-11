@@ -10,9 +10,9 @@ from app.models.enrollment import Enrollment
 from app.models.payment import Payment
 from app.models.news import News
 from app.models.notification import Notification
-from app.models.waitlist import Waitlist
-from app.models.forms import Form
-from app.models.discount import Discount
+from app.models.waitlist import WaitlistEntry, WaitlistStatus
+from app.models.forms import ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm, FeedbackForm
+from app.models.discount import Discount, DiscountType, DiscountReason
 from app.models.room_booking import RoomBooking
 from app.models.audit import AuditLog
 from app.models.report import Report
@@ -30,9 +30,17 @@ __all__ = [
     "Payment",
     "News",
     "Notification",
-    "Waitlist",
-    "Form",
+    "WaitlistEntry",
+    "WaitlistStatus",
+    "ChildForm",
+    "AdultForm",
+    "PreschoolForm",
+    "TeacherForm",
+    "TestingForm",
+    "FeedbackForm",
     "Discount",
+    "DiscountType",
+    "DiscountReason",
     "RoomBooking",
     "AuditLog",
     "Report",
