@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, Date
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy.sql import func
 from app.core.database import Base
 
 
@@ -22,6 +23,9 @@ class ChildForm(Base):
     studied_before = Column(String, nullable=True)
     where_how = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
+    comment = Column(Text, nullable=True)
+    status = Column(String, default="new", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class AdultForm(Base):
@@ -39,6 +43,9 @@ class AdultForm(Base):
     studied_before = Column(String, nullable=True)
     where_how = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
+    comment = Column(Text, nullable=True)
+    status = Column(String, default="new", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class PreschoolForm(Base):
@@ -58,6 +65,9 @@ class PreschoolForm(Base):
     email = Column(String, nullable=True)
     pickup_time = Column(String, nullable=True)
     notes = Column(Text, nullable=True)
+    comment = Column(Text, nullable=True)
+    status = Column(String, default="new", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class TeacherForm(Base):
@@ -76,6 +86,9 @@ class TeacherForm(Base):
     address = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     email = Column(String, nullable=False)
+    comment = Column(Text, nullable=True)
+    status = Column(String, default="new", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class TestingForm(Base):
@@ -89,6 +102,9 @@ class TestingForm(Base):
     grade = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     test_level = Column(String, nullable=False)  # elementary, middle, senior
+    comment = Column(Text, nullable=True)
+    status = Column(String, default="new", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class FeedbackForm(Base):
@@ -100,3 +116,5 @@ class FeedbackForm(Base):
     phone = Column(String, nullable=False)
     email = Column(String, nullable=True)
     message = Column(Text, nullable=True)
+    is_read = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
