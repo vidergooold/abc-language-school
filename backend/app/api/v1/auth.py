@@ -2,18 +2,18 @@
 
 Публичные эндпоинты (без токена):
   POST /auth/register   — регистрация нового пользователя
-  POST /auth/login      — получение JWT-токена
+  POST /auth/login      — получение JWT-токена (принимает JSON)
   GET  /auth/me         — данные текущего пользователя (require_student)
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import (
     hash_password, verify_password, create_access_token,
-    get_current_user, require_student,
+    require_student,
 )
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserOut
@@ -21,6 +21,13 @@ from app.schemas.user import UserCreate, UserOut
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+# ── Схема для JSON-логина ──────────────────────────────────────────────────────
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+# ── Регистрация ────────────────────────────────────────────────────────────────
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
     """Регистрация. Email должен быть уникальным в системе."""
@@ -43,19 +50,22 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
     return user
 
 
+# ── Вход (JSON) ────────────────────────────────────────────────────────────────
 @router.post("/login")
-async def login(
-    form: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
-    request: Request = None,
-):
-    """Вход: проверяем email+password, возвращаем JWT.
-    JWT payload содержит: sub (user_id), email, role.
+async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
+    """Вход: принимает JSON {email, password}, возвращает JWT + объект user.
+
+    Ответ:
+      {
+        "access_token": "...",
+        "token_type": "bearer",
+        "user": { "id": 1, "email": "...", "full_name": "...", "role": "admin" }
+      }
     """
-    result = await db.execute(select(User).where(User.email == form.username))
+    result = await db.execute(select(User).where(User.email == data.email))
     user: User | None = result.scalar_one_or_none()
 
-    if not user or not verify_password(form.password, user.hashed_password):
+    if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Неверный email или пароль",
@@ -72,9 +82,19 @@ async def login(
         "email": user.email,
         "role":  user.role.value,
     })
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id":        user.id,
+            "email":     user.email,
+            "full_name": user.full_name,
+            "role":      user.role.value,
+        },
+    }
 
 
+# ── Текущий пользователь ───────────────────────────────────────────────────────
 @router.get("/me", response_model=UserOut)
 async def get_me(current_user: User = Depends(require_student)):
     """Текущий авторизованный пользователь."""
