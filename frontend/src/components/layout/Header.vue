@@ -17,18 +17,18 @@
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
           <div class="nav-dropdown__inner">
-            <RouterLink to="/organization/main" @click="closeAll">Основные сведения</RouterLink>
+            <RouterLink to="/organization" @click="closeAll">Основные сведения</RouterLink>
             <RouterLink to="/organization/structure" @click="closeAll">Структура и филиалы</RouterLink>
             <RouterLink to="/organization/docs" @click="closeAll">Документы</RouterLink>
             <RouterLink to="/organization/education" @click="closeAll">Образование</RouterLink>
-            <RouterLink to="/organization/standards" @click="closeAll">Образовательные стандарты</RouterLink>
-            <RouterLink to="/organization/staff" @click="closeAll">Руководство и педсостав</RouterLink>
-            <RouterLink to="/organization/mto" @click="closeAll">Материально-техническое обеспечение</RouterLink>
+            <RouterLink to="/organization/management" @click="closeAll">Руководство и педсостав</RouterLink>
+            <RouterLink to="/organization/staff" @click="closeAll">Сотрудники</RouterLink>
+            <RouterLink to="/organization/facilities" @click="closeAll">Материально-техническое обеспечение</RouterLink>
+            <RouterLink to="/organization/services" @click="closeAll">Платные услуги</RouterLink>
+            <RouterLink to="/organization/finance" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
+            <RouterLink to="/organization/vacancies" @click="closeAll">Вакантные места</RouterLink>
             <RouterLink to="/organization/grants" @click="closeAll">Стипендии и гранты</RouterLink>
-            <RouterLink to="/organization/paid" @click="closeAll">Платные услуги</RouterLink>
-            <RouterLink to="/organization/budget" @click="closeAll">Финансово-хозяйственная деятельность</RouterLink>
-            <RouterLink to="/organization/vacancy" @click="closeAll">Вакантные места</RouterLink>
-            <RouterLink to="/organization/accessible" @click="closeAll">Доступная среда</RouterLink>
+            <RouterLink to="/organization/accessibility" @click="closeAll">Доступная среда</RouterLink>
             <RouterLink to="/organization/international" @click="closeAll">Международное сотрудничество</RouterLink>
           </div>
         </div>
@@ -53,7 +53,7 @@
 
       <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
       <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
-            <div
+      <div
         class="nav-item nav-dropdown"
         @mouseenter="openMenu('login')"
         @mouseleave="closeMenu('login')"
@@ -68,7 +68,7 @@
           </div>
         </div>
       </div>
-<RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
+      <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
       <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
     </nav>
   </header>
