@@ -33,151 +33,55 @@ import ClientsTax from '@/pages/clients/Tax.vue'
 
 import AccountLayout from '@/components/layout/AccountLayout.vue'
 import AccountDashboard from '@/pages/account/Dashboard.vue'
+import AccountProfile from '@/pages/account/Profile.vue'
 import AccountForms from '@/pages/account/Forms.vue'
 import AccountDocuments from '@/pages/account/Documents.vue'
+import AccountFeedback from '@/pages/account/Feedback.vue'
+import AccountStudents from '@/pages/account/Students.vue'
+import AccountSchedule from '@/pages/account/Schedule.vue'
+import AccountScheduleAdmin from '@/pages/account/ScheduleAdmin.vue'
+import AccountNews from '@/pages/account/News.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Home
-    },
-    {
-      path: '/courses',
-      name: 'courses',
-      component: Courses
-    },
-    {
-      path: '/enroll',
-      name: 'enroll',
-      component: Enroll
-    },
-    {
-      path: '/testing',
-      name: 'testing',
-      component: Testing
-    },
-    {
-      path: '/jobs',
-      name: 'jobs',
-      component: Jobs
-    },
-    {
-      path: '/privacy',
-      name: 'privacy',
-      component: Privacy
-    },
-    {
-      path: '/consent',
-      name: 'consent',
-      component: Consent
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: Login,
-      beforeEnter: redirectAuthenticated
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: Register,
-      beforeEnter: redirectAuthenticated
-    },
+    { path: '/', name: 'home', component: Home },
+    { path: '/courses', name: 'courses', component: Courses },
+    { path: '/enroll', name: 'enroll', component: Enroll },
+    { path: '/testing', name: 'testing', component: Testing },
+    { path: '/jobs', name: 'jobs', component: Jobs },
+    { path: '/privacy', name: 'privacy', component: Privacy },
+    { path: '/consent', name: 'consent', component: Consent },
+    { path: '/login', name: 'login', component: Login, beforeEnter: redirectAuthenticated },
+    { path: '/register', name: 'register', component: Register, beforeEnter: redirectAuthenticated },
     {
       path: '/organization',
       component: OrganizationLayout,
       children: [
-        {
-          path: '',
-          name: 'organization',
-          component: OrgMain
-        },
-        {
-          path: 'structure',
-          name: 'org-structure',
-          component: OrgStructure
-        },
-        {
-          path: 'docs',
-          name: 'org-docs',
-          component: OrgDocs
-        },
-        {
-          path: 'education',
-          name: 'org-education',
-          component: OrgEducation
-        },
-        {
-          path: 'management',
-          name: 'org-management',
-          component: OrgManagement
-        },
-        {
-          path: 'staff',
-          name: 'org-staff',
-          component: OrgStaff
-        },
-        {
-          path: 'facilities',
-          name: 'org-facilities',
-          component: OrgFacilities
-        },
-        {
-          path: 'services',
-          name: 'org-services',
-          component: OrgServices
-        },
-        {
-          path: 'finance',
-          name: 'org-finance',
-          component: OrgFinance
-        },
-        {
-          path: 'vacancies',
-          name: 'org-vacancies',
-          component: OrgVacancies
-        },
-        {
-          path: 'grants',
-          name: 'org-grants',
-          component: OrgGrants
-        },
-        {
-          path: 'accessibility',
-          name: 'org-accessibility',
-          component: OrgAccessibility
-        },
-        {
-          path: 'international',
-          name: 'org-international',
-          component: OrgInternational
-        }
+        { path: '', name: 'organization', component: OrgMain },
+        { path: 'structure', name: 'org-structure', component: OrgStructure },
+        { path: 'docs', name: 'org-docs', component: OrgDocs },
+        { path: 'education', name: 'org-education', component: OrgEducation },
+        { path: 'management', name: 'org-management', component: OrgManagement },
+        { path: 'staff', name: 'org-staff', component: OrgStaff },
+        { path: 'facilities', name: 'org-facilities', component: OrgFacilities },
+        { path: 'services', name: 'org-services', component: OrgServices },
+        { path: 'finance', name: 'org-finance', component: OrgFinance },
+        { path: 'vacancies', name: 'org-vacancies', component: OrgVacancies },
+        { path: 'grants', name: 'org-grants', component: OrgGrants },
+        { path: 'accessibility', name: 'org-accessibility', component: OrgAccessibility },
+        { path: 'international', name: 'org-international', component: OrgInternational }
       ]
     },
     {
       path: '/clients',
       component: ClientsLayout,
-      meta: { requiresAuth: true, allowedRoles: ['admin', 'staff', 'student'] },
-      beforeEnter: checkRole(['admin', 'staff', 'student']),
+      meta: { requiresAuth: true, allowedRoles: ['admin', 'teacher', 'student'] },
+      beforeEnter: checkRole(['admin', 'teacher', 'student']),
       children: [
-        {
-          path: 'holidays',
-          name: 'clients-holidays',
-          component: ClientsHolidays
-        },
-        {
-          path: 'payment',
-          name: 'clients-payment',
-          component: ClientsPayment
-        },
-        {
-          path: 'tax',
-          name: 'clients-tax',
-          component: ClientsTax
-        }
+        { path: 'holidays', name: 'clients-holidays', component: ClientsHolidays },
+        { path: 'payment', name: 'clients-payment', component: ClientsPayment },
+        { path: 'tax', name: 'clients-tax', component: ClientsTax }
       ]
     },
     {
@@ -186,11 +90,13 @@ const router = createRouter({
       meta: { requiresAuth: true },
       beforeEnter: checkAuth,
       children: [
-        {
-          path: '',
-          name: 'account',
-          component: AccountDashboard
-        },
+        // Все роли
+        { path: '', name: 'account', component: AccountDashboard },
+        { path: 'profile', name: 'account-profile', component: AccountProfile },
+        { path: 'schedule', name: 'account-schedule', component: AccountSchedule },
+        { path: 'documents', name: 'account-documents', component: AccountDocuments },
+        { path: 'news', name: 'account-news', component: AccountNews },
+        // Только staff (admin + teacher)
         {
           path: 'forms',
           name: 'account-forms',
@@ -199,9 +105,26 @@ const router = createRouter({
           beforeEnter: checkStaff
         },
         {
-          path: 'documents',
-          name: 'account-documents',
-          component: AccountDocuments
+          path: 'feedback',
+          name: 'account-feedback',
+          component: AccountFeedback,
+          meta: { requiresStaff: true },
+          beforeEnter: checkStaff
+        },
+        {
+          path: 'students',
+          name: 'account-students',
+          component: AccountStudents,
+          meta: { requiresStaff: true },
+          beforeEnter: checkStaff
+        },
+        // Только admin
+        {
+          path: 'schedule-admin',
+          name: 'account-schedule-admin',
+          component: AccountScheduleAdmin,
+          meta: { requiresAdmin: true },
+          beforeEnter: checkAdmin
         }
       ]
     }

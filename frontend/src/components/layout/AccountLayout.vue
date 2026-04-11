@@ -7,30 +7,25 @@
         <p class="sidebar__name">{{ auth.user?.full_name || auth.user?.email }}</p>
       </div>
       <nav>
-        <RouterLink to="/account/dashboard" class="sidebar-link">
-          📊 Главная
-        </RouterLink>
-        <RouterLink to="/account/schedule" class="sidebar-link">
-          🗓 Расписание
-        </RouterLink>
-        <RouterLink to="/account/materials" class="sidebar-link">
-          📚 Материалы
-        </RouterLink>
-        <RouterLink to="/account/news" class="sidebar-link">
-          📣 Новости
-        </RouterLink>
-        <RouterLink to="/account/forms" class="sidebar-link">
-          📝 Анкеты и формы
-        </RouterLink>
-        <RouterLink to="/account/students" class="sidebar-link">
-          👥 Ученики
-        </RouterLink>
-        <RouterLink to="/account/documents" class="sidebar-link">
-          📂 Документы
-        </RouterLink>
-        <RouterLink to="/account/feedback" class="sidebar-link">
-          💬 Обратная связь
-        </RouterLink>
+        <!-- Все роли -->
+        <RouterLink to="/account" class="sidebar-link">📊 Главная</RouterLink>
+        <RouterLink to="/account/schedule" class="sidebar-link">🗓 Расписание</RouterLink>
+        <RouterLink to="/account/news" class="sidebar-link">📣 Новости</RouterLink>
+        <RouterLink to="/account/documents" class="sidebar-link">📂 Документы</RouterLink>
+        <RouterLink to="/account/profile" class="sidebar-link">👤 Профиль</RouterLink>
+
+        <!-- Только учитель и админ -->
+        <template v-if="isStaff">
+          <RouterLink to="/account/students" class="sidebar-link">👥 Ученики</RouterLink>
+          <RouterLink to="/account/forms" class="sidebar-link">📝 Анкеты и формы</RouterLink>
+          <RouterLink to="/account/feedback" class="sidebar-link">💬 Обратная связь</RouterLink>
+        </template>
+
+        <!-- Только админ -->
+        <template v-if="isAdmin">
+          <RouterLink to="/account/schedule-admin" class="sidebar-link">🗓 Расписание (ред.)</RouterLink>
+        </template>
+
         <div class="sidebar-divider"></div>
         <button @click="logout" class="sidebar-logout">Выйти</button>
       </nav>
@@ -49,8 +44,21 @@ import { useRouter, RouterLink } from 'vue-router'
 const auth = useAuthStore()
 const router = useRouter()
 
-const roleLabel = computed(() => auth.isAdmin ? '🔑 Администратор' : '👨‍🏫 Учитель')
-const roleClass = computed(() => auth.isAdmin ? 'role-admin' : 'role-teacher')
+const role = computed(() => auth.user?.role)
+const isAdmin = computed(() => role.value === 'admin')
+const isTeacher = computed(() => role.value === 'teacher')
+const isStaff = computed(() => isAdmin.value || isTeacher.value)
+
+const roleLabel = computed(() => {
+  if (isAdmin.value) return '🔑 Администратор'
+  if (isTeacher.value) return '👨‍🏫 Учитель'
+  return '🎓 Студент'
+})
+const roleClass = computed(() => {
+  if (isAdmin.value) return 'role-admin'
+  if (isTeacher.value) return 'role-teacher'
+  return 'role-student'
+})
 
 function logout() {
   auth.logout()
@@ -94,6 +102,7 @@ function logout() {
 }
 .role-admin { background: #ffeaea; color: var(--brand-red); }
 .role-teacher { background: #ffe3cf; color: var(--brand-orange); }
+.role-student { background: #e8f4ff; color: #2a7bbf; }
 .sidebar__name {
   font-size: 13px;
   color: var(--text-secondary, #888);
