@@ -10,23 +10,26 @@
         <RouterLink to="/account/dashboard" class="sidebar-link">
           📊 Главная
         </RouterLink>
+        <RouterLink to="/account/schedule" class="sidebar-link">
+          🗓 Расписание
+        </RouterLink>
+        <RouterLink to="/account/materials" class="sidebar-link">
+          📚 Материалы
+        </RouterLink>
+        <RouterLink to="/account/news" class="sidebar-link">
+          📣 Новости
+        </RouterLink>
         <RouterLink to="/account/forms" class="sidebar-link">
           📝 Анкеты и формы
-        </RouterLink>
-        <RouterLink to="/account/feedback" class="sidebar-link">
-          💬 Обратная связь
         </RouterLink>
         <RouterLink to="/account/students" class="sidebar-link">
           👥 Ученики
         </RouterLink>
-        <RouterLink to="/account/schedule" class="sidebar-link">
-          🗓 Расписание
-        </RouterLink>
         <RouterLink to="/account/documents" class="sidebar-link">
           📂 Документы
         </RouterLink>
-        <RouterLink v-if="auth.isAdmin" to="/account/news" class="sidebar-link">
-          📣 Новости
+        <RouterLink to="/account/feedback" class="sidebar-link">
+          💬 Обратная связь
         </RouterLink>
         <div class="sidebar-divider"></div>
         <button @click="logout" class="sidebar-logout">Выйти</button>

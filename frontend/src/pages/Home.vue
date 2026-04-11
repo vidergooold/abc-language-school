@@ -3,7 +3,6 @@
     <!-- Hero -->
     <section class="hero">
       <div class="hero__content">
-        <img src="/logo.png" alt="Логотип ABC Language School" class="hero__logo" />
         <h1 class="hero__title">
           Добро пожаловать<br/>в ABC Language School!
         </h1>
@@ -66,13 +65,6 @@ import NewsSection from '@/components/home/NewsSection.vue'
   border-radius: 24px;
   padding: 48px 32px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
-}
-
-.hero__logo {
-  width: 120px;
-  height: auto;
-  margin-bottom: 24px;
-  display: block;
 }
 
 .hero__title {

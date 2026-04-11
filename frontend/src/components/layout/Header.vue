@@ -44,9 +44,10 @@
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
           <div class="nav-dropdown__inner">
-            <RouterLink to="/clients/schedule" @click="closeAll">Расписание</RouterLink>
-            <RouterLink to="/clients/materials" @click="closeAll">Материалы</RouterLink>
-            <RouterLink to="/clients/news" @click="closeAll">Новости</RouterLink>
+            <RouterLink to="/clients/info" @click="closeAll">Важная информация</RouterLink>
+            <RouterLink to="/clients/holidays" @click="closeAll">Каникулы и выходные дни</RouterLink>
+            <RouterLink to="/clients/payment" @click="closeAll">Оплата обучения, перерасчет, возврат</RouterLink>
+            <RouterLink to="/clients/tax" @click="closeAll">Оформление налогового вычета</RouterLink>
           </div>
         </div>
       </div>
@@ -111,6 +112,7 @@ function scrollToFeedback(e: Event) {
   text-decoration: none;
   cursor: pointer;
   transition: opacity 0.2s;
+  flex-shrink: 0;
 }
 .logo:hover {
   opacity: 0.8;
@@ -122,18 +124,19 @@ function scrollToFeedback(e: Event) {
 }
 .nav {
   display: flex;
-  gap: 16px;
+  gap: 6px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .nav-link {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--brand-purple);
   text-decoration: none;
-  padding: 6px 10px;
+  padding: 5px 7px;
   border-radius: 8px;
   transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
 }
 .nav-link:hover {
   background: #ffe3cf;
@@ -148,14 +151,15 @@ function scrollToFeedback(e: Event) {
   cursor: pointer;
 }
 .nav-dropdown__trigger {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--brand-purple);
-  padding: 6px 10px;
+  padding: 5px 7px;
   border-radius: 8px;
   transition: background 0.2s, color 0.2s;
   user-select: none;
   display: block;
+  white-space: nowrap;
 }
 .nav-dropdown__trigger.active,
 .nav-dropdown__trigger:hover {
@@ -187,7 +191,7 @@ function scrollToFeedback(e: Event) {
 .nav-dropdown__inner a {
   padding: 10px 18px;
   white-space: nowrap;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--brand-purple);
   text-decoration: none;
@@ -204,15 +208,16 @@ function scrollToFeedback(e: Event) {
   font-weight: 700;
 }
 .nav-feedback {
-  padding: 8px 16px;
+  padding: 6px 13px;
   border-radius: 999px;
   background: var(--brand-orange);
   color: #ffffff;
   text-decoration: none;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 13px;
   transition: background 0.2s, transform 0.15s;
   cursor: pointer;
+  white-space: nowrap;
 }
 .nav-feedback:hover {
   background: var(--brand-red);
