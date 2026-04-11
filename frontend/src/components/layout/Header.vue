@@ -53,9 +53,9 @@
 
       <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
       <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
+      <RouterLink to="/register" class="nav-register">Регистрация</RouterLink>
       <RouterLink to="/account" class="nav-link">Личный кабинет</RouterLink>
       <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
-
       <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
     </nav>
   </header>
@@ -70,17 +70,14 @@ const openMenuName = ref<string | null>(null)
 function openMenu(name: string) {
   openMenuName.value = name
 }
-
 function closeMenu(name: string) {
   if (openMenuName.value === name) {
     openMenuName.value = null
   }
 }
-
 function closeAll() {
   openMenuName.value = null
 }
-
 function scrollToFeedback(e: Event) {
   e.preventDefault()
   closeAll()
@@ -144,6 +141,21 @@ function scrollToFeedback(e: Event) {
 .nav-link.router-link-active {
   color: var(--brand-orange);
   background: #fff0e6;
+}
+.nav-register {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: var(--brand-purple);
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.nav-register:hover {
+  background: #5a2d8a;
+  transform: translateY(-1px);
 }
 .nav-item {
   position: relative;
