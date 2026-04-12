@@ -1,5 +1,5 @@
-from typing import Optional
-from pydantic import BaseModel, EmailStr
+from typing import Optional, Union
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class ChildFormCreate(BaseModel):
@@ -22,7 +22,7 @@ class ChildFormCreate(BaseModel):
 
 class AdultFormCreate(BaseModel):
     fio: str
-    age: Optional[str] = None
+    age: Union[str, int, None] = None
     birthdate: Optional[str] = None
     work: Optional[str] = None
     phone: Optional[str] = None
@@ -31,6 +31,13 @@ class AdultFormCreate(BaseModel):
 studiedBefore: Optional[str] = None
     whereHow: Optional[str] = None
     notes: Optional[str] = None
+
+    @field_validator('age', mode='before')
+    @classmethod
+    def convert_age_to_str(cls, v):
+        if v is not None and isinstance(v, int):
+            return str(v)
+        return v
 
 class PreschoolFormCreate(BaseModel):
     fio: str
