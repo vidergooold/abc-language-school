@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin
+from app.core.security import require_admin, require_staff
 from app.models.group import Course, Group, StudentGroup, GroupStatus
 from app.schemas.group import (
     CourseCreate, CourseOut,
@@ -62,7 +62,7 @@ async def update_course(
 @router.get("/groups", response_model=List[GroupOut])
 async def get_groups(
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _=Depends(require_staff),  # учитель тоже может видеть группы
 ):
     result = await db.execute(select(Group).order_by(Group.created_at.desc()))
     return result.scalars().all()
@@ -74,7 +74,6 @@ async def create_group(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
-    # Проверяем, что курс существует
     course = await db.execute(select(Course).where(Course.id == data.course_id))
     if not course.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Курс не найден")
@@ -107,7 +106,7 @@ async def update_group_status(
 async def get_group_students(
     group_id: int,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _=Depends(require_staff),  # учитель тоже может видеть студентов
 ):
     result = await db.execute(
         select(StudentGroup)
@@ -124,7 +123,6 @@ async def add_student_to_group(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
-    # Проверяем вместимость группы
     group_result = await db.execute(
         select(Group).where(Group.id == group_id)
     )
@@ -137,7 +135,6 @@ async def add_student_to_group(
     )
     course = course_result.scalar_one_or_none()
 
-    # Считаем текущее количество активных студентов
     count_result = await db.execute(
         select(func.count()).select_from(StudentGroup)
         .where(StudentGroup.group_id == group_id, StudentGroup.is_active == True)
