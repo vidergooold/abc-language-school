@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.models.news import NewsStatus
 
 
-# ── Категории ────────────────────────────────────────────────────────────────
+# ── Категории ──────────────────────────────────────────────────────────────────────────
 class NewsCategoryBase(BaseModel):
     name: str = Field(..., max_length=100)
     slug: str = Field(..., max_length=100)
@@ -22,7 +22,7 @@ class NewsCategoryOut(NewsCategoryBase):
     model_config = {"from_attributes": True}
 
 
-# ── История статусов ───────────────────────────────────────────────────────────────
+# ── История статусов ───────────────────────────────────────────────────────────────────────────────────
 class NewsStatusHistoryOut(BaseModel):
     id: int
     from_status: Optional[NewsStatus]
@@ -34,7 +34,7 @@ class NewsStatusHistoryOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Новости ──────────────────────────────────────────────────────────────────
+# ── Новости ─────────────────────────────────────────────────────────────────────────────
 class NewsCreate(BaseModel):
     title: str = Field(..., max_length=255)
     tag: Optional[str] = Field(None, max_length=100)
@@ -93,11 +93,12 @@ class NewsOut(BaseModel):
 
 
 class NewsListOut(BaseModel):
-    """\u041e\u0431\u043b\u0435\u0433\u0447\u0451\u043d\u043d\u044b\u0439 \u0432\u044b\u0432\u043e\u0434 \u0434\u043b\u044f \u0441\u043f\u0438\u0441\u043a\u043e\u0432 — \u0431\u0435\u0437 body \u0438 \u0438\u0441\u0442\u043e\u0440\u0438\u0438"""
+    """Список новостей — включает body для отображения текста на главной странице."""
     id: int
     title: str
     slug: Optional[str]
     tag: Optional[str]
+    body: Optional[str] = None  # included so homepage slider can render news text
     date: Optional[str]
     image_url: Optional[str]
     is_pinned: Optional[bool] = False
