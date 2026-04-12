@@ -2,7 +2,6 @@
   <div class="schedule-admin">
     <div class="page-header">
       <h1>🗓 Расписание (управление)</h1>
-      <RouterLink to="/courses" class="btn-public">🔗 Публичное расписание ↗</RouterLink>
     </div>
 
     <div class="filters">
@@ -62,7 +61,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
 import http from '@/api/http'
 
 const loading = ref(true)
@@ -115,8 +113,6 @@ onMounted(async () => {
 <style scoped>
 .schedule-admin h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.btn-public { background: #f5f0ff; color: var(--brand-purple); border: 1.5px solid #e8deff; padding: 9px 18px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 600; transition: background 0.2s; }
-.btn-public:hover { background: #e8deff; }
 
 .filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .filters input, .filters select { padding: 9px 14px; border-radius: 10px; border: 1.5px solid #ffe3cf; font-size: 15px; min-width: 180px; outline: none; }
