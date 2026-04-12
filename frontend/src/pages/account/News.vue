@@ -1,12 +1,13 @@
 <template>
-  <div class="news-admin">
-    <h1>📣 Управление новостями</h1>
-    <p class="subtitle">Доступно только администратору.</p>
+  <div class="news-page">
+    <div class="news-page-header">
+      <h1>📣 Новости</h1>
+      <!-- Кнопка «Добавить» — только для staff -->
+      <button v-if="auth.isStaff" class="btn-add" @click="addNews">+ Добавить новость</button>
+    </div>
 
-    <button class="btn-add" @click="addNews">+ Добавить новость</button>
-
-    <!-- Форма добавления/редактирования -->
-    <div v-if="showForm" class="news-form">
+    <!-- Форма добавления/редактирования — только для staff -->
+    <div v-if="auth.isStaff && showForm" class="news-form">
       <h2>{{ editing ? 'Редактировать новость' : 'Новая новость' }}</h2>
 
       <div class="field">
@@ -50,17 +51,20 @@
 
     <!-- Список новостей -->
     <div v-if="loading" class="news-empty">Загрузка...</div>
-    <div v-else-if="newsList.length === 0" class="news-empty">Новостей пока нет. Добавьте первую!</div>
+    <div v-else-if="newsList.length === 0" class="news-empty">Новостей пока нет.</div>
 
     <div v-else class="news-list">
       <div v-for="n in newsList" :key="n.id" class="news-card">
         <div class="news-card-header">
           <div class="news-meta">
+            <span v-if="n.is_pinned" class="pinned-badge">📌 Закреплено</span>
             <span class="tag" v-if="n.tag">{{ n.tag }}</span>
-            <span :class="['status-badge', n.status]">{{ statusLabel(n.status) }}</span>
+            <!-- Бейдж статуса — только для staff -->
+            <span v-if="auth.isStaff" :class="['status-badge', n.status]">{{ statusLabel(n.status) }}</span>
             <span class="date">{{ n.date }}</span>
           </div>
-          <div class="news-actions">
+          <!-- Кнопки управления — только для staff -->
+          <div v-if="auth.isStaff" class="news-actions">
             <button v-if="n.status !== 'published'" @click="publishNews(n.id)" class="btn-publish">✅ Опубл.</button>
             <button @click="editNews(n)">✏️ Ред.</button>
             <button @click="deleteNews(n.id)" class="btn-del">🗑️ Удал.</button>
@@ -76,10 +80,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import http from '@/api/http'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const showForm = ref(false)
 const editing = ref<number | null>(null)
-const saving = ref(false)
+const saving  = ref(false)
 const loading = ref(false)
 const formError = ref('')
 
@@ -96,9 +103,13 @@ const newsList = ref<any[]>([])
 async function load() {
   loading.value = true
   try {
-    const r = await http.get('/admin/news')
-    newsList.value = r.data
-  } catch (e: any) {
+    // staff загружает все статусы через /admin/news,
+    // обычный пользователь — только опубликованные через /news
+    const url = auth.isStaff ? '/admin/news' : '/news'
+    const r = await http.get(url)
+    // публичный /news возвращает { items: [] }, /admin/news — массив
+    newsList.value = Array.isArray(r.data) ? r.data : (r.data.items ?? [])
+  } catch (e) {
     console.error('Ошибка загрузки новостей:', e)
   } finally {
     loading.value = false
@@ -122,10 +133,10 @@ function cancelForm() {
 function editNews(n: any) {
   editing.value = n.id
   form.value = {
-    title: n.title,
-    tag: n.tag || '',
-    body: n.body,
-    status: n.status,
+    title:      n.title,
+    tag:        n.tag || '',
+    body:       n.body,
+    status:     n.status,
     publish_at: n.publish_at || null,
   }
   formError.value = ''
@@ -134,21 +145,15 @@ function editNews(n: any) {
 
 async function saveNews() {
   formError.value = ''
-  if (!form.value.title.trim()) {
-    formError.value = 'Введите заголовок'
-    return
-  }
-  if (!form.value.body.trim()) {
-    formError.value = 'Введите текст новости'
-    return
-  }
+  if (!form.value.title.trim()) { formError.value = 'Введите заголовок'; return }
+  if (!form.value.body.trim())  { formError.value = 'Введите текст новости'; return }
 
   saving.value = true
   try {
     const payload: any = {
-      title: form.value.title,
-      tag: form.value.tag,
-      body: form.value.body,
+      title:  form.value.title,
+      tag:    form.value.tag,
+      body:   form.value.body,
       status: form.value.status,
     }
     if (form.value.publish_at) {
@@ -192,16 +197,16 @@ async function deleteNews(id: number) {
 
 function getPreview(html: string): string {
   const text = (html || '').replace(/<[^>]*>/g, '')
-  return text.length > 120 ? text.substring(0, 120) + '...' : text
+  return text.length > 150 ? text.substring(0, 150) + '...' : text
 }
 
 function statusLabel(s: string): string {
   const map: Record<string, string> = {
-    draft: 'Черновик',
-    review: 'На проверке',
+    draft:     'Черновик',
+    review:    'На проверке',
     scheduled: 'Запланировано',
     published: 'Опубликовано',
-    archived: 'Архив',
+    archived:  'Архив',
   }
   return map[s] || s
 }
@@ -210,18 +215,23 @@ onMounted(() => load())
 </script>
 
 <style scoped>
-.news-admin h1 {
+.news-page { max-width: 860px; }
+
+.news-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.news-page-header h1 {
   font-size: 28px;
   font-weight: 700;
   color: var(--brand-purple);
-  margin-bottom: 6px;
+  margin: 0;
 }
-.subtitle {
-  font-size: 14px;
-  color: #e44;
-  margin-bottom: 20px;
-  font-weight: 600;
-}
+
 .btn-add {
   background: var(--brand-orange);
   color: #fff;
@@ -231,7 +241,6 @@ onMounted(() => load())
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 24px;
 }
 .btn-add:hover { background: #e55a10; }
 
@@ -248,16 +257,8 @@ onMounted(() => load())
   color: var(--brand-purple);
   margin-bottom: 16px;
 }
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-.field label {
-  font-size: 14px;
-  font-weight: 600;
-}
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 14px; font-weight: 600; }
 .field input,
 .field textarea,
 .field select {
@@ -269,39 +270,23 @@ onMounted(() => load())
 }
 .field select { background: #fff; cursor: pointer; }
 
-.form-error {
-  color: #c33;
-  font-size: 14px;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-.form-actions {
-  display: flex;
-  gap: 12px;
-}
+.form-error { color: #c33; font-size: 14px; margin-bottom: 10px; font-weight: 600; }
+.form-actions { display: flex; gap: 12px; }
 .btn-save {
-  background: var(--brand-orange);
-  color: #fff;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
+  background: var(--brand-orange); color: #fff; border: none;
+  padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;
 }
 .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-save:not(:disabled):hover { background: #e55a10; }
 .btn-cancel {
-  background: #eee;
-  color: #555;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
+  background: #eee; color: #555; border: none;
+  padding: 10px 24px; border-radius: 8px; cursor: pointer;
 }
 .btn-cancel:hover { background: #ddd; }
 
 .news-empty { font-size: 15px; color: #888; padding: 20px 0; }
 .news-list { display: flex; flex-direction: column; gap: 14px; }
+
 .news-card {
   background: #fff7f0;
   border-radius: 12px;
@@ -317,39 +302,37 @@ onMounted(() => load())
   gap: 8px;
 }
 .news-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.tag {
-  background: var(--brand-orange);
-  color: #fff;
+
+.pinned-badge {
   font-size: 12px;
   font-weight: 700;
+  color: #7c5a00;
+  background: #fff3cd;
   padding: 3px 10px;
   border-radius: 999px;
+}
+.tag {
+  background: var(--brand-orange); color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px;
 }
 .date { font-size: 13px; color: #888; }
 
 .status-badge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: 0.03em;
 }
-.status-badge.draft { background: #f0f0f0; color: #666; }
-.status-badge.review { background: #fff3cd; color: #856404; }
+.status-badge.draft     { background: #f0f0f0; color: #666; }
+.status-badge.review    { background: #fff3cd; color: #856404; }
 .status-badge.scheduled { background: #cfe2ff; color: #084298; }
 .status-badge.published { background: #d1e7dd; color: #0a3622; }
-.status-badge.archived { background: #e2e3e5; color: #41464b; }
+.status-badge.archived  { background: #e2e3e5; color: #41464b; }
 
 .news-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .news-actions button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  background: #fff;
-  font-weight: 600;
+  padding: 6px 12px; border: none; border-radius: 8px;
+  cursor: pointer; font-size: 13px; background: #fff; font-weight: 600;
 }
 .news-actions button:hover { background: #f0f0f0; }
 .btn-publish { background: #d1e7dd !important; color: #0a3622; }
