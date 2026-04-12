@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from app.models.news import NewsStatus
 
 
@@ -66,20 +66,30 @@ class NewsOut(BaseModel):
     body: str
     date: Optional[str]
     image_url: Optional[str]
-    is_pinned: bool = False
+    is_pinned: Optional[bool] = False
     status: NewsStatus
     publish_at: Optional[datetime]
     published_at: Optional[datetime]
     author_id: Optional[int]
     category_id: Optional[int]
     category: Optional[NewsCategoryOut]
-    views_count: int = 0
-    likes_count: int = 0
+    views_count: Optional[int] = 0
+    likes_count: Optional[int] = 0
     created_at: datetime
     updated_at: datetime
     status_history: List[NewsStatusHistoryOut] = []
 
     model_config = {"from_attributes": True}
+
+    @field_validator("is_pinned", mode="before")
+    @classmethod
+    def coerce_is_pinned(cls, v):
+        return v if v is not None else False
+
+    @field_validator("views_count", "likes_count", mode="before")
+    @classmethod
+    def coerce_counts(cls, v):
+        return v if v is not None else 0
 
 
 class NewsListOut(BaseModel):
@@ -90,15 +100,25 @@ class NewsListOut(BaseModel):
     tag: Optional[str]
     date: Optional[str]
     image_url: Optional[str]
-    is_pinned: bool = False
+    is_pinned: Optional[bool] = False
     status: NewsStatus
     published_at: Optional[datetime]
     category: Optional[NewsCategoryOut]
-    views_count: int = 0
-    likes_count: int = 0
+    views_count: Optional[int] = 0
+    likes_count: Optional[int] = 0
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_validator("is_pinned", mode="before")
+    @classmethod
+    def coerce_is_pinned(cls, v):
+        return v if v is not None else False
+
+    @field_validator("views_count", "likes_count", mode="before")
+    @classmethod
+    def coerce_counts(cls, v):
+        return v if v is not None else 0
 
 
 class NewsPaginatedOut(BaseModel):
