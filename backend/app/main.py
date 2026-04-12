@@ -5,7 +5,10 @@ from app.core.database import init_db
 
 # Импортируем все модели чтобы Base.metadata знал о всех таблицах
 from app.models import user, news  # noqa: F401
-from app.models.forms import ApplicationForm, StudentProfile  # noqa: F401
+from app.models.forms import (  # noqa: F401
+    ChildForm, AdultForm, PreschoolForm,
+    TeacherForm, TestingForm, FeedbackForm,
+)
 from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.document import Document  # noqa: F401
 from app.models.schedule import Lesson, Classroom  # noqa: F401
