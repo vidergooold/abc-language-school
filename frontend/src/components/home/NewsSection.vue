@@ -49,7 +49,8 @@ let timer: ReturnType<typeof setInterval> | null = null
 async function loadNews() {
   try {
     const r = await http.get('/news')
-    news.value = r.data
+    // API returns a paginated object { total, page, page_size, pages, items }
+    news.value = r.data?.items ?? r.data ?? []
   } catch {
     news.value = []
   } finally {
@@ -193,7 +194,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   background: var(--brand-orange);
 }
 .slide-enter-active,
-.slide-leave-active {
+.slide-leave-leave-active {
   transition: all 0.35s ease;
 }
 .slide-enter-from {
