@@ -41,6 +41,7 @@ import AccountStudents from '@/pages/account/Students.vue'
 import AccountSchedule from '@/pages/account/Schedule.vue'
 import AccountScheduleAdmin from '@/pages/account/ScheduleAdmin.vue'
 import AccountNews from '@/pages/account/News.vue'
+import AccountAttendance from '@/pages/account/Attendance.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -96,6 +97,7 @@ const router = createRouter({
         { path: 'schedule', name: 'account-schedule', component: AccountSchedule },
         { path: 'documents', name: 'account-documents', component: AccountDocuments },
         { path: 'news', name: 'account-news', component: AccountNews },
+        { path: 'attendance', name: 'account-attendance', component: AccountAttendance },
         // Только staff (admin + teacher)
         {
           path: 'forms',

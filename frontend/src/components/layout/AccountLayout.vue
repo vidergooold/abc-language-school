@@ -14,8 +14,14 @@
         <RouterLink to="/account/documents" class="sidebar-link">📂 Документы</RouterLink>
         <RouterLink to="/account/profile" class="sidebar-link">👤 Профиль</RouterLink>
 
+        <!-- Только студент -->
+        <template v-if="isStudent">
+          <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
+        </template>
+
         <!-- Только учитель и админ -->
         <template v-if="isStaff">
+          <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
           <RouterLink to="/account/students" class="sidebar-link">👥 Ученики</RouterLink>
           <RouterLink to="/account/forms" class="sidebar-link">📝 Анкеты и формы</RouterLink>
           <RouterLink to="/account/feedback" class="sidebar-link">💬 Обратная связь</RouterLink>
@@ -44,18 +50,19 @@ import { useRouter, RouterLink } from 'vue-router'
 const auth = useAuthStore()
 const router = useRouter()
 
-const role = computed(() => auth.user?.role)
-const isAdmin = computed(() => role.value === 'admin')
+const role      = computed(() => auth.user?.role)
+const isAdmin   = computed(() => role.value === 'admin')
 const isTeacher = computed(() => role.value === 'teacher')
-const isStaff = computed(() => isAdmin.value || isTeacher.value)
+const isStaff   = computed(() => isAdmin.value || isTeacher.value)
+const isStudent = computed(() => role.value === 'student')
 
 const roleLabel = computed(() => {
-  if (isAdmin.value) return '🔑 Администратор'
+  if (isAdmin.value)   return '🔑 Администратор'
   if (isTeacher.value) return '👨‍🏫 Учитель'
   return '🎓 Студент'
 })
 const roleClass = computed(() => {
-  if (isAdmin.value) return 'role-admin'
+  if (isAdmin.value)   return 'role-admin'
   if (isTeacher.value) return 'role-teacher'
   return 'role-student'
 })
@@ -67,86 +74,37 @@ function logout() {
 </script>
 
 <style scoped>
-.account-layout {
-  display: flex;
-  min-height: calc(100vh - 80px);
-}
+.account-layout { display: flex; min-height: calc(100vh - 80px); }
 .sidebar {
-  width: 240px;
-  padding: 20px 16px;
-  background: var(--bg-white);
-  border-right: 2px solid #ffe3cf;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex-shrink: 0;
+  width: 240px; padding: 20px 16px;
+  background: var(--bg-white); border-right: 2px solid #ffe3cf;
+  display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
 }
-.sidebar__header {
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid var(--brand-orange);
-}
-.sidebar__header h3 {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--brand-purple);
-  margin-bottom: 4px;
-}
+.sidebar__header { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--brand-orange); }
+.sidebar__header h3 { font-size: 17px; font-weight: 700; color: var(--brand-purple); margin-bottom: 4px; }
 .sidebar__role {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; margin-bottom: 4px;
 }
-.role-admin { background: #ffeaea; color: var(--brand-red); }
+.role-admin   { background: #ffeaea; color: var(--brand-red); }
 .role-teacher { background: #ffe3cf; color: var(--brand-orange); }
 .role-student { background: #e8f4ff; color: #2a7bbf; }
 .sidebar__name {
-  font-size: 13px;
-  color: var(--text-secondary, #888);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13px; color: var(--text-secondary, #888);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .sidebar-link {
-  display: block;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--brand-purple);
-  text-decoration: none;
-  transition: background 0.2s, color 0.2s, padding-left 0.2s;
+  display: block; padding: 10px 12px; border-radius: 10px;
+  font-size: 15px; font-weight: 500; color: var(--brand-purple);
+  text-decoration: none; transition: background 0.2s, color 0.2s, padding-left 0.2s;
 }
-.sidebar-link:hover {
-  background: #ffe3cf;
-  color: var(--brand-orange);
-  padding-left: 16px;
-}
-.sidebar-link.router-link-active {
-  background: #ffe3cf;
-  color: var(--brand-orange);
-  font-weight: 700;
-}
-.sidebar-divider {
-  height: 1px;
-  background: #ffe3cf;
-  margin: 8px 0;
-}
+.sidebar-link:hover { background: #ffe3cf; color: var(--brand-orange); padding-left: 16px; }
+.sidebar-link.router-link-active { background: #ffe3cf; color: var(--brand-orange); font-weight: 700; }
+.sidebar-divider { height: 1px; background: #ffe3cf; margin: 8px 0; }
 .sidebar-logout {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  background: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--brand-red);
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  width: 100%;
+  padding: 10px 12px; border-radius: 10px; border: none; background: none;
+  font-size: 15px; font-weight: 500; color: var(--brand-red);
+  cursor: pointer; text-align: left; font-family: inherit; width: 100%;
   transition: background 0.2s;
 }
 .sidebar-logout:hover { background: #ffeaea; }
