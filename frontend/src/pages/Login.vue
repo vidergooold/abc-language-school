@@ -3,7 +3,6 @@
     <div class="login-card">
       <div class="login-card__icon">🔐</div>
       <h1 class="login-title">Личный кабинет</h1>
-      <p class="login-subtitle">Вход только для администратора</p>
 
       <form @submit.prevent="submit">
         <div class="field">
@@ -11,7 +10,7 @@
           <input
             v-model="email"
             type="email"
-            placeholder="admin@abc-school.ru"
+            placeholder="Введите ваш email"
             autocomplete="username"
             required
           />
@@ -101,12 +100,6 @@ async function submit() {
   font-size: 26px;
   font-weight: 800;
   color: var(--brand-purple);
-  margin-bottom: 4px;
-}
-
-.login-subtitle {
-  font-size: 14px;
-  color: #999;
   margin-bottom: 28px;
 }
 
