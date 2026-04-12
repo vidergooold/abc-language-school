@@ -4,7 +4,7 @@ from pydantic import BaseModel, field_validator
 
 class ChildFormCreate(BaseModel):
     fio: str
-    age: Optional[str] = None
+    age: Union[str, int, None] = None
     birthdate: Optional[str] = None
     school: str
     grade: str
@@ -18,6 +18,13 @@ class ChildFormCreate(BaseModel):
     studiedBefore: Optional[str] = None
     whereHow: Optional[str] = None
     notes: Optional[str] = None
+
+    @field_validator('age', mode='before')
+    @classmethod
+    def convert_age_to_str(cls, v):
+        if v is not None and isinstance(v, int):
+            return str(v)
+        return v
 
 
 class AdultFormCreate(BaseModel):
@@ -42,7 +49,7 @@ class AdultFormCreate(BaseModel):
 
 class PreschoolFormCreate(BaseModel):
     fio: str
-    age: Optional[str] = None
+    age: Union[str, int, None] = None
     birthdate: Optional[str] = None
     kindergarten: str
     group: str
@@ -55,7 +62,7 @@ class PreschoolFormCreate(BaseModel):
     notes: Optional[str] = None
 
 
-class TeacherFormCreate(BaseModel):
+class PreschoolFormCreate(BaseModel):
     fio: str
     birthInfo: str
     maritalStatus: str
