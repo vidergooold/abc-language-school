@@ -17,7 +17,7 @@ class ClassroomOut(BaseModel):
     name: str
     capacity: int
     floor: Optional[int] = None
-    has_projector: bool
+    has_projector: Optional[bool] = False
     has_whiteboard: bool
     is_active: bool
 

@@ -28,7 +28,7 @@ class CourseOut(BaseModel):
     price_per_month: int
     max_students: int
     is_active: bool
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -48,7 +48,7 @@ class GroupOut(BaseModel):
     status: GroupStatus
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
