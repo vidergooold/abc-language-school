@@ -12,6 +12,7 @@ import Consent from '@/pages/Consent.vue'
 
 import OrganizationLayout from '@/components/layout/OrganizationLayout.vue'
 import OrgMain from '@/pages/organization/Main.vue'
+import OrgGeneral from '@/pages/organization/General.vue'
 import OrgStructure from '@/pages/organization/Structure.vue'
 import OrgDocs from '@/pages/organization/Docs.vue'
 import OrgEducation from '@/pages/organization/Education.vue'
@@ -59,6 +60,7 @@ const router = createRouter({
       component: OrganizationLayout,
       children: [
         { path: '', name: 'organization', component: OrgMain },
+        { path: 'general', name: 'org-general', component: OrgGeneral },
         { path: 'structure', name: 'org-structure', component: OrgStructure },
         { path: 'docs', name: 'org-docs', component: OrgDocs },
         { path: 'education', name: 'org-education', component: OrgEducation },
@@ -74,13 +76,10 @@ const router = createRouter({
       ]
     },
     {
-      // Public layout — no auth on parent
       path: '/clients',
       component: ClientsLayout,
       children: [
-        // Public — доступно всем без авторизации
         { path: 'holidays', name: 'clients-holidays', component: ClientsHolidays },
-        // Protected — только авторизованным клиентам
         {
           path: 'payment',
           name: 'clients-payment',
