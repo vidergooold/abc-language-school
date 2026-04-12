@@ -6,7 +6,7 @@ import os
 # Database URL from environment variable or default to SQLite for development
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/abc_language_school"
+    "postgresql://abc_user:yourpassword123@localhost:5432/abc_school"
 )
 
 # Create engine

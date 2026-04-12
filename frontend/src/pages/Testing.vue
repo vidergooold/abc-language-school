@@ -24,10 +24,10 @@
       </div>
 
       <div class="question-block">
-        <p class="question-text" v-html="questions[currentQ].q"></p>
+        <p class="question-text" v-if="currentQuestion" v-html="currentQuestion.q"></p>
         <div class="options">
           <label
-            v-for="(opt, i) in questions[currentQ].options"
+            v-for="(opt, i) in currentQuestion?.options ?? []"
             :key="i"
             class="option"
             :class="{ selected: answers[currentQ] === i }"
@@ -221,6 +221,8 @@ const questions = computed(() =>
   activeTest.value ? allTests[activeTest.value] : []
 )
 
+const currentQuestion = computed(() => questions.value[currentQ.value])
+
 function startTest(key: TestKey) {
   activeTest.value = key
   currentQ.value = 0
@@ -243,7 +245,7 @@ function prevQ() {
 function calcResult() {
   const total = questions.value.length
   const correct = answers.value.filter(
-    (a, i) => a === questions.value[i].answer
+    (a, i) => a === questions.value[i]?.answer
   ).length
   const pct = (correct / total) * 100
 

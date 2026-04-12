@@ -208,7 +208,7 @@ async def admin_create_news(
         tag=data.tag,
         body=data.body,
         status=data.status,
-        publish_at=data.publish_at,
+        publish_at=data.publish_at.replace(tzinfo=None) if data.publish_at else None,
         published_at=publish_time,
         category_id=data.category_id,
         image_url=data.image_url,
@@ -257,7 +257,7 @@ async def admin_update_news(
     if data.body is not None:
         news.body = data.body
     if data.publish_at is not None:
-        news.publish_at = data.publish_at
+        news.publish_at = data.publish_at.replace(tzinfo=None) if data.publish_at else None
     if data.category_id is not None:
         news.category_id = data.category_id
     if data.image_url is not None:
