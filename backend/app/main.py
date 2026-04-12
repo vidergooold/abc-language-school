@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import init_db
+from app.core.scheduler import start_scheduler, shutdown_scheduler
 
 # Импортируем все модели чтобы Base.metadata знал о всех таблицах
 from app.models import user, news  # noqa: F401
@@ -38,7 +39,9 @@ from app.api.v1 import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    start_scheduler()
     yield
+    shutdown_scheduler()
 
 
 app = FastAPI(
