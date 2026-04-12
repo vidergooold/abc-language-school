@@ -365,7 +365,6 @@ async def admin_toggle_pin(
 @router.post("/admin/news/publish-scheduled", summary="[Планировщик] Опубликовать запланированные")
 async def publish_scheduled_news(
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
 ):
     """
     Публикует все scheduled-статьи, у которых publish_at <= now.
