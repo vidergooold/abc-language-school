@@ -1,27 +1,34 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-
 from app.core.database import init_db
+
+# Импортируем все модели чтобы Base.metadata знал о всех таблицах
+from app.models import user, news  # noqa: F401
+from app.models.forms import ApplicationForm, StudentProfile  # noqa: F401
+from app.models.enrollment import Enrollment  # noqa: F401
+from app.models.document import Document  # noqa: F401
+from app.models.schedule import Lesson, Classroom  # noqa: F401
+from app.models.attendance import Attendance  # noqa: F401
+from app.models.payment import Payment  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
+from app.models.group import Group  # noqa: F401
+
 from app.api.v1 import (
-    admin,
     auth,
     users,
     courses,
+    news as news_router,
     enrollments,
-    news,
-    groups,
-    schedule,
-    payments,
-    attendance,
-    notifications,
-    waitlist,
-    analytics,
     forms,
-    teachers,
-    reports,
-    audit,
-    discounts,
+    documents,
+    schedule,
+    attendance,
+    payments,
+    notifications,
+    groups,
+    admin,
+    analytics,
 )
 
 
@@ -33,57 +40,65 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="ABC Language School API",
-    description=(
-        "АПИ для языковой школы ABC.\n\n"
-        "Модули: авторизация, новости (с отложенной публикацией), "
-        "расписание (проверка конфликтов), группы и курсы, "
-        "посещаемость, финансы и аналитика, "
-        "лист ожидания, уведомления, анкеты, "
-        "преподаватели, отчёты, аудит, скидки."
-    ),
-    version="4.0.0",
+    description="""
+    REST API для сайта языковой школы **ABC Language School** (г. Новосибирск).
+
+    ## Возможности
+    - 🔐 Аутентификация (JWT)
+    - 📚 Курсы и группы
+    - 📰 Новости и объявления
+    - 📝 Запись на курсы
+    - 👤 Личный кабинет
+    - 📂 Документы и договоры
+    - 🗓 Расписание занятий
+    - ✅ Посещаемость
+    - 💳 Оплата
+    - 🔔 Уведомления
+    """,
+    version="1.1.0",
+    contact={
+        "name": "ABC Language School",
+        "email": "info@abc-school.ru",
+    },
     lifespan=lifespan,
 )
 
-# ─── Middleware ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ─── Роутеры ───────────────────────────────────────────────────────────────────────────────────────────────────────────
-# --- Базовые модули
+# Авторизация
 app.include_router(auth.router,          prefix="/api/v1")
 app.include_router(users.router,         prefix="/api/v1")
-app.include_router(news.router,          prefix="/api/v1")
-app.include_router(courses.router,       prefix="/api/v1")
-app.include_router(groups.router,        prefix="/api/v1")
-app.include_router(teachers.router,      prefix="/api/v1")
 
-# --- Учебный процесс
+# Общедоступные ресурсы
+app.include_router(courses.router,       prefix="/api/v1")
+app.include_router(news_router.router,   prefix="/api/v1")
 app.include_router(enrollments.router,   prefix="/api/v1")
+app.include_router(forms.router,         prefix="/api/v1")
+app.include_router(documents.router,     prefix="/api/v1")
+
+# Личный кабинет / преподаватель
 app.include_router(schedule.router,      prefix="/api/v1")
 app.include_router(attendance.router,    prefix="/api/v1")
-app.include_router(waitlist.router,      prefix="/api/v1")
-
-# --- Финансы
 app.include_router(payments.router,      prefix="/api/v1")
-app.include_router(discounts.router,     prefix="/api/v1")
-app.include_router(analytics.router,     prefix="/api/v1")
-app.include_router(reports.router,       prefix="/api/v1")
-
-# --- Коммуникации и анкеты
 app.include_router(notifications.router, prefix="/api/v1")
-app.include_router(forms.router,         prefix="/api/v1")
+app.include_router(groups.router,        prefix="/api/v1")
 
-# --- Административные
+# Админ
 app.include_router(admin.router,         prefix="/api/v1")
-app.include_router(audit.router,         prefix="/api/v1")
+app.include_router(analytics.router,     prefix="/api/v1")
 
 
-@app.get("/")
+@app.get("/", tags=["root"])
 async def root():
-    return {"message": "ABC Language School API v4.0 работает"}
+    return {
+        "project": "ABC Language School",
+        "version": "1.1.0",
+        "docs": "/docs",
+        "status": "running",
+    }
