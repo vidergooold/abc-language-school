@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import require_admin, require_staff, require_student
 from app.models.schedule import Lesson, Classroom, LessonStatus
-from app.models.group_student import GroupStudent
+from app.models.group import StudentGroup
 from app.schemas.schedule import LessonCreate, LessonOut, ClassroomCreate, ClassroomOut
 from app.models.user import User
 
@@ -92,12 +92,16 @@ async def get_my_schedule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_student),
 ):
-    """Расписание текущего студента: выбирается через его группы."""
-    # Находим все group_id студента
-    gs_result = await db.execute(
-        select(GroupStudent.group_id).where(GroupStudent.student_id == current_user.id)
+    """Расписание текущего студента через StudentGroup.student_email == user.email."""
+    sg_result = await db.execute(
+        select(StudentGroup.group_id).where(
+            and_(
+                StudentGroup.student_email == current_user.email,
+                StudentGroup.is_active == True,
+            )
+        )
     )
-    group_ids = [row[0] for row in gs_result.all()]
+    group_ids = [row[0] for row in sg_result.all()]
 
     if not group_ids:
         return []
