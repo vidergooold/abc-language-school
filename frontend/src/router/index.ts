@@ -74,13 +74,25 @@ const router = createRouter({
       ]
     },
     {
+      // Public layout — no auth on parent
       path: '/clients',
       component: ClientsLayout,
-      meta: { requiresAuth: true, allowedRoles: ['admin', 'teacher', 'student'] },
       children: [
+        // Public — доступно всем без авторизации
         { path: 'holidays', name: 'clients-holidays', component: ClientsHolidays },
-        { path: 'payment', name: 'clients-payment', component: ClientsPayment },
-        { path: 'tax', name: 'clients-tax', component: ClientsTax }
+        // Protected — только авторизованным клиентам
+        {
+          path: 'payment',
+          name: 'clients-payment',
+          component: ClientsPayment,
+          meta: { requiresAuth: true, allowedRoles: ['admin', 'teacher', 'student'] }
+        },
+        {
+          path: 'tax',
+          name: 'clients-tax',
+          component: ClientsTax,
+          meta: { requiresAuth: true, allowedRoles: ['admin', 'teacher', 'student'] }
+        }
       ]
     },
     {
