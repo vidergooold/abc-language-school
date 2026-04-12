@@ -29,6 +29,8 @@ class AdultFormCreate(BaseModel):
     address: Optional[str] = None
     email: Optional[str] = None
     studiedBefore: Optional[str] = None
+        whereHow: Optional[str] = None
+    notes: Optional[str] = None
 
 class PreschoolFormCreate(BaseModel):
     fio: str
