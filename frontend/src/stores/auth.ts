@@ -5,7 +5,7 @@ interface AuthUser {
   id: number
   email: string
   full_name: string | null
-  role: 'admin' | 'teacher'
+  role: 'admin' | 'teacher' | 'student'
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -15,9 +15,11 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isStaff: (state) => state.user?.role === 'admin' || state.user?.role === 'teacher',
-    isAdmin: (state) => state.user?.role === 'admin',
-    isLoggedIn: (state) => !!state.token,
+    isLoggedIn:  (state) => !!state.token,
+    isAdmin:     (state) => state.user?.role === 'admin',
+    isTeacher:   (state) => state.user?.role === 'teacher',
+    isStudent:   (state) => state.user?.role === 'student',
+    isStaff:     (state) => state.user?.role === 'admin' || state.user?.role === 'teacher',
   },
 
   actions: {
