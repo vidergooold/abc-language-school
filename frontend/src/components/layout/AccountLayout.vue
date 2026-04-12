@@ -8,20 +8,16 @@
       </div>
       <nav>
         <!-- Все роли -->
-        <RouterLink to="/account" class="sidebar-link">📊 Главная</RouterLink>
+        <RouterLink to="/account" exact-active-class="router-link-active" class="sidebar-link">📊 Главная</RouterLink>
         <RouterLink to="/account/schedule" class="sidebar-link">🗓 Расписание</RouterLink>
         <RouterLink to="/account/news" class="sidebar-link">📣 Новости</RouterLink>
         <RouterLink to="/account/documents" class="sidebar-link">📂 Документы</RouterLink>
+        <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
         <RouterLink to="/account/profile" class="sidebar-link">👤 Профиль</RouterLink>
-
-        <!-- Только студент -->
-        <template v-if="isStudent">
-          <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
-        </template>
 
         <!-- Только учитель и админ -->
         <template v-if="isStaff">
-          <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
+          <div class="sidebar-section">Управление</div>
           <RouterLink to="/account/students" class="sidebar-link">👥 Ученики</RouterLink>
           <RouterLink to="/account/forms" class="sidebar-link">📝 Анкеты и формы</RouterLink>
           <RouterLink to="/account/feedback" class="sidebar-link">💬 Обратная связь</RouterLink>
@@ -33,7 +29,7 @@
         </template>
 
         <div class="sidebar-divider"></div>
-        <button @click="logout" class="sidebar-logout">Выйти</button>
+        <button @click="logout" class="sidebar-logout">🚪 Выйти</button>
       </nav>
     </aside>
     <main class="content">
@@ -54,11 +50,10 @@ const role      = computed(() => auth.user?.role)
 const isAdmin   = computed(() => role.value === 'admin')
 const isTeacher = computed(() => role.value === 'teacher')
 const isStaff   = computed(() => isAdmin.value || isTeacher.value)
-const isStudent = computed(() => role.value === 'student')
 
 const roleLabel = computed(() => {
   if (isAdmin.value)   return '🔑 Администратор'
-  if (isTeacher.value) return '👨‍🏫 Учитель'
+  if (isTeacher.value) return '👨\u200d🏫 Учитель'
   return '🎓 Студент'
 })
 const roleClass = computed(() => {
@@ -76,7 +71,7 @@ function logout() {
 <style scoped>
 .account-layout { display: flex; min-height: calc(100vh - 80px); }
 .sidebar {
-  width: 240px; padding: 20px 16px;
+  width: 250px; padding: 20px 16px;
   background: var(--bg-white); border-right: 2px solid #ffe3cf;
   display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
 }
@@ -92,6 +87,11 @@ function logout() {
 .sidebar__name {
   font-size: 13px; color: var(--text-secondary, #888);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sidebar-section {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-secondary, #aaa);
+  padding: 12px 12px 4px;
 }
 .sidebar-link {
   display: block; padding: 10px 12px; border-radius: 10px;
@@ -109,4 +109,9 @@ function logout() {
 }
 .sidebar-logout:hover { background: #ffeaea; }
 .content { flex: 1; padding: 32px; overflow-x: auto; }
+@media (max-width: 768px) {
+  .account-layout { flex-direction: column; }
+  .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #ffe3cf; }
+  .content { padding: 20px 16px; }
+}
 </style>

@@ -1,237 +1,168 @@
 <template>
-  <div class="profile">
+  <div class="profile-page">
     <h1>👤 Профиль</h1>
 
-    <!-- Инфо-карточка -->
-    <div class="profile-card">
-      <div class="profile-avatar">{{ avatarLetter }}</div>
-      <div class="profile-info">
-        <div class="profile-name">{{ auth.user?.full_name || 'Имя не указано' }}</div>
-        <div class="profile-email">{{ auth.user?.email }}</div>
-        <div class="profile-role-badge" :class="roleClass">{{ roleLabel }}</div>
+    <div v-if="loading" class="skeleton-list">
+      <div class="skeleton-field" v-for="n in 4" :key="n"></div>
+    </div>
+
+    <div v-else class="profile-wrap">
+      <!-- Аватар -->
+      <div class="avatar-block">
+        <div class="avatar">
+          {{ initials }}
+        </div>
+        <div class="avatar-info">
+          <div class="avatar-name">{{ auth.user?.full_name || auth.user?.email }}</div>
+          <span class="role-badge" :class="'role-' + auth.user?.role">
+            {{ roleLabel }}
+          </span>
+        </div>
       </div>
-    </div>
 
-    <!-- Форма редактирования -->
-    <div class="profile-section">
-      <h2>Изменить данные</h2>
-      <form @submit.prevent="saveProfile" class="profile-form">
-        <div class="form-group">
-          <label>Имя и фамилия</label>
-          <input v-model="form.full_name" type="text" placeholder="Введите имя" />
+      <!-- Форма -->
+      <div class="profile-form">
+        <div class="form-section">
+          <h2>Личные данные</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label>Полное имя</label>
+              <input v-model="form.full_name" placeholder="Иванов Иван Иванович" :disabled="saving" />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input :value="auth.user?.email" disabled placeholder="email@example.com" />
+              <span class="field-hint">Email изменить нельзя — это ваш логин</span>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input :value="auth.user?.email" type="email" disabled class="input-disabled" />
-          <span class="hint">Для смены email обратитесь к администратору</span>
-        </div>
-        <div v-if="profileSuccess" class="alert-success">✔ Имя успешно обновлено</div>
-        <div v-if="profileError" class="alert-error">{{ profileError }}</div>
-        <button type="submit" class="btn-save" :disabled="profileLoading">
-          {{ profileLoading ? 'Сохранение…' : 'Сохранить изменения' }}
-        </button>
-      </form>
-    </div>
 
-    <!-- Смена пароля -->
-    <div class="profile-section">
-      <h2>Сменить пароль</h2>
-      <form @submit.prevent="savePassword" class="profile-form">
-        <div class="form-group">
-          <label>Текущий пароль</label>
-          <input v-model="pwForm.current_password" type="password" placeholder="••••••••" />
+        <div class="form-section">
+          <h2>Смена пароля</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label>Новый пароль</label>
+              <input v-model="form.new_password" type="password" placeholder="Минимум 8 символов" :disabled="saving" />
+            </div>
+            <div class="field">
+              <label>Повторите пароль</label>
+              <input v-model="form.confirm_password" type="password" placeholder="Повторите пароль" :disabled="saving" />
+              <span v-if="passwordMismatch" class="field-error">Пароли не совпадают</span>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Новый пароль</label>
-          <input v-model="pwForm.new_password" type="password" placeholder="Не менее 8 символов" />
+
+        <div v-if="successMsg" class="alert-success">✅ {{ successMsg }}</div>
+        <div v-if="errorMsg" class="alert-error">❌ {{ errorMsg }}</div>
+
+        <div class="form-actions">
+          <button class="btn-save" :disabled="saving || passwordMismatch" @click="save">
+            {{ saving ? 'Сохранение...' : 'Сохранить изменения' }}
+          </button>
         </div>
-        <div class="form-group">
-          <label>Повторите новый пароль</label>
-          <input v-model="pwForm.confirm_password" type="password" placeholder="Повторите пароль" />
-        </div>
-        <div v-if="pwSuccess" class="alert-success">✔ Пароль успешно изменён</div>
-        <div v-if="pwError" class="alert-error">{{ pwError }}</div>
-        <button type="submit" class="btn-save" :disabled="pwLoading">
-          {{ pwLoading ? 'Сохранение…' : 'Изменить пароль' }}
-        </button>
-      </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import http from '@/api/http'
 
 const auth = useAuthStore()
+const loading = ref(false)
+const saving = ref(false)
+const successMsg = ref('')
+const errorMsg = ref('')
 
-const avatarLetter = computed(() => {
+const form = ref({
+  full_name: '',
+  new_password: '',
+  confirm_password: '',
+})
+
+const initials = computed(() => {
   const name = auth.user?.full_name || auth.user?.email || '?'
-  return name.charAt(0).toUpperCase()
+  return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 })
 
-const role = computed(() => auth.user?.role)
 const roleLabel = computed(() => {
-  if (role.value === 'admin') return '🔑 Администратор'
-  if (role.value === 'teacher') return '👨‍🏫 Учитель'
-  return '🎓 Студент'
-})
-const roleClass = computed(() => {
-  if (role.value === 'admin') return 'role-admin'
-  if (role.value === 'teacher') return 'role-teacher'
-  return 'role-student'
+  const r = auth.user?.role
+  return { admin: '🔑 Администратор', teacher: '👨‍🏫 Учитель', student: '🎓 Студент' }[r] ?? r
 })
 
-// --- Имя ---
-const form = reactive({ full_name: auth.user?.full_name || '' })
-const profileLoading = ref(false)
-const profileSuccess = ref(false)
-const profileError = ref('')
+const passwordMismatch = computed(() =>
+  !!form.value.confirm_password && form.value.new_password !== form.value.confirm_password
+)
 
-async function saveProfile() {
-  profileLoading.value = true
-  profileSuccess.value = false
-  profileError.value = ''
+onMounted(() => {
+  form.value.full_name = auth.user?.full_name || ''
+})
+
+async function save() {
+  if (passwordMismatch.value) return
+  saving.value = true
+  successMsg.value = ''
+  errorMsg.value = ''
   try {
-    const res = await http.patch('/auth/me', { full_name: form.full_name })
-    auth.user = { ...auth.user, ...res.data }
-    profileSuccess.value = true
-    setTimeout(() => profileSuccess.value = false, 3000)
+    const payload: any = { full_name: form.value.full_name }
+    if (form.value.new_password) {
+      payload.password = form.value.new_password
+    }
+    await http.patch('/users/me', payload)
+    auth.user!.full_name = form.value.full_name
+    form.value.new_password = ''
+    form.value.confirm_password = ''
+    successMsg.value = 'Данные успешно обновлены!'
+    setTimeout(() => successMsg.value = '', 4000)
   } catch (e: any) {
-    profileError.value = e?.response?.data?.detail || 'Ошибка при сохранении'
+    errorMsg.value = e?.response?.data?.detail || 'Ошибка при сохранении'
   } finally {
-    profileLoading.value = false
-  }
-}
-
-// --- Пароль ---
-const pwForm = reactive({ current_password: '', new_password: '', confirm_password: '' })
-const pwLoading = ref(false)
-const pwSuccess = ref(false)
-const pwError = ref('')
-
-async function savePassword() {
-  pwError.value = ''
-  pwSuccess.value = false
-  if (pwForm.new_password.length < 8) {
-    pwError.value = 'Пароль должен содержать не менее 8 символов'
-    return
-  }
-  if (pwForm.new_password !== pwForm.confirm_password) {
-    pwError.value = 'Пароли не совпадают'
-    return
-  }
-  pwLoading.value = true
-  try {
-    await http.patch('/auth/me', {
-      current_password: pwForm.current_password,
-      new_password: pwForm.new_password,
-    })
-    pwSuccess.value = true
-    pwForm.current_password = ''
-    pwForm.new_password = ''
-    pwForm.confirm_password = ''
-    setTimeout(() => pwSuccess.value = false, 3000)
-  } catch (e: any) {
-    pwError.value = e?.response?.data?.detail || 'Ошибка при смене пароля'
-  } finally {
-    pwLoading.value = false
+    saving.value = false
   }
 }
 </script>
 
 <style scoped>
-.profile h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); margin-bottom: 24px; }
+.profile-page h1 { font-size: 28px; font-weight: 700; color: var(--brand-purple); margin-bottom: 28px; }
 
-.profile-card {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  background: #fff7f0;
-  border: 2px solid #ffe3cf;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 32px;
-}
-.profile-avatar {
-  width: 64px; height: 64px;
-  border-radius: 50%;
-  background: var(--brand-orange);
-  color: #fff;
-  font-size: 28px;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.profile-name { font-size: 20px; font-weight: 700; color: var(--brand-purple); }
-.profile-email { font-size: 14px; color: var(--text-secondary, #888); margin: 4px 0 8px; }
-.profile-role-badge {
-  display: inline-block;
-  padding: 2px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.role-admin { background: #ffeaea; color: var(--brand-red); }
+/* Skeleton */
+.skeleton-list { display: flex; flex-direction: column; gap: 14px; }
+.skeleton-field { height: 52px; border-radius: 10px; background: linear-gradient(90deg,#fff0e8 25%,#ffe8d6 50%,#fff0e8 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; }
+@keyframes shimmer { 0%{background-position:-200% 0}100%{background-position:200% 0} }
+
+.profile-wrap { display: flex; flex-direction: column; gap: 28px; max-width: 700px; }
+
+/* Avatar */
+.avatar-block { display: flex; align-items: center; gap: 20px; background: #fff7f0; border-radius: 16px; padding: 20px; border: 2px solid #ffe3cf; }
+.avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--brand-orange); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; flex-shrink: 0; }
+.avatar-info { display: flex; flex-direction: column; gap: 6px; }
+.avatar-name { font-size: 18px; font-weight: 700; color: var(--brand-purple); }
+.role-badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+.role-admin   { background: #ffeaea; color: var(--brand-red, #d63031); }
 .role-teacher { background: #ffe3cf; color: var(--brand-orange); }
 .role-student { background: #e8f4ff; color: #2a7bbf; }
 
-.profile-section {
-  background: #fff;
-  border: 2px solid #ffe3cf;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-.profile-section h2 { font-size: 18px; font-weight: 700; color: var(--brand-purple); margin-bottom: 20px; }
+/* Form */
+.profile-form { background: #fff; border-radius: 16px; padding: 24px; border: 2px solid #ffe3cf; }
+.form-section { margin-bottom: 24px; }
+.form-section:last-of-type { margin-bottom: 0; }
+.form-section h2 { font-size: 16px; font-weight: 700; color: var(--brand-purple); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #ffe3cf; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 13px; font-weight: 600; color: #555; }
+.field input { padding: 10px 14px; border-radius: 10px; border: 1.5px solid #e0d5ff; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.field input:focus { border-color: var(--brand-orange); }
+.field input:disabled { background: #f5f5f5; color: #aaa; cursor: not-allowed; }
+.field-hint { font-size: 12px; color: #aaa; }
+.field-error { font-size: 12px; color: #e03c3c; font-weight: 600; }
 
-.profile-form { display: flex; flex-direction: column; gap: 16px; max-width: 440px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 14px; font-weight: 600; color: #444; }
-.form-group input {
-  padding: 10px 14px;
-  border: 2px solid #ffe3cf;
-  border-radius: 10px;
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-group input:focus { border-color: var(--brand-orange); }
-.input-disabled { background: #f5f5f5; color: #aaa; cursor: not-allowed; }
-.hint { font-size: 12px; color: var(--text-secondary, #aaa); }
+.alert-success { background: #e6f9ef; color: #22a55b; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; }
+.alert-error   { background: #fdeaea; color: #e03c3c; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; }
 
-.btn-save {
-  padding: 11px 24px;
-  background: var(--brand-orange);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-  width: fit-content;
-}
-.btn-save:hover { background: var(--brand-purple); }
+.form-actions { margin-top: 20px; }
+.btn-save { background: var(--brand-orange); color: #fff; border: none; padding: 12px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-save:hover:not(:disabled) { background: var(--brand-red, #d63031); }
 .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.alert-success {
-  padding: 10px 14px;
-  background: #edfaf1;
-  border: 1.5px solid #6fcf97;
-  border-radius: 8px;
-  color: #27ae60;
-  font-size: 14px;
-  font-weight: 600;
-}
-.alert-error {
-  padding: 10px 14px;
-  background: #ffeaea;
-  border: 1.5px solid var(--brand-red);
-  border-radius: 8px;
-  color: var(--brand-red);
-  font-size: 14px;
-  font-weight: 600;
-}
 </style>
