@@ -66,15 +66,15 @@ class NewsOut(BaseModel):
     body: str
     date: Optional[str]
     image_url: Optional[str]
-    is_pinned: bool
+    is_pinned: bool = False
     status: NewsStatus
     publish_at: Optional[datetime]
     published_at: Optional[datetime]
     author_id: Optional[int]
     category_id: Optional[int]
     category: Optional[NewsCategoryOut]
-    views_count: int
-    likes_count: int
+    views_count: int = 0
+    likes_count: int = 0
     created_at: datetime
     updated_at: datetime
     status_history: List[NewsStatusHistoryOut] = []
@@ -90,12 +90,12 @@ class NewsListOut(BaseModel):
     tag: Optional[str]
     date: Optional[str]
     image_url: Optional[str]
-    is_pinned: bool
+    is_pinned: bool = False
     status: NewsStatus
     published_at: Optional[datetime]
     category: Optional[NewsCategoryOut]
-    views_count: int
-    likes_count: int
+    views_count: int = 0
+    likes_count: int = 0
     created_at: datetime
 
     model_config = {"from_attributes": True}
