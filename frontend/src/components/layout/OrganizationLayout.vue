@@ -3,7 +3,7 @@
     <h1 class="page-title">Сведения об образовательной организации</h1>
 
     <nav class="sections-nav">
-      <RouterLink to="/organization/general" class="nav-link">Основные сведения</RouterLink>
+      <RouterLink to="/organization" class="nav-link">Основные сведения</RouterLink>
       <RouterLink to="/organization/structure" class="nav-link">Структура и филиалы</RouterLink>
       <RouterLink to="/organization/docs" class="nav-link">Документы</RouterLink>
       <RouterLink to="/organization/education" class="nav-link">Образование</RouterLink>
@@ -66,7 +66,7 @@ import { RouterLink } from 'vue-router'
   background: #f5f0ff;
 }
 
-.nav-link.router-link-active {
+.nav-link.router-link-exact-active {
   background: var(--brand-purple);
   color: #fff;
 }
