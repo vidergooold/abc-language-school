@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { checkAuth, checkRole, checkStaff, checkAdmin, redirectAuthenticated } from './guards'
 
 import Home from '@/pages/Home.vue'
 import Courses from '@/pages/Courses.vue'
@@ -53,8 +52,8 @@ const router = createRouter({
     { path: '/jobs', name: 'jobs', component: Jobs },
     { path: '/privacy', name: 'privacy', component: Privacy },
     { path: '/consent', name: 'consent', component: Consent },
-    { path: '/login', name: 'login', component: Login, beforeEnter: redirectAuthenticated },
-    { path: '/register', name: 'register', component: Register, beforeEnter: redirectAuthenticated },
+    { path: '/login', name: 'login', component: Login, meta: { redirectIfAuth: true } },
+    { path: '/register', name: 'register', component: Register, meta: { redirectIfAuth: true } },
     {
       path: '/organization',
       component: OrganizationLayout,
@@ -78,7 +77,6 @@ const router = createRouter({
       path: '/clients',
       component: ClientsLayout,
       meta: { requiresAuth: true, allowedRoles: ['admin', 'teacher', 'student'] },
-      beforeEnter: checkRole(['admin', 'teacher', 'student']),
       children: [
         { path: 'holidays', name: 'clients-holidays', component: ClientsHolidays },
         { path: 'payment', name: 'clients-payment', component: ClientsPayment },
@@ -89,45 +87,17 @@ const router = createRouter({
       path: '/account',
       component: AccountLayout,
       meta: { requiresAuth: true },
-      beforeEnter: checkAuth,
       children: [
-        // Все роли
         { path: '', name: 'account', component: AccountDashboard },
         { path: 'profile', name: 'account-profile', component: AccountProfile },
         { path: 'schedule', name: 'account-schedule', component: AccountSchedule },
         { path: 'documents', name: 'account-documents', component: AccountDocuments },
         { path: 'news', name: 'account-news', component: AccountNews },
         { path: 'attendance', name: 'account-attendance', component: AccountAttendance },
-        // Только staff (admin + teacher)
-        {
-          path: 'forms',
-          name: 'account-forms',
-          component: AccountForms,
-          meta: { requiresStaff: true },
-          beforeEnter: checkStaff
-        },
-        {
-          path: 'feedback',
-          name: 'account-feedback',
-          component: AccountFeedback,
-          meta: { requiresStaff: true },
-          beforeEnter: checkStaff
-        },
-        {
-          path: 'students',
-          name: 'account-students',
-          component: AccountStudents,
-          meta: { requiresStaff: true },
-          beforeEnter: checkStaff
-        },
-        // Только admin
-        {
-          path: 'schedule-admin',
-          name: 'account-schedule-admin',
-          component: AccountScheduleAdmin,
-          meta: { requiresAdmin: true },
-          beforeEnter: checkAdmin
-        }
+        { path: 'forms', name: 'account-forms', component: AccountForms, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'feedback', name: 'account-feedback', component: AccountFeedback, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'students', name: 'account-students', component: AccountStudents, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'schedule-admin', name: 'account-schedule-admin', component: AccountScheduleAdmin, meta: { requiresAuth: true, requiresAdmin: true } }
       ]
     }
   ]

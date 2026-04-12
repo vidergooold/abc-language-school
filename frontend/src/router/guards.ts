@@ -1,41 +1,47 @@
-import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import type { Router } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-/**
- * Проверка доступа к маршрутам на основе роли пользователя
- */
-export function setupRouterGuards(router: any) {
-  router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+export function setupRouterGuards(router: Router) {
+  router.beforeEach((to, _from, next) => {
     const auth = useAuthStore()
+    const role = auth.user?.role || ''
+    const isAuthenticated = !!auth.token
 
-    // 1. Проверка аутентификации
-    if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    // Redirect authenticated users away from login/register
+    if (to.meta.redirectIfAuth && isAuthenticated) {
+      return next('/account')
+    }
+
+    // Require authentication
+    if (to.meta.requiresAuth && !isAuthenticated) {
       return next({ path: '/login', query: { redirect: to.fullPath } })
     }
 
-    // 2. Проверка роли admin
-    if (to.meta.requiresAdmin && auth.user?.role !== 'admin') {
+    // Require admin role
+    if (to.meta.requiresAdmin && role !== 'admin') {
       return next('/account')
     }
 
-    // 3. Проверка роли staff (сотрудник/преподаватель)
-    if (to.meta.requiresStaff && !['admin', 'teacher', 'manager'].includes(auth.user?.role || '')) {
-      return next('/login')
+    // Require staff role (admin or teacher)
+    if (to.meta.requiresStaff && !['admin', 'teacher'].includes(role)) {
+      return next('/account')
     }
 
-    // 4. Проверка allowedRoles (гибкая проверка ролей)
+    // Require specific roles
     if (to.meta.allowedRoles && Array.isArray(to.meta.allowedRoles)) {
       const allowed = to.meta.allowedRoles as string[]
-      if (!allowed.includes(auth.user?.role || '')) {
+      if (!allowed.includes(role)) {
         return next('/account')
       }
-    }
-
-    // 5. Редирект авторизованных с /login и /register
-    if ((to.path === '/login' || to.path === '/register') && auth.isAuthenticated) {
-      return next('/account')
     }
 
     next()
   })
 }
+
+// Legacy named exports kept for compatibility (no longer used as beforeEnter)
+export const checkAuth = () => {}
+export const checkRole = () => () => {}
+export const checkStaff = () => {}
+export const checkAdmin = () => {}
+export const redirectAuthenticated = () => {}
