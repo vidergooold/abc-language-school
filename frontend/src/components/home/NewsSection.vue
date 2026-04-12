@@ -8,7 +8,12 @@
 
     <template v-else>
       <div class="slider">
-        <button class="slider__btn slider__btn--prev" @click="prev" aria-label="Назад">&#8592;</button>
+        <button
+          v-if="news.length > 1"
+          class="slider__btn slider__btn--prev"
+          @click="prev"
+          aria-label="Назад"
+        >&#8592;</button>
 
         <transition name="slide" mode="out-in">
           <article class="news-card" :key="current">
@@ -21,10 +26,15 @@
           </article>
         </transition>
 
-        <button class="slider__btn slider__btn--next" @click="next" aria-label="Вперёд">&#8594;</button>
+        <button
+          v-if="news.length > 1"
+          class="slider__btn slider__btn--next"
+          @click="next"
+          aria-label="Вперёд"
+        >&#8594;</button>
       </div>
 
-      <div class="slider__dots">
+      <div v-if="news.length > 1" class="slider__dots">
         <button
           v-for="(_, i) in news"
           :key="i"
@@ -49,7 +59,6 @@ let timer: ReturnType<typeof setInterval> | null = null
 async function loadNews() {
   try {
     const r = await http.get('/news')
-    // API returns a paginated object { total, page, page_size, pages, items }
     news.value = r.data?.items ?? r.data ?? []
   } catch {
     news.value = []
@@ -194,7 +203,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   background: var(--brand-orange);
 }
 .slide-enter-active,
-.slide-leave-leave-active {
+.slide-leave-active {
   transition: all 0.35s ease;
 }
 .slide-enter-from {
