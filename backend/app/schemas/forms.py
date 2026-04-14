@@ -61,13 +61,13 @@ class PreschoolFormCreate(BaseModel):
     notes: Optional[str] = None
 
 
-class PreschoolFormCreate(BaseModel):
+class TeacherFormCreate(BaseModel):
     fio: str
-    birthInfo: str
-    maritalStatus: str
+    birth_info: str
+    marital_status: str
     education: str
-    workExperience: str
-    languageLevel: str
+    work_experience: str
+    language_level: str
     skills: Optional[str] = None
     qualities: Optional[str] = None
     address: str
