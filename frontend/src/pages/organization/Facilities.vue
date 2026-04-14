@@ -25,7 +25,7 @@
         <strong>Адрес:</strong> г.Новосибирск, ул. Бориса Богаткова, д. 208/2,
         офис 4 и 5
       </p>
-      <p><strong>Общее количество:</strong> 5</p>
+      <p><strong>Общее количество:</strong> 3</p>
     </div>
 
     <div class="facility-card">
@@ -34,39 +34,27 @@
         <strong>Адрес:</strong> г.Новосибирск, ул. Бориса Богаткова, д. 208/2,
         офис 4 и 5
       </p>
-      <p><strong>Общее количество:</strong> 5</p>
+      <p><strong>Общее количество:</strong> 3</p>
     </div>
 
     <div class="classrooms-gallery">
       <div class="classroom-item">
         <div class="classroom-image">
-          <img src="/images/classrooms/room1.jpg" alt="Кабинет №1" loading="lazy" />
+          <img src="/images/classrooms/room1.jpg" alt="Кабинет ↖1" loading="lazy" />
         </div>
-        <p class="classroom-caption">Кабинет №1</p>
+        <p class="classroom-caption">Кабинет ↖1</p>
       </div>
       <div class="classroom-item">
         <div class="classroom-image">
-          <img src="/images/classrooms/room2.jpg" alt="Кабинет №2" loading="lazy" />
+          <img src="/images/classrooms/room3.jpg" alt="Кабинет ↖2" loading="lazy" />
         </div>
-        <p class="classroom-caption">Кабинет №2</p>
+        <p class="classroom-caption">Кабинет ↖2</p>
       </div>
       <div class="classroom-item">
         <div class="classroom-image">
-          <img src="/images/classrooms/room3.jpg" alt="Кабинет №3" loading="lazy" />
+          <img src="/images/classrooms/room5.jpg" alt="Кабинет ↖3" loading="lazy" />
         </div>
-        <p class="classroom-caption">Кабинет №3</p>
-      </div>
-      <div class="classroom-item">
-        <div class="classroom-image">
-          <img src="/images/classrooms/room4.jpg" alt="Кабинет №4" loading="lazy" />
-        </div>
-        <p class="classroom-caption">Кабинет №4</p>
-      </div>
-      <div class="classroom-item">
-        <div class="classroom-image">
-          <img src="/images/classrooms/room5.jpg" alt="Кабинет №5" loading="lazy" />
-        </div>
-        <p class="classroom-caption">Кабинет №5</p>
+        <p class="classroom-caption">Кабинет ↖3</p>
       </div>
     </div>
 
@@ -77,7 +65,7 @@
         <strong>Адрес:</strong> г.Новосибирск, ул. Бориса Богаткова, д. 208/2,
         офис 4 и 5
       </p>
-      <p><strong>Общее количество мест:</strong> 5</p>
+      <p><strong>Общее количество мест:</strong> 3</p>
     </div>
 
     <h3>Об условиях охраны здоровья</h3>
