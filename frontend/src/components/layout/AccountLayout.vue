@@ -10,13 +10,13 @@
         <!-- Все роли -->
         <RouterLink to="/account" exact-active-class="router-link-active" class="sidebar-link">📊 Главная</RouterLink>
         <RouterLink to="/account/schedule" class="sidebar-link">🗓 Расписание</RouterLink>
-        <RouterLink to="/account/news" class="sidebar-link">📣 Новости</RouterLink>
         <RouterLink to="/account/documents" class="sidebar-link">📂 Документы</RouterLink>
         <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
         <RouterLink to="/account/profile" class="sidebar-link">👤 Профиль</RouterLink>
 
         <!-- Только учитель и админ -->
         <template v-if="isStaff">
+          <RouterLink to="/account/news" class="sidebar-link">📣 Новости</RouterLink>
           <div class="sidebar-section">Управление</div>
           <RouterLink to="/account/students" class="sidebar-link">👥 Ученики</RouterLink>
           <RouterLink to="/account/forms" class="sidebar-link">📝 Анкеты и формы</RouterLink>
