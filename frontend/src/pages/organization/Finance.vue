@@ -7,7 +7,7 @@
       по итогам финансового года
     </h3>
     <p class="doc-link">
-      📊 <a href="#" target="_blank" download>ОН0002 (2024 год)</a>
+      📊 <a href="/docs/finance/ОН0002_2025.xlsx" target="_blank" download>ОН0002 (2025 год)</a>
     </p>
   </div>
 </template>
