@@ -37,24 +37,38 @@
       <p><strong>Общее количество:</strong> 3</p>
     </div>
 
-    <div class="classrooms-gallery">
-      <div class="classroom-item">
-        <div class="classroom-image">
-          <img src="/images/classrooms/room1.jpg" alt="Кабинет ↖1" loading="lazy" />
+    <div class="classrooms-list">
+      <div class="classroom-block">
+        <p class="classroom-title">Кабинет №1</p>
+        <div class="classroom-photos">
+          <div class="classroom-image">
+            <img src="/images/classrooms/room1.jpg" alt="Кабинет №1, фото 1" loading="lazy" />
+          </div>
+          <div class="classroom-image">
+            <img src="/images/classrooms/room2.jpg" alt="Кабинет №1, фото 2" loading="lazy" />
+          </div>
         </div>
-        <p class="classroom-caption">Кабинет ↖1</p>
       </div>
-      <div class="classroom-item">
-        <div class="classroom-image">
-          <img src="/images/classrooms/room3.jpg" alt="Кабинет ↖2" loading="lazy" />
+
+      <div class="classroom-block">
+        <p class="classroom-title">Кабинет №2</p>
+        <div class="classroom-photos">
+          <div class="classroom-image">
+            <img src="/images/classrooms/room3.jpg" alt="Кабинет №2, фото 1" loading="lazy" />
+          </div>
+          <div class="classroom-image">
+            <img src="/images/classrooms/room4.jpg" alt="Кабинет №2, фото 2" loading="lazy" />
+          </div>
         </div>
-        <p class="classroom-caption">Кабинет ↖2</p>
       </div>
-      <div class="classroom-item">
-        <div class="classroom-image">
-          <img src="/images/classrooms/room5.jpg" alt="Кабинет ↖3" loading="lazy" />
+
+      <div class="classroom-block">
+        <p class="classroom-title">Кабинет №3</p>
+        <div class="classroom-photos">
+          <div class="classroom-image">
+            <img src="/images/classrooms/room5.jpg" alt="Кабинет №3" loading="lazy" />
+          </div>
         </div>
-        <p class="classroom-caption">Кабинет ↖3</p>
       </div>
     </div>
 
@@ -135,6 +149,45 @@ p {
 .doc-link a:hover {
   text-decoration: underline;
 }
+
+/* Список кабинетов */
+.classrooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin: 24px 0;
+}
+.classroom-block {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+}
+.classroom-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--brand-purple);
+  margin-bottom: 12px;
+}
+.classroom-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.classroom-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.classroom-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Галерея дополнительных помещений */
 .classrooms-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -146,16 +199,6 @@ p {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.classroom-image {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-.classroom-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .classroom-caption {
   padding: 12px;
