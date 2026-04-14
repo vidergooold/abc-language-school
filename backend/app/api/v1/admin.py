@@ -36,27 +36,26 @@ async def get_all_forms(
     """Получить все формы заявок"""
     forms = []
 
-    async with db as session:
-        for model, type_label in [
-            (ChildForm, "child"),
-            (AdultForm, "adult"),
-            (PreschoolForm, "preschool"),
-            (TeacherForm, "teacher"),
-            (TestingForm, "testing"),
-        ]:
-            result = await session.execute(select(model).order_by(model.id.desc()))
-            for row in result.scalars().all():
-                forms.append({
-                    "id": row.id,
-                    "type": type_label,
-                    "fio": row.fio,
-                    "phone": row.phone,
-                    "email": getattr(row, "email", None),
-                    "comment": getattr(row, "comment", None),
-                    "status": getattr(row, "status", "new"),
-                    "created_at": _fmt_dt(getattr(row, "created_at", None)),
-                    "date": _fmt_dt(getattr(row, "created_at", None)),
-                })
+    for model, type_label in [
+        (ChildForm, "child"),
+        (AdultForm, "adult"),
+        (PreschoolForm, "preschool"),
+        (TeacherForm, "teacher"),
+        (TestingForm, "testing"),
+    ]:
+        result = await db.execute(select(model).order_by(model.id.desc()))
+        for row in result.scalars().all():
+            forms.append({
+                "id": row.id,
+                "type": type_label,
+                "fio": row.fio,
+                "phone": row.phone,
+                "email": getattr(row, "email", None),
+                "comment": getattr(row, "comment", None),
+                "status": getattr(row, "status", "new"),
+                "created_at": _fmt_dt(getattr(row, "created_at", None)),
+                "date": _fmt_dt(getattr(row, "created_at", None)),
+            })
 
     forms.sort(key=lambda x: x["created_at"] or "", reverse=True)
     return forms[:limit] if limit else forms
@@ -75,15 +74,14 @@ async def update_form(
     """Обновить статус или комментарий анкеты."""
     models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm]
 
-    async with db as session:
-        for model in models:
-            row = await session.get(model, form_id)
-            if row:
-                for key, value in payload.items():
-                    if hasattr(row, key):
-                        setattr(row, key, value)
-                await session.commit()
-                return {"ok": True}
+    for model in models:
+        row = await db.get(model, form_id)
+        if row:
+            for key, value in payload.items():
+                if hasattr(row, key):
+                    setattr(row, key, value)
+            await db.commit()
+            return {"ok": True}
 
     raise HTTPException(status_code=404, detail="Form not found")
 
@@ -100,13 +98,12 @@ async def delete_form(
     """Удалить анкету по ID во всех типах."""
     models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm]
 
-    async with db as session:
-        for model in models:
-            row = await session.get(model, form_id)
-            if row:
-                await session.delete(row)
-                await session.commit()
-                return {"ok": True}
+    for model in models:
+        row = await db.get(model, form_id)
+        if row:
+            await db.delete(row)
+            await db.commit()
+            return {"ok": True}
 
     raise HTTPException(status_code=404, detail="Form not found")
 
@@ -121,26 +118,25 @@ async def get_all_feedback(
     _=Depends(require_admin),
 ):
     """Получить все сообщения обратной связи"""
-    async with db as session:
-        query = select(FeedbackForm).order_by(FeedbackForm.id.desc())
-        if limit:
-            query = query.limit(limit)
-        result = await session.execute(query)
-        rows = result.scalars().all()
+    query = select(FeedbackForm).order_by(FeedbackForm.id.desc())
+    if limit:
+        query = query.limit(limit)
+    result = await db.execute(query)
+    rows = result.scalars().all()
 
-        return [
-            {
-                "id": fb.id,
-                "name": fb.name,
-                "phone": fb.phone,
-                "email": fb.email,
-                "message": fb.message,
-                "is_read": fb.is_read,
-                "created_at": _fmt_dt(fb.created_at),
-                "date": _fmt_dt(fb.created_at),
-            }
-            for fb in rows
-        ]
+    return [
+        {
+            "id": fb.id,
+            "name": fb.name,
+            "phone": fb.phone,
+            "email": fb.email,
+            "message": fb.message,
+            "is_read": fb.is_read,
+            "created_at": _fmt_dt(fb.created_at),
+            "date": _fmt_dt(fb.created_at),
+        }
+        for fb in rows
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -153,13 +149,12 @@ async def mark_feedback_read(
     _=Depends(require_admin),
 ):
     """Отметить сообщение как прочитанное."""
-    async with db as session:
-        fb = await session.get(FeedbackForm, feedback_id)
-        if not fb:
-            raise HTTPException(status_code=404, detail="Feedback not found")
-        fb.is_read = True
-        await session.commit()
-        return {"ok": True}
+    fb = await db.get(FeedbackForm, feedback_id)
+    if not fb:
+        raise HTTPException(status_code=404, detail="Feedback not found")
+    fb.is_read = True
+    await db.commit()
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------
@@ -175,31 +170,30 @@ async def get_stats(
     Фронтенд ожидает:
       total_forms, total_students, total_feedback, schedule_groups
     """
-    async with db as session:
-        child_count     = await session.scalar(select(func.count()).select_from(ChildForm))
-        adult_count     = await session.scalar(select(func.count()).select_from(AdultForm))
-        preschool_count = await session.scalar(select(func.count()).select_from(PreschoolForm))
-        teacher_count   = await session.scalar(select(func.count()).select_from(TeacherForm))
-        testing_count   = await session.scalar(select(func.count()).select_from(TestingForm))
-        feedback_count  = await session.scalar(select(func.count()).select_from(FeedbackForm))
-        groups_count    = await session.scalar(select(func.count()).select_from(Group))
+    child_count     = await db.scalar(select(func.count()).select_from(ChildForm))
+    adult_count     = await db.scalar(select(func.count()).select_from(AdultForm))
+    preschool_count = await db.scalar(select(func.count()).select_from(PreschoolForm))
+    teacher_count   = await db.scalar(select(func.count()).select_from(TeacherForm))
+    testing_count   = await db.scalar(select(func.count()).select_from(TestingForm))
+    feedback_count  = await db.scalar(select(func.count()).select_from(FeedbackForm))
+    groups_count    = await db.scalar(select(func.count()).select_from(Group))
 
-        total_forms    = child_count + adult_count + preschool_count + teacher_count + testing_count
-        total_students = child_count + adult_count + preschool_count
+    total_forms    = child_count + adult_count + preschool_count + teacher_count + testing_count
+    total_students = child_count + adult_count + preschool_count
 
-        return {
-            "total_forms":     total_forms,
-            "total_students":  total_students,
-            "total_feedback":  feedback_count,
-            "schedule_groups": groups_count,
-            "forms_by_type": {
-                "child":     child_count,
-                "adult":     adult_count,
-                "preschool": preschool_count,
-                "teacher":   teacher_count,
-                "testing":   testing_count,
-            },
-        }
+    return {
+        "total_forms":     total_forms,
+        "total_students":  total_students,
+        "total_feedback":  feedback_count,
+        "schedule_groups": groups_count,
+        "forms_by_type": {
+            "child":     child_count,
+            "adult":     adult_count,
+            "preschool": preschool_count,
+            "teacher":   teacher_count,
+            "testing":   testing_count,
+        },
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -213,23 +207,22 @@ async def get_all_students(
     """Получить всех студентов (школьники + дошкольники + взрослые)"""
     students = []
 
-    async with db as session:
-        for model, type_label in [
-            (ChildForm, "child"),
-            (AdultForm, "adult"),
-            (PreschoolForm, "preschool"),
-        ]:
-            result = await session.execute(select(model).order_by(model.id.desc()))
-            for row in result.scalars().all():
-                students.append({
-                    "id":         row.id,
-                    "type":       type_label,
-                    "fio":        row.fio,
-                    "age":        getattr(row, "age", None),
-                    "phone":      row.phone,
-                    "email":      getattr(row, "email", None),
-                    "status":     getattr(row, "status", "new"),
-                    "created_at": _fmt_dt(getattr(row, "created_at", None)),
-                })
+    for model, type_label in [
+        (ChildForm, "child"),
+        (AdultForm, "adult"),
+        (PreschoolForm, "preschool"),
+    ]:
+        result = await db.execute(select(model).order_by(model.id.desc()))
+        for row in result.scalars().all():
+            students.append({
+                "id":         row.id,
+                "type":       type_label,
+                "fio":        row.fio,
+                "age":        getattr(row, "age", None),
+                "phone":      row.phone,
+                "email":      getattr(row, "email", None),
+                "status":     getattr(row, "status", "new"),
+                "created_at": _fmt_dt(getattr(row, "created_at", None)),
+            })
 
     return students
