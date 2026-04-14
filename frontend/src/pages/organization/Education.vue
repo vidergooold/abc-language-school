@@ -15,149 +15,117 @@
     <h3>Реализуемые образовательные программы</h3>
 
     <div class="programs-list">
+
       <details class="program-item">
-        <summary class="program-title">
-          Рабочая программа по английскому языку "Academy Stars 1"
-        </summary>
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Academy Stars 1&raquo;</summary>
         <div class="program-details">
-          <p>
-            <strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />
-            Не указаны
-          </p>
-          <p>
-            <strong>Практика:</strong><br />
-            Не указана
-          </p>
-          <p>
-            <strong>Электронное обучение и дистанционные технологии:</strong
-            ><br />
-            Не используются
-          </p>
-          <p class="doc-link">
-            📄 <a href="#" target="_blank">Образовательная программа</a>
-          </p>
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_Acad_st1.docx" target="_blank">Образовательная программа</a></p>
         </div>
       </details>
 
       <details class="program-item">
-        <summary class="program-title">
-          Рабочая программа по английскому языку "Academy Stars 2"
-        </summary>
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Academy Stars 2&raquo;</summary>
         <div class="program-details">
-          <p>
-            <strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />
-            Не указаны
-          </p>
-          <p>
-            <strong>Практика:</strong><br />
-            Не указана
-          </p>
-          <p>
-            <strong>Электронное обучение и дистанционные технологии:</strong
-            ><br />
-            Не используются
-          </p>
-          <p class="doc-link">
-            📄 <a href="#" target="_blank">Образовательная программа</a>
-          </p>
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_Acad_st2.docx" target="_blank">Образовательная программа</a></p>
         </div>
       </details>
 
       <details class="program-item">
-        <summary class="program-title">
-          Рабочая программа по английскому языку "Academy Stars 3"
-        </summary>
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Academy Stars 3&raquo;</summary>
         <div class="program-details">
-          <p>
-            <strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />
-            Не указаны
-          </p>
-          <p>
-            <strong>Практика:</strong><br />
-            Не указана
-          </p>
-          <p>
-            <strong>Электронное обучение и дистанционные технологии:</strong
-            ><br />
-            Не используются
-          </p>
-          <p class="doc-link">
-            📄 <a href="#" target="_blank">Образовательная программа</a>
-          </p>
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_Academy_St3.docx" target="_blank">Образовательная программа</a></p>
         </div>
       </details>
 
       <details class="program-item">
-        <summary class="program-title">
-          Рабочая программа по английскому языку "Gateway A1+"
-        </summary>
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;FlyHigh 1&raquo;</summary>
         <div class="program-details">
-          <p>
-            <strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />
-            Не указаны
-          </p>
-          <p>
-            <strong>Практика:</strong><br />
-            Не указана
-          </p>
-          <p>
-            <strong>Электронное обучение и дистанционные технологии:</strong
-            ><br />
-            Не используются
-          </p>
-          <p class="doc-link">
-            📄 <a href="#" target="_blank">Образовательная программа</a>
-          </p>
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_Fly_High1.docx" target="_blank">Образовательная программа</a></p>
         </div>
       </details>
 
       <details class="program-item">
-        <summary class="program-title">
-          Рабочая программа по английскому языку "Gateway B1"
-        </summary>
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway A1+&raquo;</summary>
         <div class="program-details">
-          <p>
-            <strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />
-            Не указаны
-          </p>
-          <p>
-            <strong>Практика:</strong><br />
-            Не указана
-          </p>
-          <p>
-            <strong>Электронное обучение и дистанционные технологии:</strong
-            ><br />
-            Не используются
-          </p>
-          <p class="doc-link">
-            📄 <a href="#" target="_blank">Образовательная программа</a>
-          </p>
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_gateway2nd_a1.doc" target="_blank">Образовательная программа</a></p>
         </div>
       </details>
 
       <details class="program-item">
-        <summary class="program-title">
-          Рабочая программа по английскому языку "FlyHigh 1"
-        </summary>
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway A2&raquo;</summary>
         <div class="program-details">
-          <p>
-            <strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />
-            Не указаны
-          </p>
-          <p>
-            <strong>Практика:</strong><br />
-            Не указана
-          </p>
-          <p>
-            <strong>Электронное обучение и дистанционные технологии:</strong
-            ><br />
-            Не используются
-          </p>
-          <p class="doc-link">
-            📄 <a href="#" target="_blank">Образовательная программа</a>
-          </p>
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_gateway2nd_a2.doc" target="_blank">Образовательная программа</a></p>
         </div>
       </details>
+
+      <details class="program-item">
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway B1&raquo;</summary>
+        <div class="program-details">
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_gateway2nd_b1.doc" target="_blank">Образовательная программа</a></p>
+        </div>
+      </details>
+
+      <details class="program-item">
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway B1+&raquo;</summary>
+        <div class="program-details">
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_gateway2nd_b1+.doc" target="_blank">Образовательная программа</a></p>
+        </div>
+      </details>
+
+      <details class="program-item">
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway B2&raquo;</summary>
+        <div class="program-details">
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_gateway2nd_b2.doc" target="_blank">Образовательная программа</a></p>
+        </div>
+      </details>
+
+      <details class="program-item">
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway B2+&raquo;</summary>
+        <div class="program-details">
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_gateway2nd_b2+.doc" target="_blank">Образовательная программа</a></p>
+        </div>
+      </details>
+
+      <details class="program-item">
+        <summary class="program-title">Рабочая программа по английскому языку &laquo;Gateway C1&raquo;</summary>
+        <div class="program-details">
+          <p><strong>Учебный предмет, курс, дисциплина (модуль):</strong><br />Не указаны</p>
+          <p><strong>Практика:</strong><br />Не указана</p>
+          <p><strong>Электронное обучение и дистанционные технологии:</strong><br />Не используются</p>
+          <p class="doc-link">📄 <a href="/docs/education/РП_Gateway_C1.doc" target="_blank">Образовательная программа</a></p>
+        </div>
+      </details>
+
     </div>
   </div>
 </template>
