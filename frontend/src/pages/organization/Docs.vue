@@ -5,7 +5,7 @@
     <h3>Иные документы</h3>
     <p class="doc-link">
       📄
-      <a href="#" target="_blank">
+      <a href="/docs/contract/reg.pdf" target="_blank">
         Свидетельство о государственной регистрации некоммерческой организации
       </a>
     </p>
