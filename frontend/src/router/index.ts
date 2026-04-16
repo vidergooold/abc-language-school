@@ -10,6 +10,11 @@ import Jobs from '@/pages/Jobs.vue'
 import Privacy from '@/pages/Privacy.vue'
 import Consent from '@/pages/Consent.vue'
 
+import AnketaShkolnik from '@/pages/blanks/AnketaShkolnik.vue'
+import AnketaDoshkolnik from '@/pages/blanks/AnketaDoshkolnik.vue'
+import AnketaVzrosly from '@/pages/blanks/AnketaVzrosly.vue'
+import AnketaTeacher from '@/pages/blanks/AnketaTeacher.vue'
+
 import OrganizationLayout from '@/components/layout/OrganizationLayout.vue'
 import OrgMain from '@/pages/organization/Main.vue'
 import OrgStructure from '@/pages/organization/Structure.vue'
@@ -54,11 +59,14 @@ const router = createRouter({
     { path: '/consent', name: 'consent', component: Consent },
     { path: '/login', name: 'login', component: Login, meta: { redirectIfAuth: true } },
     { path: '/register', name: 'register', component: Register, meta: { redirectIfAuth: true } },
+    { path: '/blanks/shkolnik', name: 'blank-shkolnik', component: AnketaShkolnik },
+    { path: '/blanks/doshkolnik', name: 'blank-doshkolnik', component: AnketaDoshkolnik },
+    { path: '/blanks/vzrosly', name: 'blank-vzrosly', component: AnketaVzrosly },
+    { path: '/blanks/teacher', name: 'blank-teacher', component: AnketaTeacher },
     {
       path: '/organization',
       component: OrganizationLayout,
       children: [
-        // Основные сведения — index route (path: '')
         { path: '', name: 'organization', component: OrgMain },
         { path: 'structure', name: 'org-structure', component: OrgStructure },
         { path: 'docs', name: 'org-docs', component: OrgDocs },

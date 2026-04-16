@@ -3,7 +3,13 @@
     <h1 class="page-title">Стать преподавателем</h1>
     <p class="page-subtitle">Заполните анкету, и мы рассмотрим вашу кандидатуру</p>
 
-    <form class="form" @submit.prevent="submit">
+    <div v-if="submitted" class="success-block">
+      <div class="success-icon">✅</div>
+      <h2>Анкета отправлена!</h2>
+      <p>Мы свяжемся с вами в ближайшее время.</p>
+    </div>
+
+    <form v-else class="form" @submit.prevent="submit">
       <div class="field">
         <label>ФИО *</label>
         <input v-model="form.fio" type="text" required />
@@ -62,12 +68,14 @@
       <div class="field-row">
         <div class="field">
           <label>Код с рисунка *</label>
-          <input v-model="form.captcha" type="text" required />
+          <input v-model="captchaInput" type="text" required />
         </div>
         <div class="captcha-image">
           <span class="captcha-text">{{ captchaCode }}</span>
         </div>
       </div>
+
+      <p v-if="error" class="error-msg">{{ error }}</p>
 
       <div class="consent-block">
         <div class="field checkbox-field">
@@ -87,14 +95,18 @@
         </div>
       </div>
 
-      <button class="submit-btn" type="submit" :disabled="!consent.privacy || !consent.personalData">Отправить</button>
+      <button class="submit-btn" type="submit" :disabled="loading || !consent.privacy || !consent.personalData">
+        {{ loading ? 'Отправка...' : 'Отправить' }}
+      </button>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+
+const API = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
 
 const form = ref({
   fio: '',
@@ -108,21 +120,57 @@ const form = ref({
   address: '',
   phone: '',
   email: '',
-  captcha: '',
 })
 
 const consent = ref({ privacy: false, personalData: false })
+const captchaInput = ref('')
+const captchaCode = ref(generateCaptcha())
+const submitted = ref(false)
+const loading = ref(false)
+const error = ref('')
 
-const captchaCode = computed(() => {
+function generateCaptcha() {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
-})
+}
 
-function submit() {
-  if (form.value.captcha.toUpperCase() !== captchaCode.value) {
-    alert('Неверный код с рисунка!')
+async function submit() {
+  error.value = ''
+
+  if (captchaInput.value.toUpperCase() !== captchaCode.value) {
+    error.value = 'Неверный код с рисунка!'
+    captchaCode.value = generateCaptcha()
+    captchaInput.value = ''
     return
   }
-  alert('Анкета преподавателя отправлена! Мы свяжемся с вами.')
+
+  loading.value = true
+  try {
+    const res = await fetch(`${API}/api/v1/forms/teacher`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fio: form.value.fio,
+        birth_info: form.value.birthInfo,
+        marital_status: form.value.maritalStatus,
+        education: form.value.education,
+        work_experience: form.value.workExperience,
+        language_level: form.value.languageLevel,
+        skills: form.value.skills,
+        qualities: form.value.qualities,
+        address: form.value.address,
+        phone: form.value.phone,
+        email: form.value.email,
+      }),
+    })
+    if (!res.ok) throw new Error('Ошибка сервера')
+    submitted.value = true
+  } catch (e) {
+    error.value = 'Не удалось отправить анкету. Попробуйте позже.'
+    captchaCode.value = generateCaptcha()
+    captchaInput.value = ''
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -144,6 +192,17 @@ function submit() {
   color: var(--text-secondary);
   margin-bottom: 24px;
 }
+
+.success-block {
+  text-align: center;
+  padding: 60px 24px;
+  background: #f0fff4;
+  border-radius: 20px;
+  border: 2px solid #68d391;
+}
+.success-icon { font-size: 48px; margin-bottom: 16px; }
+.success-block h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.success-block p { font-size: 16px; color: #555; }
 
 .form {
   background: #ffe3cf;
@@ -197,6 +256,13 @@ function submit() {
   font-family: 'Courier New', monospace;
   text-decoration: line-through;
   text-decoration-color: #999;
+}
+
+.error-msg {
+  color: #e53e3e;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .consent-block {
