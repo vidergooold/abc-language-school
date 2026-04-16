@@ -7,18 +7,15 @@
     <div v-else class="branches-list">
       <div v-for="branch in branches" :key="branch.id" class="branch-card">
         <h3>{{ branch.name }}</h3>
-        <p v-if="branch.manager_name">
-          <strong>Руководитель:</strong> {{ branch.manager_name }}<br />
-          <strong>Должность:</strong> {{ branch.manager_position }}
-        </p>
+        <p><strong>Руководитель:</strong> {{ branch.manager_name || '—' }}</p>
+        <p><strong>Должность:</strong> {{ branch.manager_position || '—' }}</p>
         <p><strong>Адрес:</strong> {{ branch.address }}</p>
-        <p v-if="branch.phone">
+        <p>
           <strong>Телефон:</strong>
-          <a :href="`tel:${branch.phone}`">{{ formatPhone(branch.phone) }}</a>
+          <a v-if="branch.phone" :href="`tel:${branch.phone}`">{{ formatPhone(branch.phone) }}</a>
+          <span v-else>—</span>
         </p>
-        <p v-if="branch.working_hours">
-          <strong>Режим работы:</strong> {{ branch.working_hours }}
-        </p>
+        <p><strong>Режим работы:</strong> {{ branch.working_hours || '—' }}</p>
       </div>
     </div>
   </div>
@@ -44,7 +41,6 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 
 function formatPhone(phone: string): string {
-  // '+79139121809' -> '(913) 912-18-09'
   const digits = phone.replace(/\D/g, '')
   if (digits.length === 11) {
     return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`
@@ -111,7 +107,7 @@ onMounted(async () => {
 
 .branch-card p {
   font-size: 15px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .branch-card a {
