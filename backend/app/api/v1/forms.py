@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
+from app.core.security import require_staff
+from app.models.user import User
 from app.models.forms import (
     ChildForm,
     AdultForm,
@@ -23,6 +25,8 @@ from app.schemas.forms import (
 
 router = APIRouter(prefix="/forms", tags=["Forms"])
 
+
+# ─── POST эндпоинты — публичные (без авторизации) ─────────────────────────────
 
 @router.post("/child", response_model=FormResponse)
 async def create_child_form(
@@ -160,10 +164,14 @@ async def create_feedback_form(
     return form
 
 
-# GET endpoints to retrieve submitted forms
+# ─── GET эндпоинт — только для admin и teacher ────────────────────────────────
+
 @router.get("/")
-async def get_all_forms(db: AsyncSession = Depends(get_db)):
-    """Get all forms grouped by type"""
+async def get_all_forms(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    """Все анкеты. Доступно только сотрудникам школы (teacher, admin)."""
     child_forms = (await db.execute(select(ChildForm))).scalars().all()
     adult_forms = (await db.execute(select(AdultForm))).scalars().all()
     preschool_forms = (await db.execute(select(PreschoolForm))).scalars().all()
