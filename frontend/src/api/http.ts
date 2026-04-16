@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useAuthStore } from '@/stores/auth'
 
 const http = axios.create({
   baseURL: 'http://localhost:8000/api/v1',
@@ -8,12 +7,12 @@ const http = axios.create({
   },
 })
 
-// автоматически добавляем JWT, если есть
+// читаем токен напрямую из localStorage — надёжнее чем через Pinia при инициализации модуля
 http.interceptors.request.use((config) => {
-  const authStore = useAuthStore()
-  if (authStore.token) {
+  const token = localStorage.getItem('token')
+  if (token) {
     config.headers = config.headers || {}
-    config.headers.Authorization = `Bearer ${authStore.token}`
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
