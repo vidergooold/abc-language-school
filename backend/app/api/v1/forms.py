@@ -107,11 +107,11 @@ async def create_teacher_form(
 ):
     form = TeacherForm(
         fio=data.fio,
-        birth_info=data.birthInfo,
-        marital_status=data.maritalStatus,
+        birth_info=data.birth_info,
+        marital_status=data.marital_status,
         education=data.education,
-        work_experience=data.workExperience,
-        language_level=data.languageLevel,
+        work_experience=data.work_experience,
+        language_level=data.language_level,
         skills=data.skills,
         qualities=data.qualities,
         address=data.address,
@@ -170,12 +170,12 @@ async def get_all_forms(db: AsyncSession = Depends(get_db)):
     teacher_forms = (await db.execute(select(TeacherForm))).scalars().all()
     testing_forms = (await db.execute(select(TestingForm))).scalars().all()
     feedback_forms = (await db.execute(select(FeedbackForm))).scalars().all()
-    
+
     return {
         "child": child_forms,
         "adult": adult_forms,
         "preschool": preschool_forms,
         "teacher": teacher_forms,
         "testing": testing_forms,
-        "feedback": feedback_forms
+        "feedback": feedback_forms,
     }
