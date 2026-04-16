@@ -28,6 +28,8 @@
               <th>День</th>
               <th>Время</th>
               <th>Кабинет</th>
+              <th>Филиал</th>
+              <th>Программа</th>
               <th>Тема</th>
               <th>Статус</th>
               <th>Действия</th>
@@ -40,6 +42,8 @@
               <td class="col-days">{{ dayLabel(item.day_of_week) }}</td>
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
+              <td>{{ branchName(item.branch_id) }}</td>
+              <td>{{ programName(item.program_id) }}</td>
               <td class="col-topic">{{ item.topic || '—' }}</td>
               <td><span class="status-badge" :class="'s-' + item.status">{{ statusLabel(item.status) }}</span></td>
               <td class="col-actions">
@@ -87,6 +91,20 @@
             <select v-model.number="form.classroom_id" required>
               <option value="">— выберите —</option>
               <option v-for="c in classrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </label>
+
+          <label>Филиал
+            <select v-model.number="form.branch_id">
+              <option value="">— выберите —</option>
+              <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+            </select>
+          </label>
+
+          <label>Программа
+            <select v-model.number="form.program_id">
+              <option value="">— выберите —</option>
+              <option v-for="p in programs" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
           </label>
 
@@ -162,6 +180,8 @@ const schedule = ref<any[]>([])
 const groups = ref<any[]>([])
 const teachers = ref<any[]>([])
 const classrooms = ref<any[]>([])
+const branches = ref<any[]>([])
+const programs = ref<any[]>([])
 const search = ref('')
 const filterDay = ref('')
 const modal = ref(false)
@@ -183,6 +203,8 @@ const emptyForm = () => ({
   group_id: '' as number | '',
   teacher_id: '' as number | '',
   classroom_id: '' as number | '',
+  branch_id: '' as number | '',
+  program_id: '' as number | '',
   day_of_week: '',
   time_start: '',
   time_end: '',
@@ -212,6 +234,12 @@ function teacherName(id: number) {
 function classroomName(id: number) {
   return classrooms.value.find(c => c.id === id)?.name || `Каб. #${id}`
 }
+function branchName(id: number) {
+  return branches.value.find(b => b.id === id)?.name || '—'
+}
+function programName(id: number) {
+  return programs.value.find(p => p.id === id)?.name || '—'
+}
 function dayLabel(key: string) {
   return days.find(d => d.key === key)?.label || key
 }
@@ -235,6 +263,8 @@ function openEdit(item: any) {
     group_id: item.group_id,
     teacher_id: item.teacher_id,
     classroom_id: item.classroom_id,
+    branch_id: item.branch_id || '',
+    program_id: item.program_id || '',
     day_of_week: item.day_of_week,
     time_start: item.time_start.slice(0, 5),
     time_end: item.time_end.slice(0, 5),
@@ -306,16 +336,20 @@ async function loadSchedule() {
 
 onMounted(async () => {
   try {
-    const [sRes, gRes, tRes, cRes] = await Promise.all([
+    const [sRes, gRes, tRes, cRes, bRes, pRes] = await Promise.all([
       http.get('/schedule'),
       http.get('/groups'),
       http.get('/teachers'),
       http.get('/classrooms'),
+      http.get('/branches'),
+      http.get('/programs'),
     ])
     schedule.value = Array.isArray(sRes.data) ? sRes.data : []
     groups.value = Array.isArray(gRes.data) ? gRes.data : []
     teachers.value = Array.isArray(tRes.data) ? tRes.data : []
     classrooms.value = Array.isArray(cRes.data) ? cRes.data : []
+    branches.value = Array.isArray(bRes.data) ? bRes.data : []
+    programs.value = Array.isArray(pRes.data) ? pRes.data : []
   } catch {
     schedule.value = []
   } finally {
