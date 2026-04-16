@@ -9,13 +9,18 @@ class Branch(Base):
     __tablename__ = "branches"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)           # напр. "Филиал на Ленина"
+    name = Column(String(255), nullable=False)
     address = Column(String(500), nullable=False)
     phone = Column(String(50), nullable=True)
     email = Column(String(255), nullable=True)
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Новые поля для страницы "Структура и филиалы"
+    manager_name = Column(String(255), nullable=True)       # Руководитель
+    manager_position = Column(String(255), nullable=True)   # Должность
+    working_hours = Column(String(255), nullable=True)      # Режим работы
 
     # Связи
     lessons = relationship("Lesson", back_populates="branch", lazy="select")

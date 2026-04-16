@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class BranchBase(BaseModel):
@@ -10,6 +10,9 @@ class BranchBase(BaseModel):
     email: Optional[str] = None
     description: Optional[str] = None
     is_active: bool = True
+    manager_name: Optional[str] = None
+    manager_position: Optional[str] = None
+    working_hours: Optional[str] = None
 
 
 class BranchCreate(BranchBase):
@@ -23,6 +26,9 @@ class BranchUpdate(BaseModel):
     email: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    manager_name: Optional[str] = None
+    manager_position: Optional[str] = None
+    working_hours: Optional[str] = None
 
 
 class BranchOut(BranchBase):
