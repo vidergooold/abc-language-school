@@ -12,6 +12,9 @@ from app.models.forms import (  # noqa: F401
 )
 from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.document import Document  # noqa: F401
+from app.models.branch import Branch  # noqa: F401
+from app.models.educational_program import EducationalProgram  # noqa: F401
+from app.models.student import Student  # noqa: F401
 from app.models.schedule import Lesson, Classroom  # noqa: F401
 from app.models.attendance import Attendance  # noqa: F401
 from app.models.payment import Payment  # noqa: F401
@@ -33,7 +36,9 @@ from app.api.v1 import (
     groups,
     admin,
     analytics,
+    teachers,
 )
+from app.api.v1 import branches, programs, students
 
 
 @asynccontextmanager
@@ -60,8 +65,10 @@ app = FastAPI(
     - ✅ Посещаемость
     - 💳 Оплата
     - 🔔 Уведомления
+    - 🏫 Филиалы и образовательные программы
+    - 🎓 База студентов
     """,
-    version="1.1.0",
+    version="1.2.0",
     contact={
         "name": "ABC Language School",
         "email": "info@abc-school.ru",
@@ -87,6 +94,8 @@ app.include_router(news_router.router,   prefix="/api/v1")
 app.include_router(enrollments.router,   prefix="/api/v1")
 app.include_router(forms.router,         prefix="/api/v1")
 app.include_router(documents.router,     prefix="/api/v1")
+app.include_router(branches.router,      prefix="/api/v1")
+app.include_router(programs.router,      prefix="/api/v1")
 
 # Личный кабинет / преподаватель
 app.include_router(schedule.router,      prefix="/api/v1")
@@ -94,6 +103,8 @@ app.include_router(attendance.router,    prefix="/api/v1")
 app.include_router(payments.router,      prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(groups.router,        prefix="/api/v1")
+app.include_router(teachers.router,      prefix="/api/v1")
+app.include_router(students.router,      prefix="/api/v1")
 
 # Админ
 app.include_router(admin.router,         prefix="/api/v1")
@@ -104,7 +115,7 @@ app.include_router(analytics.router,     prefix="/api/v1")
 async def root():
     return {
         "project": "ABC Language School",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "docs": "/docs",
         "status": "running",
     }

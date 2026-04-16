@@ -3,8 +3,11 @@
 
 from app.models.user import User
 from app.models.teacher import Teacher
+from app.models.branch import Branch
+from app.models.educational_program import EducationalProgram
+from app.models.student import Student, StudentType, StudentStatus
 from app.models.schedule import Classroom, Lesson, DayOfWeek, LessonStatus
-from app.models.group import Group
+from app.models.group import Group, Course, CourseLevel, CourseCategory, GroupStatus, StudentGroup
 from app.models.attendance import Attendance
 from app.models.enrollment import Enrollment
 from app.models.payment import Payment
@@ -20,11 +23,21 @@ from app.models.report import ReportCache
 __all__ = [
     "User",
     "Teacher",
+    "Branch",
+    "EducationalProgram",
+    "Student",
+    "StudentType",
+    "StudentStatus",
     "Classroom",
     "Lesson",
     "DayOfWeek",
     "LessonStatus",
+    "Course",
+    "CourseLevel",
+    "CourseCategory",
     "Group",
+    "GroupStatus",
+    "StudentGroup",
     "Attendance",
     "Enrollment",
     "Payment",
