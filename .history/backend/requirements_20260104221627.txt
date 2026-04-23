@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-asyncpg
-pydantic
-python-jose
-passlib[bcrypt]
