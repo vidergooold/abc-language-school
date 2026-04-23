@@ -67,8 +67,8 @@ pip install -r requirements.txt
 # Initialize database (creates all 15 tables)
 python init_db.py
 
-# Populate with sample data from Excel
-python seed_real_data.py
+# Populate with sample data
+python seeds/seed_all.py
 ```
 
 ### 3. Run the Server
@@ -186,7 +186,8 @@ backend/
 │       ├── notifications.py # Notification system
 │       └── analytics.py     # Financial analytics
 ├── init_db.py              # Database initialization
-├── seed_real_data.py       # Sample data from Excel
+├── seeds/
+│   └── seed_all.py         # Unified seed script
 └── requirements.txt        # Python dependencies
 ```
 
