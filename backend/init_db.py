@@ -56,5 +56,5 @@ if __name__ == "__main__":
     print("ABC Language School - Database Initialization")
     print("="*60)
     init_database()
-    print("\nYou can now run 'python seed_real_data.py' to populate with sample data")
+    print("\nYou can now run 'python seeds/seed_all.py' to populate with sample data")
     print("="*60)
