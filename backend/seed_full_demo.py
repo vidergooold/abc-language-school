@@ -7,6 +7,12 @@ Seeds a realistic demo dataset so the whole flow works end-to-end:
 Run from the backend/ directory:
     cd backend
     python seed_full_demo.py
+
+Prerequisites:
+  - Group id=1 must exist in the database.
+  - Classroom id=1 must exist (created e.g. by seed_account_data.py); if it
+    is missing the lesson inserts will fail with a FK violation.  Run the
+    other seed scripts first or create a classroom row manually.
 """
 
 import asyncio
@@ -235,7 +241,10 @@ async def seed_full_demo() -> None:
                     teacher_id=TEACHER_ID,
                     status=status,
                     note=notes_map.get(status),
-                    lesson_date=lesson.lesson_date or datetime.utcnow(),
+                    # lesson_date is nullable in the schema; use the lesson's
+                    # stored date when available (always set for newly created
+                    # lessons), fall back to now() for legacy rows without it.
+                    lesson_date=lesson.lesson_date if lesson.lesson_date is not None else datetime.utcnow(),
                 )
                 session.add(att)
                 attendance_created += 1
