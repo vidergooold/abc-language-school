@@ -1,22 +1,43 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import require_admin
 from app.models.teacher import Teacher
+from app.models.schedule import Lesson, LessonStatus
 from app.schemas.teacher import TeacherCreate, TeacherUpdate, TeacherOut
 
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
 
 @router.get("/", response_model=List[TeacherOut])
-async def get_teachers(db: AsyncSession = Depends(get_db)):
+async def get_teachers(
+    branch_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
     """Публичный список активных преподавателей"""
-    result = await db.execute(
-        select(Teacher).where(Teacher.is_active == True).order_by(Teacher.full_name)
-    )
+    base_query = select(Teacher).where(Teacher.is_active == True)
+
+    # Если выбран филиал, сначала пробуем отфильтровать по расписанию в этом филиале.
+    if branch_id is not None:
+        filtered_query = (
+            base_query
+            .join(Lesson, Lesson.teacher_id == Teacher.id)
+            .where(
+                Lesson.branch_id == branch_id,
+                Lesson.status.in_([LessonStatus.scheduled, LessonStatus.rescheduled]),
+            )
+            .distinct()
+            .order_by(Teacher.full_name)
+        )
+        filtered_result = await db.execute(filtered_query)
+        filtered_teachers = filtered_result.scalars().all()
+        if filtered_teachers:
+            return filtered_teachers
+
+    result = await db.execute(base_query.order_by(Teacher.full_name))
     return result.scalars().all()
 
 

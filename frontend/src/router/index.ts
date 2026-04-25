@@ -37,13 +37,17 @@ import ClientsTax from '@/pages/clients/Tax.vue'
 
 import AccountLayout from '@/components/layout/AccountLayout.vue'
 import AccountDashboard from '@/pages/account/Dashboard.vue'
-import AccountProfile from '@/pages/account/Profile.vue'
 import AccountForms from '@/pages/account/Forms.vue'
-import AccountDocuments from '@/pages/account/Documents.vue'
 import AccountFeedback from '@/pages/account/Feedback.vue'
 import AccountStudents from '@/pages/account/Students.vue'
 import AccountSchedule from '@/pages/account/Schedule.vue'
 import AccountScheduleAdmin from '@/pages/account/ScheduleAdmin.vue'
+import AccountLessonMaterial from '@/pages/account/LessonMaterial.vue'
+import AccountHomework from '@/pages/account/Homework.vue'
+import AccountPayment from '@/pages/account/Payment.vue'
+import AccountProgress from '@/pages/account/Progress.vue'
+import AccountTeachers from '@/pages/account/Teachers.vue'
+import AccountRoleRequests from '@/pages/account/RoleRequests.vue'
 import AccountNews from '@/pages/account/News.vue'
 import AccountAttendance from '@/pages/account/Attendance.vue'
 
@@ -58,7 +62,7 @@ const router = createRouter({
     { path: '/privacy', name: 'privacy', component: Privacy },
     { path: '/consent', name: 'consent', component: Consent },
     { path: '/login', name: 'login', component: Login, meta: { redirectIfAuth: true } },
-    { path: '/register', name: 'register', component: Register, meta: { redirectIfAuth: true } },
+    { path: '/register', name: 'register', component: Register },
     { path: '/blanks/shkolnik', name: 'blank-shkolnik', component: AnketaShkolnik },
     { path: '/blanks/doshkolnik', name: 'blank-doshkolnik', component: AnketaDoshkolnik },
     { path: '/blanks/vzrosly', name: 'blank-vzrosly', component: AnketaVzrosly },
@@ -87,12 +91,7 @@ const router = createRouter({
       component: ClientsLayout,
       children: [
         { path: 'holidays', name: 'clients-holidays', component: ClientsHolidays },
-        {
-          path: 'payment',
-          name: 'clients-payment',
-          component: ClientsPayment,
-          meta: { requiresAuth: true, allowedRoles: ['admin', 'teacher', 'student'] }
-        },
+        { path: 'payment', name: 'clients-payment', component: ClientsPayment },
         {
           path: 'tax',
           name: 'clients-tax',
@@ -107,14 +106,19 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: '', name: 'account', component: AccountDashboard },
-        { path: 'profile', name: 'account-profile', component: AccountProfile },
+        { path: 'profile', redirect: '/account' },
         { path: 'schedule', name: 'account-schedule', component: AccountSchedule },
-        { path: 'documents', name: 'account-documents', component: AccountDocuments },
-        { path: 'news', name: 'account-news', component: AccountNews },
         { path: 'attendance', name: 'account-attendance', component: AccountAttendance },
-        { path: 'forms', name: 'account-forms', component: AccountForms, meta: { requiresAuth: true, requiresStaff: true } },
-        { path: 'feedback', name: 'account-feedback', component: AccountFeedback, meta: { requiresAuth: true, requiresStaff: true } },
-        { path: 'students', name: 'account-students', component: AccountStudents, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'lesson-material', name: 'account-lesson-material', component: AccountLessonMaterial, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'homework', name: 'account-homework', component: AccountHomework, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'payment', name: 'account-payment', component: AccountPayment, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'progress', name: 'account-progress', component: AccountProgress, meta: { requiresAuth: true, requiresStaff: true } },
+        { path: 'news', name: 'account-news', component: AccountNews },
+        { path: 'teachers', name: 'account-teachers', component: AccountTeachers, meta: { requiresAuth: true, requiresAdmin: true } },
+        { path: 'role-requests', name: 'account-role-requests', component: AccountRoleRequests, meta: { requiresAuth: true, requiresAdmin: true } },
+        { path: 'forms', name: 'account-forms', component: AccountForms, meta: { requiresAuth: true, requiresAdmin: true } },
+        { path: 'feedback', name: 'account-feedback', component: AccountFeedback, meta: { requiresAuth: true, requiresAdmin: true } },
+        { path: 'students', name: 'account-students', component: AccountStudents, meta: { requiresAuth: true, requiresAdmin: true } },
         { path: 'schedule-admin', name: 'account-schedule-admin', component: AccountScheduleAdmin, meta: { requiresAuth: true, requiresAdmin: true } }
       ]
     }

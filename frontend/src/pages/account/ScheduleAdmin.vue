@@ -74,14 +74,14 @@
 
         <div class="form-grid">
           <label>Группа
-            <select v-model.number="form.group_id" required>
+            <select v-model.number="form.group_id" @change="onGroupSelect" required>
               <option value="">— выберите —</option>
-              <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
+              <option v-for="g in availableGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
             </select>
           </label>
 
           <label>Преподаватель
-            <select v-model.number="form.teacher_id" required>
+            <select v-model.number="form.teacher_id" @change="onTeacherSelect" required>
               <option value="">— выберите —</option>
               <option v-for="t in teachers" :key="t.id" :value="t.id">{{ t.full_name || t.email }}</option>
             </select>
@@ -224,6 +224,11 @@ const filtered = computed(() =>
     .filter(i => !filterDay.value || i.day_of_week === filterDay.value)
 )
 
+const availableGroups = computed(() => {
+  if (!form.teacher_id) return groups.value
+  return groups.value.filter((group: any) => !group.teacher_id || group.teacher_id === form.teacher_id)
+})
+
 function groupName(id: number) {
   return groups.value.find(g => g.id === id)?.name || `Группа #${id}`
 }
@@ -275,6 +280,21 @@ function openEdit(item: any) {
   conflicts.value = []
   formError.value = ''
   modal.value = true
+}
+
+function onTeacherSelect() {
+  if (!form.teacher_id) return
+  const currentGroup = groups.value.find((group: any) => group.id === form.group_id)
+  if (currentGroup && currentGroup.teacher_id && currentGroup.teacher_id !== form.teacher_id) {
+    form.group_id = ''
+  }
+}
+
+function onGroupSelect() {
+  const selectedGroup = groups.value.find((group: any) => group.id === form.group_id)
+  if (selectedGroup?.teacher_id) {
+    form.teacher_id = selectedGroup.teacher_id
+  }
 }
 
 function confirmCancel(item: any) {

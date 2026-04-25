@@ -30,13 +30,13 @@ class CourseOut(BaseModel):
     is_active: bool
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class GroupCreate(BaseModel):
     name: str
     course_id: int
+    teacher_id: Optional[int] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
 
@@ -45,13 +45,13 @@ class GroupOut(BaseModel):
     id: int
     name: str
     course_id: int
+    teacher_id: Optional[int] = None
     status: GroupStatus
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class StudentGroupCreate(BaseModel):
@@ -74,5 +74,5 @@ class StudentGroupOut(BaseModel):
     enrolled_at: datetime
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+

@@ -20,6 +20,10 @@
         </div>
       </div>
 
+      <div v-if="auth.user?.role === 'admin'" class="admin-note">
+        <strong>Важно:</strong> при регистрации сотрудника его аккаунт создаётся со статусом «ученик». Администратор вручную назначит роль после проверки.
+      </div>
+
       <!-- Форма -->
       <div class="profile-form">
         <div class="form-section">
@@ -89,7 +93,7 @@ const initials = computed(() => {
 
 const roleLabel = computed(() => {
   const r = auth.user?.role
-  return { admin: '🔑 Администратор', teacher: '👨‍🏫 Учитель', student: '🎓 Студент' }[r] ?? r
+  return r ? { admin: '🔑 Администратор', teacher: '👨‍🏫 Учитель', student: '🎓 Студент' }[r] ?? r : '—'
 })
 
 const passwordMismatch = computed(() =>
@@ -160,6 +164,16 @@ async function save() {
 
 .alert-success { background: #e6f9ef; color: #22a55b; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; }
 .alert-error   { background: #fdeaea; color: #e03c3c; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; }
+
+.admin-note {
+  background: #fff4db;
+  border: 1px solid #ffe3af;
+  color: #5f3e0b;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-top: 16px;
+  line-height: 1.6;
+}
 
 .form-actions { margin-top: 20px; }
 .btn-save { background: var(--brand-orange); color: #fff; border: none; padding: 12px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }

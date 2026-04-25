@@ -31,13 +31,9 @@
       </section>
 
       <!-- Общие документы по категориям -->
-      <section
-        v-for="sec in publicSections"
-        :key="sec.key"
-        v-if="sec.docs.length"
-        class="doc-section"
-      >
-        <h2>{{ sec.icon }} {{ sec.title }}</h2>
+      <template v-for="sec in publicSections" :key="sec.key">
+        <section v-if="sec.docs.length" class="doc-section">
+          <h2>{{ sec.icon }} {{ sec.title }}</h2>
         <div class="doc-list">
           <a
             v-for="doc in sec.docs"

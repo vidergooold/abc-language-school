@@ -7,5 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-# main.py находится в app/api/main.py → app.api.main:app
-CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# main.py находится в app/main.py → app.main:app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

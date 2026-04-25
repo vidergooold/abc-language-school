@@ -16,19 +16,33 @@ class ClassroomOut(BaseModel):
     id: int
     name: str
     capacity: int
+    branch_id: Optional[int] = None
+    program_id: Optional[int] = None
     floor: Optional[int] = None
     has_projector: Optional[bool] = False
     has_whiteboard: bool
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+
+class LessonCardOut(BaseModel):
+    id: int
+    day: str
+    course: Optional[str] = None
+    time: str
+    teacher: Optional[str] = None
+    place: Optional[str] = None
+    level: Optional[str] = None
+    lesson_date: Optional[datetime] = None
 
 
 class LessonCreate(BaseModel):
     group_id: int
     teacher_id: int
     classroom_id: int
+    branch_id: Optional[int] = None
+    program_id: Optional[int] = None
     day_of_week: DayOfWeek
     time_start: time
     time_end: time
@@ -37,11 +51,13 @@ class LessonCreate(BaseModel):
     lesson_date: Optional[datetime] = None
 
 
-class LessonOut(BaseModel):
+class LessonManageOut(BaseModel):
     id: int
     group_id: int
     teacher_id: int
     classroom_id: int
+    branch_id: Optional[int] = None
+    program_id: Optional[int] = None
     day_of_week: DayOfWeek
     time_start: time
     time_end: time
@@ -51,8 +67,16 @@ class LessonOut(BaseModel):
     lesson_date: Optional[datetime] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+class LessonListOut(LessonManageOut):
+    group_name: Optional[str] = None
+    course_name: Optional[str] = None
+    teacher_name: Optional[str] = None
+    classroom_name: Optional[str] = None
+    branch_name: Optional[str] = None
+    program_name: Optional[str] = None
+    level: Optional[str] = None
 
 
 class ConflictError(BaseModel):

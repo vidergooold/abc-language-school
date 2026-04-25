@@ -1,10 +1,13 @@
 import os
+from pathlib import Path
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
+DEFAULT_DB_PATH = Path(__file__).resolve().parents[2] / "test.db"
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://abc_user:yourpassword123@localhost:5432/abc_school"
+    f"sqlite+aiosqlite:///{DEFAULT_DB_PATH}"
 )
 
 engine = create_async_engine(DATABASE_URL, echo=False)

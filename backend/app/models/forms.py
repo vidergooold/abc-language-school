@@ -118,3 +118,36 @@ class FeedbackForm(Base):
     message = Column(Text, nullable=True)
     is_read = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class TaxForm(Base):
+    """Заявка на налоговый вычет"""
+    __tablename__ = "tax_forms"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    payer_fio = Column(String, nullable=False)
+    payer_inn = Column(String, nullable=False)
+    payer_birthdate = Column(String, nullable=False)
+    payer_passport_series = Column(String, nullable=False)
+    payer_passport_number = Column(String, nullable=False)
+    payer_passport_date = Column(String, nullable=False)
+    payer_department_code = Column(String, nullable=False)
+    payer_phone = Column(String, nullable=False)
+
+    student_fio = Column(String, nullable=False)
+    student_inn = Column(String, nullable=True)
+    student_birthdate = Column(String, nullable=False)
+    student_doc_type = Column(String, nullable=False)
+    student_doc_series = Column(String, nullable=False)
+    student_doc_number = Column(String, nullable=False)
+    student_doc_date = Column(String, nullable=False)
+
+    period = Column(String, nullable=False)
+    cost = Column(String, nullable=True)
+    has_contracts = Column(String, nullable=False)
+    delivery_method = Column(String, nullable=False)
+
+    comment = Column(Text, nullable=True)
+    status = Column(String, default="new", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

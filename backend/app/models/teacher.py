@@ -21,5 +21,6 @@ class Teacher(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Связи
+    groups = relationship("Group", back_populates="teacher", lazy="select")
     lessons = relationship("Lesson", back_populates="teacher", lazy="select")
     attendance_records = relationship("Attendance", back_populates="teacher", lazy="select")

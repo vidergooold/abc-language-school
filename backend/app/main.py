@@ -8,7 +8,7 @@ from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.models import user, news  # noqa: F401
 from app.models.forms import (  # noqa: F401
     ChildForm, AdultForm, PreschoolForm,
-    TeacherForm, TestingForm, FeedbackForm,
+    TeacherForm, TestingForm, FeedbackForm, TaxForm,
 )
 from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.document import Document  # noqa: F401
@@ -20,6 +20,7 @@ from app.models.attendance import Attendance  # noqa: F401
 from app.models.payment import Payment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.group import Group  # noqa: F401
+from app.models.homework import Homework  # noqa: F401
 
 from app.api.v1 import (
     auth,
@@ -38,7 +39,7 @@ from app.api.v1 import (
     analytics,
     teachers,
 )
-from app.api.v1 import branches, programs, students
+from app.api.v1 import branches, programs, students, homeworks
 
 
 @asynccontextmanager
@@ -105,6 +106,7 @@ app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(groups.router,        prefix="/api/v1")
 app.include_router(teachers.router,      prefix="/api/v1")
 app.include_router(students.router,      prefix="/api/v1")
+app.include_router(homeworks.router,     prefix="/api/v1")
 
 # Админ
 app.include_router(admin.router,         prefix="/api/v1")

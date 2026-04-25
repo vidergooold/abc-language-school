@@ -14,7 +14,7 @@ import { RouterLink } from 'vue-router'
 .account-header {
   display: flex;
   align-items: center;
-  padding: 10px 24px;
+  padding: 12px 16px;
   background: #ffffff;
   border-bottom: 3px solid var(--brand-orange);
   position: sticky;
@@ -31,7 +31,7 @@ import { RouterLink } from 'vue-router'
   opacity: 0.8;
 }
 .logo-img {
-  height: 60px;
+  height: 70px;
   width: auto;
   object-fit: contain;
 }

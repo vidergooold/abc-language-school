@@ -8,23 +8,23 @@
       </div>
       <nav>
         <!-- Все роли -->
-        <RouterLink to="/account" exact-active-class="router-link-active" class="sidebar-link">📊 Главная</RouterLink>
+        <RouterLink to="/account" exact-active-class="router-link-active" class="sidebar-link">👤 Профиль</RouterLink>
         <RouterLink to="/account/schedule" class="sidebar-link">🗓 Расписание</RouterLink>
-        <RouterLink to="/account/documents" class="sidebar-link">📂 Документы</RouterLink>
         <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
-        <RouterLink to="/account/profile" class="sidebar-link">👤 Профиль</RouterLink>
+        <RouterLink to="/account/lesson-material" class="sidebar-link" v-if="isStaff">📘 Материал урока</RouterLink>
+        <RouterLink to="/account/homework" class="sidebar-link" v-if="isStaff">📝 Домашние задания</RouterLink>
+        <RouterLink to="/account/payment" class="sidebar-link" v-if="isStaff">💳 Оплата обучения</RouterLink>
+        <RouterLink to="/account/progress" class="sidebar-link" v-if="isStaff">📈 Промежуточная успеваемость</RouterLink>
 
-        <!-- Только учитель и админ -->
-        <template v-if="isStaff">
-          <RouterLink to="/account/news" class="sidebar-link">📣 Новости</RouterLink>
+        <!-- Только админ -->
+        <template v-if="isAdmin">
+          <RouterLink to="/account/teachers" class="sidebar-link">👩‍🏫 Преподаватели</RouterLink>
+          <RouterLink to="/account/role-requests" class="sidebar-link">🛂 Назначение ролей</RouterLink>
+          <RouterLink to="/account/news" class="sidebar-link">📰 Новости</RouterLink>
           <div class="sidebar-section">Управление</div>
           <RouterLink to="/account/students" class="sidebar-link">👥 Ученики</RouterLink>
           <RouterLink to="/account/forms" class="sidebar-link">📝 Анкеты и формы</RouterLink>
           <RouterLink to="/account/feedback" class="sidebar-link">💬 Обратная связь</RouterLink>
-        </template>
-
-        <!-- Только админ -->
-        <template v-if="isAdmin">
           <RouterLink to="/account/schedule-admin" class="sidebar-link">🗓 Расписание (ред.)</RouterLink>
         </template>
 

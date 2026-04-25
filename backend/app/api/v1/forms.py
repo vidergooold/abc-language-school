@@ -12,6 +12,7 @@ from app.models.forms import (
     TeacherForm,
     TestingForm,
     FeedbackForm,
+    TaxForm,
 )
 from app.schemas.forms import (
     ChildFormCreate,
@@ -20,6 +21,7 @@ from app.schemas.forms import (
     TeacherFormCreate,
     TestingFormCreate,
     FeedbackFormCreate,
+    TaxFormCreate,
     FormResponse,
 )
 
@@ -157,6 +159,39 @@ async def create_feedback_form(
         phone=data.phone,
         email=data.email,
         message=data.message,
+    )
+    db.add(form)
+    await db.commit()
+    await db.refresh(form)
+    return form
+
+
+@router.post("/tax", response_model=FormResponse)
+async def create_tax_form(
+    data: TaxFormCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    form = TaxForm(
+        payer_fio=data.payerFio,
+        payer_inn=data.payerInn,
+        payer_birthdate=data.payerBirthdate,
+        payer_passport_series=data.payerPassportSeries,
+        payer_passport_number=data.payerPassportNumber,
+        payer_passport_date=data.payerPassportDate,
+        payer_department_code=data.payerDepartmentCode,
+        payer_phone=data.payerPhone,
+        student_fio=data.studentFio,
+        student_inn=data.studentInn,
+        student_birthdate=data.studentBirthdate,
+        student_doc_type=data.studentDocType,
+        student_doc_series=data.studentDocSeries,
+        student_doc_number=data.studentDocNumber,
+        student_doc_date=data.studentDocDate,
+        period=data.period,
+        cost=data.cost,
+        has_contracts=data.hasContracts,
+        delivery_method=data.deliveryMethod,
+        comment=f"Ученик: {data.studentFio}; Период: {data.period}; Выдача: {data.deliveryMethod}",
     )
     db.add(form)
     await db.commit()

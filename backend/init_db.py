@@ -12,9 +12,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from app.database import engine, Base
 from app.models import (
-    User, Course, Group, Lesson, Room, Enrollment,
-    Payment, Attendance, News, Notification, Waitlist,
-    Review, Material, Expense, RevenueAnalytics
+    User, Document, Teacher, Branch, EducationalProgram, Student,
+    Classroom, Lesson, Group, Attendance, Enrollment, Payment,
+    News, Notification, WaitlistEntry, ChildForm, AdultForm,
+    PreschoolForm, TeacherForm, TestingForm, FeedbackForm,
+    Discount, RoomBooking, AuditLog, ReportCache
 )
 
 def init_database():

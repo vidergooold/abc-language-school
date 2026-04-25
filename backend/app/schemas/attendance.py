@@ -8,8 +8,18 @@ class AttendanceCreate(BaseModel):
     lesson_id: int
     student_group_id: int
     status: AttendanceStatus = AttendanceStatus.present
+    grade: Optional[int] = None
     note: Optional[str] = None
     lesson_date: datetime
+
+
+class AttendanceUpsert(BaseModel):
+    lesson_id: int
+    student_group_id: int
+    status: AttendanceStatus = AttendanceStatus.present
+    grade: Optional[int] = None
+    note: Optional[str] = None
+    lesson_date: Optional[datetime] = None
 
 
 class AttendanceOut(BaseModel):
@@ -18,12 +28,10 @@ class AttendanceOut(BaseModel):
     student_group_id: int
     teacher_id: Optional[int] = None
     status: AttendanceStatus
+    grade: Optional[int] = None
     note: Optional[str] = None
     lesson_date: datetime
     marked_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class AttendanceStats(BaseModel):

@@ -15,7 +15,6 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from app.core.database import AsyncSessionLocal, init_db
 from app.models.user import User, UserRole
-from app.models import user as _u, news as _n  # noqa чтобы таблицы регистрировались
 from app.core.security import hash_password
 from sqlalchemy import select
 

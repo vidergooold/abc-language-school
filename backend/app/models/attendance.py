@@ -21,6 +21,7 @@ class Attendance(Base):
     student_group_id = Column(Integer, ForeignKey("student_groups.id"), nullable=False)
     teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True)  # кто отметил
     status = Column(SAEnum(AttendanceStatus), nullable=False, default=AttendanceStatus.present)
+    grade = Column(Integer, nullable=True)
     note = Column(Text, nullable=True)     # примечание (причина отсутствия и т.д.)
     marked_at = Column(DateTime, default=datetime.utcnow)
     lesson_date = Column(DateTime, nullable=False)

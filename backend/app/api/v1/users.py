@@ -24,6 +24,7 @@ from pydantic import BaseModel, EmailStr, Field
 from app.core.database import get_db
 from app.core.security import get_current_user, require_admin, get_password_hash, verify_password
 from app.models.user import User, UserRole
+from app.models.teacher import Teacher
 
 router = APIRouter(tags=["Users"])
 
@@ -190,6 +191,22 @@ async def admin_update_role(
         )
     user = await _get_user_or_404(user_id, db)
     user.role = data.role
+
+    # При назначении роли преподавателя автоматически создаём профиль в teachers,
+    # чтобы пользователь появился в разделе "Преподаватели".
+    if data.role == UserRole.teacher:
+        teacher_result = await db.execute(select(Teacher).where(Teacher.email == user.email))
+        teacher = teacher_result.scalar_one_or_none()
+        if teacher is None:
+            teacher = Teacher(
+                full_name=user.full_name or user.email,
+                email=user.email,
+                is_active=True,
+            )
+            db.add(teacher)
+        elif not teacher.is_active:
+            teacher.is_active = True
+
     await db.commit()
     await db.refresh(user)
     return user

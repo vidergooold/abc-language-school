@@ -1,4 +1,12 @@
 {
+  "name": "abc-language-school",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "cd backend && . venv/bin/activate && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "free:backend-port": "sh -c 'pids=$(lsof -ti:8000); if [ -n \"$pids\" ]; then kill -9 $pids; fi'",
+    "dev:backend:clean": "npm run free:backend-port && npm run dev:backend"
+  },
   "dependencies": {
     "vue-router": "^4.6.4"
   }
