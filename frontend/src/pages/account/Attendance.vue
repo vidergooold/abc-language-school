@@ -121,7 +121,6 @@
 
         <div v-if="rf.group_id" class="matrix-wrap">
           <div class="matrix-title-row">
-            <h3>Матрица посещаемости по группе</h3>
             <button class="add-date-btn" @click="addMatrixDate">+</button>
           </div>
 
@@ -136,7 +135,7 @@
                 <div v-for="lesson in matrixLessons" :key="`${lesson.id}-${lesson.slot_date}`" class="matrix-cell header-cell lesson-col">
                   <div>{{ formatDateShort(lesson.slot_date) }}</div>
                   <div class="header-time">{{ formatTimeShort(lesson.time_start) }}</div>
-                  <div v-if="lesson.is_custom_date" class="header-actions">
+                  <div class="header-actions">
                     <button
                       class="header-icon-btn"
                       title="Редактировать дату"
@@ -1299,10 +1298,6 @@ watch(() => [rf.date_from, rf.date_to], () => {
 /* ── Матрица посещаемости ─────────────────────────────────── */
 .matrix-wrap {
   margin-top: 32px;
-}
-.matrix-wrap h3 {
-  font-size: 20px; font-weight: 600; color: var(--brand-purple);
-  margin-bottom: 0;
 }
 .matrix-title-row {
   display: flex;

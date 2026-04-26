@@ -168,6 +168,7 @@ const scheduleSlots = computed(() => {
   const seen = new Set<string>()
   const result: string[] = []
   for (const lesson of lessons.value) {
+    if (filters.group_id != null && lesson.group_id != null && lesson.group_id !== filters.group_id) continue
     const day = DAY_LABELS[lesson.day_of_week] || lesson.day_of_week || ''
     const time = (lesson.time_start || '').slice(0, 5)
     const key = `${day} ${time}`.trim()

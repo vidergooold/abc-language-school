@@ -264,7 +264,10 @@ function cellStatus(row: MatrixRow, key: string) {
 
 function statusClass(row: MatrixRow, key: string) {
   const status = cellStatus(row, key)
-  if (status === 'partial' || key === 'additional') return 'edit'
+  if (key === 'additional') {
+    return status === 'paid' ? 'paid' : 'unpaid'
+  }
+  if (status === 'partial') return 'edit'
   if (status === 'paid') return 'paid'
   return 'unpaid'
 }
@@ -277,8 +280,7 @@ function statusTitle(row: MatrixRow, key: string) {
 function statusSymbol(row: MatrixRow, key: string) {
   const status = cellStatus(row, key)
   if (key === 'additional') {
-    if (status === 'paid') return '+'
-    return '✎'
+    return status === 'paid' ? '+' : '-'
   }
   if (status === 'paid') return '+'
   if (status === 'partial') return '✎'
@@ -288,9 +290,7 @@ function statusSymbol(row: MatrixRow, key: string) {
 function nextStatusForCell(row: MatrixRow, key: string): 'pending' | 'paid' | 'partial' {
   const status = cellStatus(row, key)
   if (key === 'additional') {
-    if (status === 'partial') return 'paid'
-    if (status === 'paid') return 'pending'
-    return 'partial'
+    return status === 'paid' ? 'pending' : 'paid'
   }
   if (status === 'paid') return 'pending'
   return 'paid'
