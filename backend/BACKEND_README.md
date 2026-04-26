@@ -25,7 +25,7 @@ Comprehensive backend system for managing a language school with 15+ database ta
 
 ## Key Features
 
-### 1. Advanced Schedule Management (app/api/v1/scheduler.py)
+### 1. Advanced Schedule Management (routers/scheduler.py)
 - **Conflict Prevention**: Automatic detection of scheduling conflicts
   - Teacher cannot have overlapping lessons
   - Rooms cannot be double-booked
@@ -34,7 +34,7 @@ Comprehensive backend system for managing a language school with 15+ database ta
 - **Available Room Finder**: Real-time room availability checking
 - **Teacher Schedule View**: Complete teacher schedule management
 
-### 2. Automated Notification System (app/api/v1/notifications.py)
+### 2. Automated Notification System (routers/notifications.py)
 - **Scheduled Notifications**: Background task processing
 - **Bulk Notifications**: Mass notifications for announcements
 - **Role-Based Targeting**: Send to specific user roles
@@ -42,7 +42,7 @@ Comprehensive backend system for managing a language school with 15+ database ta
 - **Statistics & Monitoring**: Track sent/pending/failed notifications
 - **Cron-Compatible**: Endpoint for scheduled notification sending
 
-### 3. Economic Analytics (app/api/v1/analytics.py)
+### 3. Economic Analytics (routers/analytics.py)
 - **Revenue Reports**: Comprehensive financial analysis
   - Total revenue, expenses, net profit
   - Profit margins
@@ -179,10 +179,13 @@ Response:
 backend/
 ├── app/
 │   ├── main.py              # Main application
-│   ├── api/v1/              # API роутеры
-│   │   ├── scheduler.py     # Schedule management
-│   │   ├── notifications.py # Notification system
-│   │   └── analytics.py     # Financial analytics
+│   ├── core/
+│   │   └── database.py      # Database configuration
+│   ├── models/              # SQLAlchemy models
+│   └── routers/
+│       ├── scheduler.py     # Schedule management
+│       ├── notifications.py # Notification system
+│       └── analytics.py     # Financial analytics
 ├── init_db.py              # Database initialization
 ├── seed_real_data.py       # Sample data from Excel
 └── requirements.txt        # Python dependencies

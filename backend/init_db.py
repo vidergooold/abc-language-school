@@ -10,7 +10,7 @@ import os
 # Add the app directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
-from app.database import engine, Base
+from app.core.database import engine, Base
 from app.models import (
     User, Document, Teacher, Branch, EducationalProgram, Student,
     Classroom, Lesson, Group, Attendance, Enrollment, Payment,
