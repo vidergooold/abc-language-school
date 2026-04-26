@@ -30,7 +30,7 @@ from app.api.v1 import (
     enrollments,
     forms,
     documents,
-    schedule,
+    scheduler,
     attendance,
     payments,
     notifications,
@@ -99,7 +99,7 @@ app.include_router(branches.router,      prefix="/api/v1")
 app.include_router(programs.router,      prefix="/api/v1")
 
 # Личный кабинет / преподаватель
-app.include_router(schedule.router,      prefix="/api/v1")
+app.include_router(scheduler.router,     prefix="/api/v1")
 app.include_router(attendance.router,    prefix="/api/v1")
 app.include_router(payments.router,      prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
