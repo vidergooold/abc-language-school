@@ -18,7 +18,7 @@ class NewsStatus(str, enum.Enum):
 
 # Допустимые переходы статусов (FSM)
 NEWS_STATUS_TRANSITIONS: dict[NewsStatus, list[NewsStatus]] = {
-    NewsStatus.draft:     [NewsStatus.review, NewsStatus.scheduled, NewsStatus.published],
+    NewsStatus.draft:     [NewsStatus.review, NewsStatus.scheduled, NewsStatus.published, NewsStatus.archived],
     NewsStatus.review:    [NewsStatus.draft, NewsStatus.scheduled, NewsStatus.published, NewsStatus.archived],
     NewsStatus.scheduled: [NewsStatus.draft, NewsStatus.published, NewsStatus.archived],
     NewsStatus.published: [NewsStatus.archived],

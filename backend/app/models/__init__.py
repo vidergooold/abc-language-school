@@ -3,7 +3,7 @@
 
 from app.models.user import User
 from app.models.document import Document, DocumentCategory
-from app.models.teacher import Teacher
+from app.models.teacher import Teacher, TeacherGroup
 from app.models.branch import Branch
 from app.models.educational_program import EducationalProgram
 from app.models.student import Student, StudentType, StudentStatus
@@ -26,6 +26,7 @@ __all__ = [
     "Document",
     "DocumentCategory",
     "Teacher",
+    "TeacherGroup",
     "Branch",
     "EducationalProgram",
     "Student",

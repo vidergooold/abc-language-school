@@ -262,6 +262,16 @@ async def check_schedule_conflicts(
                 "conflicting_lesson_id": lesson.id,
             })
 
+    # Получаем имя преподавателя для информативного сообщения
+    teacher = await db.scalar(select(Teacher).where(Teacher.id == teacher_id))
+    teacher_full_name = teacher.full_name if teacher else f"ID {teacher_id}"
+
+    day_labels = {
+        "monday": "понедельник", "tuesday": "вторник", "wednesday": "среду",
+        "thursday": "четверг", "friday": "пятницу", "saturday": "субботу", "sunday": "воскресенье",
+    }
+    day_label = day_labels.get(day_of_week, day_of_week)
+
     teacher_lessons = (
         await db.execute(select(Lesson).where(and_(base_filter, Lesson.teacher_id == teacher_id)))
     ).scalars().all()
@@ -271,7 +281,11 @@ async def check_schedule_conflicts(
         if _time_overlaps(time_start, time_end, lesson.time_start, lesson.time_end):
             conflicts.append({
                 "conflict_type": "teacher",
-                "message": f"Преподаватель уже занят в {lesson.time_start.strftime('%H:%M')}–{lesson.time_end.strftime('%H:%M')}",
+                "message": (
+                    f"Преподаватель {teacher_full_name} уже занят в {day_label} "
+                    f"с {lesson.time_start.strftime('%H:%M')} до {lesson.time_end.strftime('%H:%M')}"
+                ),
+                "teacher_full_name": teacher_full_name,
                 "conflicting_lesson_id": lesson.id,
             })
 
@@ -449,6 +463,9 @@ async def create_lesson(
         is_recurring=data.is_recurring,
     )
     if conflicts:
+        teacher_conflicts = [c for c in conflicts if c["conflict_type"] == "teacher"]
+        if teacher_conflicts:
+            raise HTTPException(status_code=409, detail=teacher_conflicts[0]["message"])
         raise HTTPException(
             status_code=409,
             detail={"message": "Обнаружены конфликты расписания", "conflicts": conflicts},
@@ -496,6 +513,9 @@ async def update_lesson(
         exclude_lesson_id=lesson_id,
     )
     if conflicts:
+        teacher_conflicts = [c for c in conflicts if c["conflict_type"] == "teacher"]
+        if teacher_conflicts:
+            raise HTTPException(status_code=409, detail=teacher_conflicts[0]["message"])
         raise HTTPException(
             status_code=409,
             detail={"message": "Обнаружены конфликты расписания", "conflicts": conflicts},

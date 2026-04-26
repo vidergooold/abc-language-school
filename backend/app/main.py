@@ -21,6 +21,7 @@ from app.models.payment import Payment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.group import Group  # noqa: F401
 from app.models.homework import Homework  # noqa: F401
+from app.models.teacher import Teacher, TeacherGroup  # noqa: F401
 
 from app.api.v1 import (
     auth,
