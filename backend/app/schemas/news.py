@@ -17,7 +17,7 @@ class NewsCategoryCreate(NewsCategoryBase):
 
 class NewsCategoryOut(NewsCategoryBase):
     id: int
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -29,7 +29,7 @@ class NewsStatusHistoryOut(BaseModel):
     to_status: NewsStatus
     changed_by: Optional[int]
     comment: Optional[str]
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -75,7 +75,7 @@ class NewsOut(BaseModel):
     category: Optional[NewsCategoryOut]
     views_count: Optional[int] = 0
     likes_count: Optional[int] = 0
-    created_at: datetime
+    created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     status_history: List[NewsStatusHistoryOut] = []
 
@@ -107,7 +107,7 @@ class NewsListOut(BaseModel):
     category: Optional[NewsCategoryOut]
     views_count: Optional[int] = 0
     likes_count: Optional[int] = 0
-    created_at: datetime
+    created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
