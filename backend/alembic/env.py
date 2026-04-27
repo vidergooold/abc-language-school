@@ -1,4 +1,6 @@
 from logging.config import fileConfig
+from pathlib import Path
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -7,6 +9,8 @@ from alembic import context
 import asyncio
 import os
 import sys
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 # Путь к backend/
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -19,11 +23,10 @@ import app.models  # noqa: F401, E402
 
 config = context.config
 
-# URL из .env (или дефолт)
-db_url = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://abc_user:yourpassword123@localhost:5432/abc_school"
-)
+# URL из .env
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise RuntimeError("DATABASE_URL is not set in .env file")
 config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name is not None:
