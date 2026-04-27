@@ -841,7 +841,7 @@ async def seed_extended_data() -> None:
         notifs_created = 0
         for nd in notifications_data:
             user_obj = users[nd["user_idx"] % len(users)] if users else None
-            recipient_email = user_obj.email if user_obj and hasattr(user_obj, "email") else None
+            recipient_email = user_obj.email if user_obj else None
 
             notif, created = await _get_or_create(
                 session,
