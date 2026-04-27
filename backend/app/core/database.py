@@ -2,13 +2,14 @@ import os
 from pathlib import Path
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
+from dotenv import load_dotenv
 
-DEFAULT_DB_PATH = Path(__file__).resolve().parents[2] / "test.db"
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    f"sqlite+aiosqlite:///{DEFAULT_DB_PATH}"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set in .env file")
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 
