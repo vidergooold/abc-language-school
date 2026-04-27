@@ -137,7 +137,6 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>#</th>
             <th>ФИО</th>
             <th>Предмет</th>
             <th>Уровень</th>
@@ -149,7 +148,6 @@
         </thead>
         <tbody>
           <tr v-for="t in filtered" :key="t.id">
-            <td class="col-id">{{ t.id }}</td>
             <td class="col-name">{{ t.full_name || '—' }}</td>
             <td>{{ t.subject || '—' }}</td>
             <td>{{ t.language_level || '—' }}</td>

@@ -18,7 +18,6 @@
     <table v-if="filteredUsers.length" class="users-table">
       <thead>
         <tr>
-          <th>ID</th>
           <th>Имя</th>
           <th>Email</th>
           <th>Текущая роль</th>
@@ -28,7 +27,6 @@
       </thead>
       <tbody>
         <tr v-for="u in filteredUsers" :key="u.id">
-          <td>{{ u.id }}</td>
           <td>{{ u.full_name || '—' }}</td>
           <td>{{ u.email }}</td>
           <td>
