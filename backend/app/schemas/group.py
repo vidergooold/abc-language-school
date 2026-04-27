@@ -71,7 +71,7 @@ class StudentGroupOut(BaseModel):
     student_email: Optional[str] = None
     student_type: str
     form_id: Optional[int] = None
-    enrolled_at: datetime
+    enrolled_at: Optional[datetime] = None
     is_active: bool
 
     model_config = {"from_attributes": True}

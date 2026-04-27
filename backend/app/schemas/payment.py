@@ -26,7 +26,7 @@ class InvoiceOut(BaseModel):
     due_date: datetime
     status: PaymentStatus
     notes: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
 
 class InvoiceCellStatusUpdate(BaseModel):
@@ -54,7 +54,7 @@ class PaymentOut(BaseModel):
     student_name: str
     amount: Decimal
     method: PaymentMethod
-    paid_at: datetime
+    paid_at: Optional[datetime] = None
     comment: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 

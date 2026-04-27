@@ -31,11 +31,11 @@ class TeacherOut(BaseModel):
     phone: Optional[str] = None
     subject: Optional[str] = None
     language_level: Optional[str] = None
-    experience_years: int
+    experience_years: Optional[int] = None
     bio: Optional[str] = None
     is_active: bool
-    hired_at: datetime
-    created_at: datetime
+    hired_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
