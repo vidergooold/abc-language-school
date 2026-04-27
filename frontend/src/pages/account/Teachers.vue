@@ -100,6 +100,33 @@
           <button type="button" @click="cancelEdit" class="btn-secondary">Отмена</button>
         </div>
       </form>
+
+      <!-- Секция управления группами преподавателя -->
+      <div v-if="editTeacherId" class="groups-section">
+        <h4>📚 Группы преподавателя</h4>
+        <div v-if="teacherGroupsLoading" class="groups-loading">Загрузка групп...</div>
+        <div v-else>
+          <div v-if="teacherGroups.length === 0" class="groups-empty">Нет назначенных групп</div>
+          <ul v-else class="groups-list">
+            <li v-for="tg in teacherGroups" :key="tg.id" class="group-item">
+              <span class="group-name">{{ tg.group_name }}</span>
+              <span v-if="tg.course_name" class="group-course">{{ tg.course_name }}</span>
+              <button class="btn-remove-group" @click="removeTeacherGroup(tg.group_id)" title="Убрать из группы">×</button>
+            </li>
+          </ul>
+          <div class="add-group-row">
+            <select v-model.number="newGroupId" class="group-select">
+              <option value="">— выбрать группу —</option>
+              <option
+                v-for="g in availableGroups"
+                :key="g.id"
+                :value="g.id"
+              >{{ g.name }}</option>
+            </select>
+            <button class="btn-add-group" @click="addTeacherGroup" :disabled="!newGroupId">+ Добавить</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="loading" class="skeleton-list">
@@ -159,6 +186,13 @@ const showAddForm = ref(false)
 const showEditForm = ref(false)
 const saving = ref(false)
 const editTeacherId = ref<number | null>(null)
+
+// Groups section
+const teacherGroups = ref<any[]>([])
+const teacherGroupsLoading = ref(false)
+const allGroups = ref<any[]>([])
+const newGroupId = ref<number | ''>('')
+
 const newTeacher = ref({
   full_name: '',
   email: '',
@@ -188,6 +222,12 @@ const filtered = computed(() =>
   )
 )
 
+// Groups already assigned to this teacher
+const availableGroups = computed(() => {
+  const assignedIds = new Set(teacherGroups.value.map((tg: any) => tg.group_id))
+  return allGroups.value.filter((g: any) => !assignedIds.has(g.id))
+})
+
 async function load() {
   try {
     const url = auth.user?.role === 'admin' ? '/teachers/all' : '/teachers'
@@ -200,12 +240,32 @@ async function load() {
   }
 }
 
+async function loadTeacherGroups(teacherId: number) {
+  teacherGroupsLoading.value = true
+  try {
+    const res = await http.get(`/teachers/${teacherId}/groups`)
+    teacherGroups.value = res.data
+  } catch {
+    teacherGroups.value = []
+  } finally {
+    teacherGroupsLoading.value = false
+  }
+}
+
+async function loadAllGroups() {
+  try {
+    const res = await http.get('/groups')
+    allGroups.value = Array.isArray(res.data) ? res.data : []
+  } catch {
+    allGroups.value = []
+  }
+}
+
 async function addTeacher() {
   saving.value = true
   try {
     const res = await http.post('/teachers', newTeacher.value)
     teachers.value.push(res.data)
-    // Сброс формы
     newTeacher.value = {
       full_name: '',
       email: '',
@@ -237,6 +297,9 @@ function startEdit(teacher: any) {
   }
   showEditForm.value = true
   showAddForm.value = false
+  newGroupId.value = ''
+  loadTeacherGroups(teacher.id)
+  loadAllGroups()
 }
 
 async function updateTeacher() {
@@ -261,6 +324,28 @@ async function updateTeacher() {
     alert('Ошибка: ' + (err.response?.data?.detail || 'Не удалось обновить преподавателя'))
   } finally {
     saving.value = false
+  }
+}
+
+async function addTeacherGroup() {
+  if (!editTeacherId.value || !newGroupId.value) return
+  try {
+    const res = await http.post(`/teachers/${editTeacherId.value}/groups`, { group_id: newGroupId.value })
+    teacherGroups.value.push(res.data)
+    newGroupId.value = ''
+  } catch (err: any) {
+    alert('Ошибка: ' + (err.response?.data?.detail || 'Не удалось добавить группу'))
+  }
+}
+
+async function removeTeacherGroup(groupId: number) {
+  if (!editTeacherId.value) return
+  if (!confirm('Убрать преподавателя из этой группы?')) return
+  try {
+    await http.delete(`/teachers/${editTeacherId.value}/groups/${groupId}`)
+    teacherGroups.value = teacherGroups.value.filter((tg: any) => tg.group_id !== groupId)
+  } catch (err: any) {
+    alert('Ошибка: ' + (err.response?.data?.detail || 'Не удалось убрать группу'))
   }
 }
 
@@ -301,6 +386,8 @@ function cancelEdit() {
     bio: '',
     is_active: true,
   }
+  teacherGroups.value = []
+  newGroupId.value = ''
   showEditForm.value = false
 }
 
@@ -351,4 +438,23 @@ onMounted(load)
 .empty-icon { font-size: 48px; margin-bottom: 12px; }
 .empty-state p { font-size: 16px; color: #888; margin-bottom: 6px; }
 .empty-hint { font-size: 14px; color: #bbb; }
+
+/* Groups section */
+.groups-section { margin-top: 24px; padding-top: 20px; border-top: 2px solid #ffe3cf; }
+.groups-section h4 { font-size: 16px; font-weight: 700; color: var(--brand-purple); margin: 0 0 12px; }
+.groups-loading { font-size: 14px; color: #888; }
+.groups-empty { font-size: 14px; color: #aaa; margin-bottom: 12px; }
+.groups-list { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 6px; }
+.group-item { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 8px; padding: 8px 12px; border: 1px solid #ffe3cf; }
+.group-name { font-weight: 600; font-size: 14px; color: #333; flex: 1; }
+.group-course { font-size: 12px; color: #888; }
+.btn-remove-group { background: #fdeaea; color: #b91c1c; border: 1px solid #f6b7b7; border-radius: 6px; width: 24px; height: 24px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
+.btn-remove-group:hover { background: #fbd8d8; }
+.add-group-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.group-select { padding: 8px 12px; border-radius: 8px; border: 1.5px solid #ffe3cf; font-size: 14px; outline: none; min-width: 200px; }
+.group-select:focus { border-color: var(--brand-orange); }
+.btn-add-group { background: var(--brand-orange); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; }
+.btn-add-group:hover:not(:disabled) { background: #e55a00; }
+.btn-add-group:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
+

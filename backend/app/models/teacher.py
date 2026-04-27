@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -24,3 +24,18 @@ class Teacher(Base):
     groups = relationship("Group", back_populates="teacher", lazy="select")
     lessons = relationship("Lesson", back_populates="teacher", lazy="select")
     attendance_records = relationship("Attendance", back_populates="teacher", lazy="select")
+    teacher_groups = relationship("TeacherGroup", back_populates="teacher", lazy="select", cascade="all, delete-orphan")
+
+
+class TeacherGroup(Base):
+    """Связь преподаватель-группа (many-to-many дополнительные назначения)"""
+    __tablename__ = "teacher_groups"
+    __table_args__ = (UniqueConstraint("teacher_id", "group_id", name="uq_teacher_group"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    teacher_id = Column(Integer, ForeignKey("teachers.id", ondelete="CASCADE"), nullable=False, index=True)
+    group_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    teacher = relationship("Teacher", back_populates="teacher_groups")
+    group = relationship("Group", lazy="select")
