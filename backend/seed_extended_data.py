@@ -139,6 +139,8 @@ async def seed_extended_data() -> None:
                 select(Teacher).where(Teacher.full_name == full_name)
             )
             teacher_lookup[full_name] = res.scalar_one_or_none()
+            if teacher_lookup[full_name] is None:
+                print(f"  ⚠️  Преподаватель не найден: {full_name} — группа будет создана без преподавателя")
 
         course_by_name = {c.name: c for c in new_courses}
 
