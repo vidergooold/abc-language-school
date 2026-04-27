@@ -11,7 +11,7 @@ class EnrollmentStatusHistoryOut(BaseModel):
     to_status: EnrollmentStatus
     changed_by: Optional[int]
     comment: Optional[str]
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -57,7 +57,7 @@ class EnrollmentResponse(BaseModel):
     phone: str
     email: Optional[str]
     status: EnrollmentStatus
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -81,8 +81,8 @@ class EnrollmentOut(BaseModel):
     student_group_id: Optional[int]
     invoice_id: Optional[int]
     rejection_reason: Optional[str]
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     status_history: List[EnrollmentStatusHistoryOut] = []
 
     model_config = {"from_attributes": True}
@@ -99,6 +99,6 @@ class EnrollmentListOut(BaseModel):
     student_type: Optional[str]
     group_id: Optional[int]
     invoice_id: Optional[int]
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
