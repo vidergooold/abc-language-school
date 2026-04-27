@@ -1,7 +1,5 @@
 <template>
   <div class="profile-page">
-    <h1>👤 Профиль</h1>
-
     <div v-if="loading" class="skeleton-list">
       <div class="skeleton-field" v-for="n in 4" :key="n"></div>
     </div>
