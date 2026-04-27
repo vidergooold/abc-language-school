@@ -102,9 +102,9 @@ async def verify():
             res5 = await ac.post("/api/v1/schedule/check-conflicts", json=payload_room, headers=headers)
             print(f"Step 5 (Room booking conflict): Status {res5.status_code}, conflicts: {res5.json().get('conflicts')}")
 
-        # 6. Final sqlite table count
+        # 6. Final table count
         async with AsyncSessionLocal() as session:
-            count = (await session.execute(text("SELECT count(*) FROM sqlite_master WHERE type='table'"))).scalar()
+            count = (await session.execute(text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'"))).scalar()
             print(f"Step 6 (Table count): {count}")
 
 if __name__ == "__main__":
