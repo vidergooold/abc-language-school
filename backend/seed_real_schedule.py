@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Seed реального расписания ABC Language School.
 
@@ -345,7 +346,7 @@ GROUPS_SCHEDULE = [
 ]
 
 
-async def _find_teacher_by_lastname(db: AsyncSession, lastname: str) -> Teacher | None:
+async def _find_teacher_by_lastname(db: AsyncSession, lastname: str) -> Optional[Teacher]:
     """Ищет преподавателя по фамилии (ILIKE, совпадение с начала full_name)."""
     # Экранируем специальные символы LIKE, чтобы избежать случайных совпадений
     escaped = lastname.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
@@ -425,6 +426,17 @@ async def seed_real_schedule() -> None:
                 continue
 
             classroom = await _get_or_create_classroom(db, entry["classroom"])
+
+            # Получаем branch_id по названию филиала
+            branch_id = None
+            if "branch_name" in entry:
+                from sqlalchemy import select as sa_select
+                from app.models.branch import Branch
+                br = await db.execute(sa_select(Branch).where(Branch.name.ilike(f"%{entry['branch_name']}%")).limit(1))
+                br_obj = br.scalar_one_or_none()
+                if br_obj:
+                    branch_id = br_obj.id
+
             group = await _get_or_create_group(
                 db, entry["group_name"], course.id, teacher.id
             )
@@ -446,6 +458,7 @@ async def seed_real_schedule() -> None:
                 group_id=group.id,
                 teacher_id=teacher.id,
                 classroom_id=classroom.id,
+                branch_id=branch_id,
                 day_of_week=entry["day_of_week"],
                 time_start=entry["time_start"],
                 time_end=entry["time_end"],
