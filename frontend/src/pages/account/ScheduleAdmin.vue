@@ -30,8 +30,6 @@
               <th>Кабинет</th>
               <th>Филиал</th>
               <th>Программа</th>
-              <th>Тема</th>
-              <th>Статус</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -44,8 +42,6 @@
               <td>{{ classroomName(item.classroom_id) }}</td>
               <td>{{ branchName(item.branch_id) }}</td>
               <td>{{ programName(item.program_id) }}</td>
-              <td class="col-topic">{{ item.topic || '—' }}</td>
-              <td><span class="status-badge" :class="'s-' + item.status">{{ statusLabel(item.status) }}</span></td>
               <td class="col-actions">
                 <button class="btn-icon edit" @click="openEdit(item)" title="Редактировать">✏️</button>
                 <button
