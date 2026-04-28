@@ -35,9 +35,9 @@
           </thead>
           <tbody>
             <tr v-for="item in filtered" :key="item.id">
-              <td class="col-group">{{ groupName(item.group_id) }}</td>
+              <td class="col-group">{{ shortGroupName(groupName(item.group_id)) }}</td>
               <td>{{ teacherName(item.teacher_id) }}</td>
-              <td class="col-days">{{ dayLabel(item.day_of_week) }}</td>
+              <td class="col-days">{{ groupDays(item.group_id) }}</td>
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
               <td>{{ branchName(item.branch_id) }}</td>
@@ -243,6 +243,24 @@ function programName(id: number) {
 }
 function dayLabel(key: string) {
   return days.find(d => d.key === key)?.label || key
+}
+
+const dayShortLabels: Record<string, string> = {
+  monday: 'Пн', tuesday: 'Вт', wednesday: 'Ср',
+  thursday: 'Чт', friday: 'Пт', saturday: 'Сб', sunday: 'Вс',
+}
+const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+function shortGroupName(name: string): string {
+  return name.split(' — ')[0].trim()
+}
+
+function groupDays(groupId: number): string {
+  const uniqueDays = [...new Set(
+    schedule.value.filter(i => i.group_id === groupId).map(i => i.day_of_week)
+  )]
+  uniqueDays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b))
+  return uniqueDays.map(d => dayShortLabels[d] || d).join(', ')
 }
 function fmt(t: string) {
   return t ? t.slice(0, 5) : ''
