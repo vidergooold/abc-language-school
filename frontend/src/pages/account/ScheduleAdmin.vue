@@ -238,7 +238,10 @@ const availableGroups = computed(() => {
 })
 
 function shortGroupName(name: string) {
-  return name.split(' — ')[0].trim()
+  // Убираем " — Пн/Ср 09:00" и " Сб 09:00" и подобные суффиксы
+  let s = name.split(' — ')[0]
+  s = s.replace(/ (Пн|Вт|Ср|Чт|Пт|Сб|Вс).*$/i, '')
+  return s.trim()
 }
 function groupName(id: number) {
   return groups.value.find(g => g.id === id)?.name || `Группа #${id}`
