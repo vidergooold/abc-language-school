@@ -178,7 +178,7 @@
 
         <div v-else-if="!reportSearched" class="no-records">
           <div class="no-records-icon no-icon"></div>
-          <p>Выберите филиал, преподавателя и/или группу, чтобы увидеть посещаемость ниже.</p>
+          <p class="empty-hint">Выберите филиал, преподавателя и/или группу, чтобы увидеть посещаемость ниже.</p>
         </div>
       </template>
 
@@ -1207,7 +1207,14 @@ watch(() => [rf.date_from, rf.date_to], () => {
   letter-spacing: .07em; color: var(--brand-orange); margin-bottom: 14px;
 }
 .loading-hint { font-size: 14px; color: #aaa; }
-.empty-hint   { font-size: 14px; color: #bbb; }
+.empty-hint {
+  display: block;
+  text-align: center;
+  font-size: 15px;
+  color: #aaa;
+  font-weight: 400;
+  padding: 32px 0;
+}
 
 .chip-list { display: flex; flex-wrap: wrap; gap: 10px; }
 .chip {
