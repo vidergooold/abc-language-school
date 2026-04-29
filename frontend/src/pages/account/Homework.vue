@@ -614,7 +614,6 @@ async function save() {
 .empty-state {
   text-align: center;
   padding: 32px;
-  border: 1px dashed #cbd5e1;
   border-radius: 12px;
   color: #64748b;
 }
