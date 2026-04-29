@@ -170,7 +170,7 @@
         <tbody>
           <tr v-for="s in filtered" :key="s.id">
             <td class="col-name">{{ s.full_name || '—' }}</td>
-            <td>{{ studentNameToGroupId[s.full_name] ? groupName(studentNameToGroupId[s.full_name]) : '—' }}</td>
+            <td>{{ studentNameToGroupId[s.full_name] ? groupName(studentNameToGroupId[s.full_name]!) : '—' }}</td>
             <td><span class="type-badge" :class="'type-' + s.student_type">{{ typeLabel(s.student_type) }}</span></td>
             <td>{{ s.birthdate ? getAge(s.birthdate) + ' л.' : '—' }}</td>
             <td>{{ s.phone || '—' }}</td>

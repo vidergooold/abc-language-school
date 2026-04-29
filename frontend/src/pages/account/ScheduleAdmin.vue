@@ -239,8 +239,7 @@ const availableGroups = computed(() => {
 
 function shortGroupName(name: string) {
   // Убираем " — Пн/Ср 09:00" и " Сб 09:00" и подобные суффиксы
-  let s = name.split(' — ')[0]
-  s = s.replace(/ (Пн|Вт|Ср|Чт|Пт|Сб|Вс).*$/i, '')
+  const s = (name.split(' — ')[0] || name).replace(/ (Пн|Вт|Ср|Чт|Пт|Сб|Вс).*$/i, '')
   return s.trim()
 }
 function groupName(id: number) {
@@ -279,9 +278,7 @@ function dayLabel(key: string) {
 function fmt(t: string) {
   return t ? t.slice(0, 5) : ''
 }
-function statusLabel(s: string) {
-  return { scheduled: 'По расписанию', completed: 'Проведено', cancelled: 'Отменено', rescheduled: 'Перенесено' }[s] ?? s
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 function openCreate() {
   Object.assign(form, emptyForm())
