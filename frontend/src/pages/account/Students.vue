@@ -164,7 +164,6 @@
             <th>Телефон</th>
             <th>Email</th>
             <th>Статус</th>
-            <th>Дата создания</th>
             <th v-if="auth.user?.role === 'admin'">Действия</th>
           </tr>
         </thead>
@@ -177,7 +176,6 @@
             <td>{{ s.phone || '—' }}</td>
             <td>{{ s.email || '—' }}</td>
             <td><span class="status-badge" :class="'status-' + (s.status || 'active')">{{ statusLabel(s.status) }}</span></td>
-            <td class="col-date">{{ s.created_at ? new Date(s.created_at).toLocaleDateString('ru-RU') : '—' }}</td>
             <td v-if="auth.user?.role === 'admin'" class="actions-col">
               <button class="btn-edit" @click="startEdit(s)">Редактировать</button>
               <button class="btn-delete" @click="deleteStudent(s)">Удалить</button>
