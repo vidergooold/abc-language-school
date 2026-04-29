@@ -158,6 +158,7 @@
         <thead>
           <tr>
             <th>ФИО</th>
+            <th>Группа</th>
             <th>Тип</th>
             <th>Возраст</th>
             <th>Телефон</th>
@@ -170,6 +171,7 @@
         <tbody>
           <tr v-for="s in filtered" :key="s.id">
             <td class="col-name">{{ s.full_name || '—' }}</td>
+            <td>{{ studentNameToGroupId[s.full_name] ? groupName(studentNameToGroupId[s.full_name]) : '—' }}</td>
             <td><span class="type-badge" :class="'type-' + s.student_type">{{ typeLabel(s.student_type) }}</span></td>
             <td>{{ s.birthdate ? getAge(s.birthdate) + ' л.' : '—' }}</td>
             <td>{{ s.phone || '—' }}</td>
@@ -230,6 +232,11 @@ const editStudent = ref({
 })
 const editStudentGroupId = ref<number | null>(null)
 const originalGroupId = ref<number | null>(null)
+const studentNameToGroupId = ref<Record<string, number>>({})
+
+function groupName(groupId: number): string {
+  return groups.value.find(g => g.id === groupId)?.name?.split(' — ')[0] || '—'
+}
 
 const filtered = computed(() =>
   students.value
@@ -272,6 +279,21 @@ async function load() {
     ])
     students.value = studentsRes.data
     groups.value = Array.isArray(groupsRes.data) ? groupsRes.data : []
+
+    const nameMap: Record<string, number> = {}
+    await Promise.all(
+      groups.value.map(async (g) => {
+        try {
+          const sgRes = await http.get(`/groups/${g.id}/students`)
+          for (const sg of sgRes.data) {
+            nameMap[sg.student_name] = g.id
+          }
+        } catch {
+          // ignore errors for individual groups
+        }
+      })
+    )
+    studentNameToGroupId.value = nameMap
   } catch {
     students.value = []
     groups.value = []
@@ -364,8 +386,8 @@ function startEdit(student: any) {
     student_type: student.student_type || 'adult',
     status: student.status || 'active',
   }
-  editStudentGroupId.value = student.group_id || null
-  originalGroupId.value = student.group_id || null
+  editStudentGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
+  originalGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
   showEditForm.value = true
   showAddForm.value = false
 }
