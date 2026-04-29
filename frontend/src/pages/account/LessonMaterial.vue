@@ -623,11 +623,6 @@ onMounted(loadBranches)
   padding: 32px 0;
 }
 
-.empty-state p {
-  margin: 0;
-  text-align: center;
-}
-
 .btn-add {
   border: none;
   border-radius: 10px;
