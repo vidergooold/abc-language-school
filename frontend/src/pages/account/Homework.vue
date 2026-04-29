@@ -91,7 +91,7 @@
 
     <!-- Выбери группу -->
     <div v-else-if="!loading" class="empty-state">
-      <p>Выберите группу для просмотра домашних заданий.</p>
+      <p class="empty-hint">Выберите группу для просмотра домашних заданий.</p>
     </div>
 
     <!-- Модалка -->
@@ -613,10 +613,16 @@ async function save() {
 /* Пустое */
 .empty-state {
   text-align: center;
-  padding: 32px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
-  color: #64748b;
+  padding: 0;
+}
+
+.empty-hint {
+  display: block;
+  text-align: center;
+  font-size: 15px;
+  color: #aaa;
+  font-weight: 400;
+  padding: 32px 0;
 }
 
 /* Модалка */

@@ -90,7 +90,7 @@
     </template>
 
     <div v-else-if="!loading" class="empty-state">
-      <p>{{ filters.group_id ? 'Для выбранной группы пока нет занятий с датой.' : 'Выберите группу для просмотра материалов урока.' }}</p>
+      <p class="empty-hint">{{ filters.group_id ? 'Для выбранной группы пока нет занятий с датой.' : 'Выберите группу для просмотра материалов урока.' }}</p>
       <button v-if="filters.group_id" class="btn-add" @click="openCreate">+ Добавить материал</button>
     </div>
 
@@ -611,8 +611,16 @@ onMounted(loadBranches)
 /* Пустое состояние */
 .empty-state {
   text-align: center;
-  padding: 32px;
-  color: #64748b;
+  padding: 0;
+}
+
+.empty-hint {
+  display: block;
+  text-align: center;
+  font-size: 15px;
+  color: #aaa;
+  font-weight: 400;
+  padding: 32px 0;
 }
 
 .empty-state p {
