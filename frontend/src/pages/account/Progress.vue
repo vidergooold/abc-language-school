@@ -102,7 +102,7 @@
       </table>
     </div>
 
-    <p v-else class="empty-text">Выберите группу, чтобы увидеть промежуточную успеваемость.</p>
+    <p v-else class="empty-hint">Выберите группу, чтобы увидеть промежуточную успеваемость.</p>
 
     <div v-if="noteModal.open" class="modal-backdrop" @click.self="closeNoteModal">
       <div class="modal">
@@ -652,8 +652,13 @@ async function saveLessonNote() {
   color: #6b7280;
 }
 
-.empty-text {
+.empty-hint {
+  display: block;
   text-align: center;
+  font-size: 15px;
+  color: #aaa;
+  font-weight: 400;
+  padding: 32px 0;
 }
 
 .modal-backdrop {

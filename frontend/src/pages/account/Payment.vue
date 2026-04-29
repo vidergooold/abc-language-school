@@ -87,7 +87,7 @@
       </table>
     </div>
 
-    <p v-else class="hint">Выберите группу для просмотра оплаты.</p>
+    <p v-else class="empty-hint">Выберите группу для просмотра оплаты.</p>
   </div>
 </template>
 
@@ -530,14 +530,18 @@ function formatRub(value: number) {
   background: #eab308;
 }
 
-.hint,
+.empty-hint {
+  display: block;
+  text-align: center;
+  font-size: 15px;
+  color: #aaa;
+  font-weight: 400;
+  padding: 32px 0;
+}
+
 .loading {
   color: #6b7280;
   margin-top: 12px;
-}
-
-.hint {
-  text-align: center;
 }
 
 @media (max-width: 1200px) {
