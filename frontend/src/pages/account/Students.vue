@@ -230,6 +230,7 @@ const editStudent = ref({
 })
 const editStudentGroupId = ref<number | null>(null)
 const originalGroupId = ref<number | null>(null)
+const studentNameToGroupId = ref<Record<string, number>>({})
 
 const filtered = computed(() =>
   students.value
@@ -272,6 +273,21 @@ async function load() {
     ])
     students.value = studentsRes.data
     groups.value = Array.isArray(groupsRes.data) ? groupsRes.data : []
+
+    const nameMap: Record<string, number> = {}
+    await Promise.all(
+      groups.value.map(async (g) => {
+        try {
+          const sgRes = await http.get(`/groups/${g.id}/students`)
+          for (const sg of sgRes.data) {
+            nameMap[sg.student_name] = g.id
+          }
+        } catch {
+          // ignore errors for individual groups
+        }
+      })
+    )
+    studentNameToGroupId.value = nameMap
   } catch {
     students.value = []
     groups.value = []
@@ -364,8 +380,8 @@ function startEdit(student: any) {
     student_type: student.student_type || 'adult',
     status: student.status || 'active',
   }
-  editStudentGroupId.value = student.group_id || null
-  originalGroupId.value = student.group_id || null
+  editStudentGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
+  originalGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
   showEditForm.value = true
   showAddForm.value = false
 }
