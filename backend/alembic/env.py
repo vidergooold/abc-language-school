@@ -1,37 +1,53 @@
-from logging.config import fileConfig
-from sqlalchemy import pool, create_engine
-from alembic import context
 import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-from app.core.database import Base
-import app.models
+from logging.config import fileConfig
+from sqlalchemy import create_engine, pool
+from alembic import context
 
 config = context.config
-
-db_url = os.getenv("DATABASE_URL", "postgresql://abc_user:yourpassword123@localhost:5432/abc_school")
-# Конвертируем asyncpg URL в синхронный для alembic
-db_url = db_url.replace("postgresql+asyncpg://", "postgresql://").split("?")[0]
-config.set_main_option("sqlalchemy.url", db_url)
-
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# Выставляем DATABASE_URL до импорта database.py
+# (он уже должен быть в env, но на всякий случай)
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+
+# Временно подменяем create_async_engine на заглушку
+# чтобы database.py не упал при импорте в синхронном контексте
+import sqlalchemy.ext.asyncio as _async_module
+_real_create_async_engine = _async_module.create_async_engine
+
+def _fake_async_engine(url, **kwargs):
+    class _FakeEngine:
+        pass
+    return _FakeEngine()
+
+_async_module.create_async_engine = _fake_async_engine
+
+# Теперь безопасно импортируем database.py и модели
+from app.core.database import Base  # noqa: E402
+import app.models  # noqa: F401, E402
+
+# Восстанавливаем оригинальную функцию
+_async_module.create_async_engine = _real_create_async_engine
+
 target_metadata = Base.metadata
 
+def get_url():
+    url = os.environ.get("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+    return url.replace("postgresql+asyncpg://", "postgresql://")
+
 def run_migrations_offline():
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
+    context.configure(
+        url=get_url(),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
     with context.begin_transaction():
         context.run_migrations()
 
 def run_migrations_online():
-    connectable = create_engine(
-        config.get_main_option("sqlalchemy.url"),
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(get_url(), poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
