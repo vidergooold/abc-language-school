@@ -1,5 +1,8 @@
+import os
+import secrets
+import subprocess
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 
@@ -120,3 +123,15 @@ async def root():
         "docs": "/docs",
         "status": "running",
     }
+
+
+@app.post("/api/v1/admin/run-migrations", tags=["admin"])
+def run_migrations(x_migration_key: str = Header(...)):
+    migration_key = os.environ.get("MIGRATION_KEY")
+    if not migration_key or not secrets.compare_digest(x_migration_key, migration_key):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    result = subprocess.run(
+        ["alembic", "upgrade", "head"],
+        capture_output=True, text=True, cwd="/app", timeout=120
+    )
+    return {"stdout": result.stdout, "stderr": result.stderr, "returncode": result.returncode}
