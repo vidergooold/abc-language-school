@@ -1,40 +1,40 @@
 import os
 from logging.config import fileConfig
 from sqlalchemy import create_engine, pool
+from sqlalchemy.orm import DeclarativeBase
 from alembic import context
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Выставляем DATABASE_URL до импорта database.py
-# (он уже должен быть в env, но на всякий случай)
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
+# Определяем свой Base — не трогаем database.py вообще
+class Base(DeclarativeBase):
+    pass
 
-# Временно подменяем create_async_engine на заглушку
-# чтобы database.py не упал при импорте в синхронном контексте
-import sqlalchemy.ext.asyncio as _async_module
-_real_create_async_engine = _async_module.create_async_engine
+# Патчим database модуль ДО импорта моделей
+import sys
+from unittest.mock import MagicMock
 
-def _fake_async_engine(url, **kwargs):
-    class _FakeEngine:
-        pass
-    return _FakeEngine()
+# Создаём фейковый database модуль
+mock_db = MagicMock()
+mock_db.Base = Base
+sys.modules['app.core.database'] = mock_db
 
-_async_module.create_async_engine = _fake_async_engine
-
-# Теперь безопасно импортируем database.py и модели
-from app.core.database import Base  # noqa: E402
-import app.models  # noqa: F401, E402
-
-# Восстанавливаем оригинальную функцию
-_async_module.create_async_engine = _real_create_async_engine
+# Теперь импортируем все модели — они зарегистрируются на нашем Base
+import app.models  # noqa: F401
 
 target_metadata = Base.metadata
 
 def get_url():
-    url = os.environ.get("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
-    return url.replace("postgresql+asyncpg://", "postgresql://")
+    url = os.environ.get("DATABASE_URL", "")
+    url = url.replace("postgresql+asyncpg://", "postgresql://")
+    url = url.replace("postgresql+psycopg2://", "postgresql://")
+    # убираем ?ssl=true и добавляем sslmode=require
+    if "?" in url:
+        url = url.split("?")[0]
+    url += "?sslmode=require"
+    return url
 
 def run_migrations_offline():
     context.configure(
