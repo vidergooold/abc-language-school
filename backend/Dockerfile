@@ -9,6 +9,7 @@ COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini .
 COPY entrypoint.sh .
+COPY yandex-ca.crt .
 RUN chmod +x entrypoint.sh
 
 CMD ["./entrypoint.sh"]
