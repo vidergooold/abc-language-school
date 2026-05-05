@@ -248,3 +248,6 @@ alembic/versions/*.pyc
 
 # History
 .history/
+.vercel
+.env*.local
+frontend/.env.production
