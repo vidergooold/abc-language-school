@@ -15,7 +15,9 @@ if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set in .env file")
 
 import ssl as _ssl
-_ssl_ctx = _ssl.create_default_context(cafile="/app/yandex-ca.crt")
+_ssl_ctx = _ssl.create_default_context()
+_ssl_ctx.check_hostname = False
+_ssl_ctx.verify_mode = _ssl.CERT_NONE
 engine = create_async_engine(DATABASE_URL, echo=False, connect_args={"ssl": _ssl_ctx})
 
 AsyncSessionLocal = async_sessionmaker(
