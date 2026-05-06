@@ -49,10 +49,9 @@ NEWS_DATA = [
 
 async def seed_news():
     """Заполняет базу данных исходными новостями"""
-    DATABASE_URL = os.getenv(
-        "DATABASE_URL",
-        "postgresql+asyncpg://abc_user:yourpassword123@localhost:5432/abc_school"
-    )
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is not set")
     engine = create_async_engine(DATABASE_URL, echo=True)
     async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     

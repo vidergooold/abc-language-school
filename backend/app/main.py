@@ -8,22 +8,27 @@ from app.core.scheduler import start_scheduler, shutdown_scheduler
 
 # Импортируем все модели чтобы Base.metadata знал о всех таблицах
 from app.models import user, news  # noqa: F401
+from app.models.attendance import Attendance  # noqa: F401
+from app.models.audit import AuditLog  # noqa: F401
+from app.models.branch import Branch  # noqa: F401
+from app.models.discount import Discount  # noqa: F401
+from app.models.document import Document  # noqa: F401
+from app.models.educational_program import EducationalProgram  # noqa: F401
+from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.forms import (  # noqa: F401
     ChildForm, AdultForm, PreschoolForm,
     TeacherForm, TestingForm, FeedbackForm, TaxForm,
 )
-from app.models.enrollment import Enrollment  # noqa: F401
-from app.models.document import Document  # noqa: F401
-from app.models.branch import Branch  # noqa: F401
-from app.models.educational_program import EducationalProgram  # noqa: F401
-from app.models.student import Student  # noqa: F401
-from app.models.schedule import Lesson, Classroom  # noqa: F401
-from app.models.attendance import Attendance  # noqa: F401
-from app.models.payment import Payment  # noqa: F401
-from app.models.notification import Notification  # noqa: F401
 from app.models.group import Group  # noqa: F401
 from app.models.homework import Homework  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
+from app.models.payment import Payment  # noqa: F401
+from app.models.report import ReportCache  # noqa: F401
+from app.models.room_booking import RoomBooking  # noqa: F401
+from app.models.schedule import Lesson, Classroom  # noqa: F401
+from app.models.student import Student  # noqa: F401
 from app.models.teacher import Teacher, TeacherGroup  # noqa: F401
+from app.models.waitlist import WaitlistEntry  # noqa: F401
 
 from app.api.v1 import (
     auth,
