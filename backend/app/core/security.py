@@ -13,6 +13,7 @@
   - Финансы, аналитика, аудит — require_admin
 ¹ Смену посещаемости может делать учитель через require_staff.
 """
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -26,7 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.user import User, UserRole
 
-SECRET_KEY = "super-secret-key"
+SECRET_KEY = os.environ.get("SECRET_KEY", "super-secret-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 часов
 

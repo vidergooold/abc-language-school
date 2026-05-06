@@ -1,4 +1,5 @@
 """APScheduler для автоматической публикации запланированных новостей."""
+import os
 import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -7,10 +8,11 @@ scheduler = AsyncIOScheduler()
 
 async def publish_scheduled_news():
     """Вызывает эндпоинт публикации каждые 5 минут."""
+    base_url = os.environ.get("INTERNAL_API_URL", "http://127.0.0.1:8000")
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                "http://127.0.0.1:8000/api/v1/admin/news/publish-scheduled",
+                f"{base_url}/api/v1/admin/news/publish-scheduled",
                 timeout=30.0
             )
             if response.status_code == 200:

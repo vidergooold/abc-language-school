@@ -251,3 +251,10 @@ alembic/versions/*.pyc
 .vercel
 .env*.local
 frontend/.env.production
+
+# Backup config files
+*.ini.bak
+*.bak
+
+# Vite scaffolding placeholder (not part of the project)
+frontend/src/components/HelloWorld.vue

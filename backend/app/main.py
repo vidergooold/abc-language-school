@@ -41,6 +41,10 @@ from app.api.v1 import (
     admin,
     analytics,
     teachers,
+    discounts,
+    waitlist,
+    reports,
+    audit,
 )
 from app.api.v1 import branches, programs, students, homeworks
 
@@ -81,7 +85,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,6 +117,10 @@ app.include_router(homeworks.router,     prefix="/api/v1")
 # Админ
 app.include_router(admin.router,         prefix="/api/v1")
 app.include_router(analytics.router,     prefix="/api/v1")
+app.include_router(discounts.router,     prefix="/api/v1")
+app.include_router(waitlist.router,      prefix="/api/v1")
+app.include_router(reports.router,       prefix="/api/v1")
+app.include_router(audit.router,         prefix="/api/v1")
 
 
 @app.get("/", tags=["root"])

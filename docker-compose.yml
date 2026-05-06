@@ -22,6 +22,8 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/abcschool
       - SECRET_KEY=super-secret-key
+      - CORS_ORIGINS=http://localhost:3000
+      - INTERNAL_API_URL=http://backend:8000
     depends_on:
       db:
         condition: service_healthy
