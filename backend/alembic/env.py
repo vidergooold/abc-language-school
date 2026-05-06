@@ -26,15 +26,17 @@ import app.models  # noqa: F401
 
 target_metadata = Base.metadata
 
+
 def get_url():
     url = os.environ.get("DATABASE_URL", "")
+    if not url:
+        raise RuntimeError("DATABASE_URL is not set")
+    # Приводим к синхронному postgresql:// для alembic
     url = url.replace("postgresql+asyncpg://", "postgresql://")
     url = url.replace("postgresql+psycopg2://", "postgresql://")
-    # убираем ?ssl=true и добавляем sslmode=require
-    if "?" in url:
-        url = url.split("?")[0]
-    url += "?sslmode=require"
+    url = url.replace("postgres://", "postgresql://")
     return url
+
 
 def run_migrations_offline():
     context.configure(
@@ -46,12 +48,14 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online():
     connectable = create_engine(get_url(), poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
