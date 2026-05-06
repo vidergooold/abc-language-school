@@ -14,11 +14,15 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set in .env file")
 
-import ssl as _ssl
-_ssl_ctx = _ssl.create_default_context()
-_ssl_ctx.check_hostname = False
-_ssl_ctx.verify_mode = _ssl.CERT_NONE
-engine = create_async_engine(DATABASE_URL, echo=False, connect_args={"ssl": _ssl_ctx})
+_SSL_MODE = os.getenv("DB_SSL_MODE", "require").lower()
+if _SSL_MODE == "disable":
+    _ssl_connect_args = {}
+elif _SSL_MODE == "require":
+    _ssl_connect_args = {"ssl": "require"}
+else:
+    _ssl_connect_args = {"ssl": "require"}
+
+engine = create_async_engine(DATABASE_URL, echo=False, connect_args=_ssl_connect_args)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

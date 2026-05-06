@@ -10,8 +10,8 @@ interface AuthUser {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('token') as string | null,
-    user: JSON.parse(localStorage.getItem('user') || 'null') as AuthUser | null,
+    token: null as string | null,
+    user: null as AuthUser | null,
   }),
 
   getters: {
@@ -24,17 +24,19 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async login(email: string, password: string) {
-      const res = await http.post('/auth/login', { email, password })
-      this.token = res.data.access_token
-      this.user = res.data.user as AuthUser
-      localStorage.setItem('token', this.token!)
-      localStorage.setItem('user', JSON.stringify(this.user))
+      try {
+        const res = await http.post('/auth/login', { email, password })
+        this.token = res.data.access_token
+        this.user = res.data.user as AuthUser
+      } catch (err) {
+        this.token = null
+        this.user = null
+        throw err
+      }
     },
     logout() {
       this.token = null
       this.user = null
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
     },
   },
 })

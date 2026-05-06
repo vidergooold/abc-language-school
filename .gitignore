@@ -246,6 +246,9 @@ Desktop.ini
 # Alembic
 alembic/versions/*.pyc
 
+# Backup files
+*.bak
+
 # History
 .history/
 .vercel

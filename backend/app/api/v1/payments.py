@@ -6,7 +6,7 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin, require_staff, require_student
+from app.core.security import require_admin, require_student
 from app.models.attendance import Attendance, AttendanceStatus
 from app.models.user import User
 from app.models.payment import Invoice, Payment, PaymentStatus
@@ -19,7 +19,7 @@ from app.schemas.payment import (
     PaymentOut,
 )
 
-router = APIRouter(tags=["Payments"])
+router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
 # ─── Счета (Invoices) ────────────────────────────────────────────────
@@ -47,7 +47,7 @@ async def get_invoices(
 async def mark_invoice_paid(
     invoice_id: int,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    _=Depends(require_admin),
 ):
     """Отметить счёт как оплаченный (amount_paid = amount, status = paid)"""
     result = await db.execute(select(Invoice).where(Invoice.id == invoice_id))
@@ -65,7 +65,7 @@ async def mark_invoice_paid(
 async def upsert_invoice_cell_status(
     data: InvoiceCellStatusUpdate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    _=Depends(require_admin),
 ):
     """Создать/обновить счёт для ячейки матрицы оплат (студент + период)."""
     result = await db.execute(

@@ -28,6 +28,11 @@ target_metadata = Base.metadata
 
 def get_url():
     url = os.environ.get("DATABASE_URL", "")
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL environment variable is not set. "
+            "Set it before running Alembic migrations."
+        )
     url = url.replace("postgresql+asyncpg://", "postgresql://")
     url = url.replace("postgresql+psycopg2://", "postgresql://")
     # убираем ?ssl=true и добавляем sslmode=require

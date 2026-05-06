@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 const http = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1',
@@ -7,9 +8,10 @@ const http = axios.create({
   },
 })
 
-// читаем токен напрямую из localStorage — надёжнее чем через Pinia при инициализации модуля
+// Read token from in-memory auth store instead of localStorage
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+  const authStore = useAuthStore()
+  const token = authStore.token
   if (token) {
     config.headers = config.headers || {}
     config.headers.Authorization = `Bearer ${token}`
