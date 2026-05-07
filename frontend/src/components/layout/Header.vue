@@ -8,7 +8,7 @@
       class="burger-btn"
       type="button"
       :aria-expanded="isMenuOpen"
-      aria-label="Открыть меню"
+      :aria-label="isMenuOpen ? 'Закрыть меню' : 'Открыть меню'"
       @click="isMenuOpen = !isMenuOpen"
     >
       ☰
@@ -73,7 +73,7 @@
       <RouterLink to="/enroll" class="nav-link" @click="closeAll">Стать участником</RouterLink>
       <RouterLink to="/register" class="nav-link" @click="closeAll">Личный кабинет</RouterLink>
       <RouterLink to="/jobs" class="nav-link" @click="closeAll">Хотите работать у нас?</RouterLink>
-      <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
+      <a href="#feedback" class="nav-feedback" @click="closeAllAndScrollToFeedback">Обратная связь</a>
     </nav>
   </header>
 </template>
@@ -100,9 +100,9 @@ function closeAll() {
 function toggleMenu(name: string) {
   openMenuName.value = openMenuName.value === name ? null : name
 }
-function scrollToFeedback(e: Event) {
-  e.preventDefault()
+function closeAllAndScrollToFeedback(e: Event) {
   closeAll()
+  e.preventDefault()
   const el = document.getElementById('feedback')
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
