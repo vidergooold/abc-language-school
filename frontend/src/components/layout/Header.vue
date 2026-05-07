@@ -101,8 +101,8 @@ function toggleMenu(name: string) {
   openMenuName.value = openMenuName.value === name ? null : name
 }
 function closeAllAndScrollToFeedback(e: Event) {
-  closeAll()
   e.preventDefault()
+  closeAll()
   const el = document.getElementById('feedback')
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
