@@ -1,5 +1,11 @@
 # ABC Language School
 
+Инфраструктура деплоя:
+
+- Frontend: **Vercel**
+- Backend: **Railway**
+- Database: **Railway PostgreSQL plugin**
+
 Основные команды запуска из корня проекта:
 
 ```bash
