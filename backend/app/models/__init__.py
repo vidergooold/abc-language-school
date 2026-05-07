@@ -1,3 +1,4 @@
+from .homework import Homework
 # Импорт всех моделей для корректной инициализации маппера SQLAlchemy.
 # Порядок важен: сначала независимые модели, затем те, что ссылаются на них.
 
@@ -64,4 +65,7 @@ __all__ = [
     "BookingPurpose",
     "AuditLog",
     "ReportCache",
+    "Homework",
 ]
+
+from .message import Message
