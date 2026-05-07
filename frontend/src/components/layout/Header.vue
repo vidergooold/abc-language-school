@@ -4,15 +4,29 @@
       <img src="/logo.png" alt="ABC Лингвоцентр" class="logo-img" />
     </RouterLink>
 
-    <nav class="nav">
-      <RouterLink to="/" class="nav-link">Главная</RouterLink>
+    <button
+      class="burger-btn"
+      type="button"
+      @click="toggleMobileMenu"
+      :aria-expanded="isMenuOpen"
+      aria-label="Открыть меню"
+    >
+      ☰
+    </button>
+
+    <nav class="nav" :class="{ 'nav--open': isMenuOpen }">
+      <RouterLink to="/" class="nav-link" @click="closeAll">Главная</RouterLink>
 
       <div
         class="nav-item nav-dropdown"
         @mouseenter="openMenu('org')"
         @mouseleave="closeMenu('org')"
       >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'org' }">
+        <span
+          class="nav-dropdown__trigger"
+          :class="{ active: openMenuName === 'org' }"
+          @click="toggleMenu('org')"
+        >
           Сведения об организации
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
@@ -39,7 +53,11 @@
         @mouseenter="openMenu('clients')"
         @mouseleave="closeMenu('clients')"
       >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'clients' }">
+        <span
+          class="nav-dropdown__trigger"
+          :class="{ active: openMenuName === 'clients' }"
+          @click="toggleMenu('clients')"
+        >
           Действующим клиентам
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
@@ -51,10 +69,10 @@
         </div>
       </div>
 
-      <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
-      <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
-      <RouterLink to="/register" class="nav-link">Личный кабинет</RouterLink>
-      <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
+      <RouterLink to="/testing" class="nav-link" @click="closeAll">Пройти тестирование</RouterLink>
+      <RouterLink to="/enroll" class="nav-link" @click="closeAll">Стать участником</RouterLink>
+      <RouterLink to="/register" class="nav-link" @click="closeAll">Личный кабинет</RouterLink>
+      <RouterLink to="/jobs" class="nav-link" @click="closeAll">Хотите работать у нас?</RouterLink>
       <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
     </nav>
   </header>
@@ -65,6 +83,7 @@ import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 const openMenuName = ref<string | null>(null)
+const isMenuOpen = ref(false)
 
 function openMenu(name: string) {
   openMenuName.value = name
@@ -76,6 +95,16 @@ function closeMenu(name: string) {
 }
 function closeAll() {
   openMenuName.value = null
+  isMenuOpen.value = false
+}
+function toggleMenu(name: string) {
+  openMenuName.value = openMenuName.value === name ? null : name
+}
+function toggleMobileMenu() {
+  isMenuOpen.value = !isMenuOpen.value
+  if (!isMenuOpen.value) {
+    openMenuName.value = null
+  }
 }
 function scrollToFeedback(e: Event) {
   e.preventDefault()
@@ -217,5 +246,67 @@ function scrollToFeedback(e: Event) {
 .nav-feedback:hover {
   background: var(--brand-red);
   transform: translateY(-1px);
+}
+
+.burger-btn {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: var(--brand-purple);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 12px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .logo-img {
+    height: 56px;
+  }
+
+  .burger-btn {
+    display: block;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .nav.nav--open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    z-index: 200;
+    padding: 16px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .nav-dropdown__menu {
+    position: static;
+    padding-top: 4px;
+  }
+
+  .nav-dropdown__inner {
+    min-width: 0;
+  }
+
+  .nav-link,
+  .nav-dropdown__trigger,
+  .nav-feedback {
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 </style>

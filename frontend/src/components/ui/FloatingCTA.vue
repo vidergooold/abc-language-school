@@ -53,4 +53,23 @@ const isAccount = computed(() => route.path.startsWith('/account') || route.path
 .cta-btn__title { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
 .cta-btn__subtitle { font-size: 16px; font-weight: 600; }
 .cta-btn--level .cta-btn__subtitle { color: var(--brand-orange); }
+
+@media (max-width: 768px) {
+  .floating-cta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cta-btn {
+    min-width: 0;
+    padding: 12px 10px;
+  }
+
+  .cta-btn__title {
+    font-size: 16px;
+  }
+
+  .cta-btn__subtitle {
+    font-size: 13px;
+  }
+}
 </style>

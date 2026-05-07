@@ -47,4 +47,10 @@ const isAccount = computed(() =>
   flex: 1;
   padding: 16px;
 }
+
+@media (max-width: 768px) {
+  .app {
+    padding-bottom: 88px;
+  }
+}
 </style>
