@@ -7,8 +7,7 @@ Comprehensive backend system for managing a language school with 15+ database ta
 
 - Frontend: **Vercel**
 - Backend: **Railway**
-- Database: **Railway PostgreSQL plugin**
-- SSL: standard Railway SSL (`sslmode=require`), custom CA certificates are not required.
+- Database: **Railway PostgreSQL plugin** (use standard Railway SSL with `sslmode=require`; custom CA certificates are not required)
 
 ## Database Architecture
 
