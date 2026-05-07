@@ -1,6 +1,6 @@
 # ABC Language School
 
-Инфраструктура деплоя:
+Инфраструктура развёртывания:
 
 - Frontend: **Vercel**
 - Backend: **Railway**
