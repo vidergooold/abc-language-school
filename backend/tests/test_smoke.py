@@ -7,6 +7,7 @@ transport — no real HTTP calls are made to external servers.
 Run with:
     python -m pytest backend/tests/test_smoke.py -v
 """
+import os
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -353,12 +354,10 @@ async def test_cors_preflight_vercel_origin(client: AsyncClient):
     origin missing from allow_origins when allow_credentials=True is set.
     ALLOWED_ORIGINS (or the legacy FRONTEND_URL) must be set to include
     https://abc-school-frontend.vercel.app in production.
+    The conftest sets ALLOWED_ORIGINS before the app is imported so the
+    CORSMiddleware is initialized with the production-like origin list.
     """
-    import os
-
     vercel_origin = "https://abc-school-frontend.vercel.app"
-    # Confirm the env-driven helper includes the origin when the var is set
-    os.environ.setdefault("ALLOWED_ORIGINS", vercel_origin)
 
     from app.core.cors import get_cors_origins
     assert vercel_origin in get_cors_origins(), (
