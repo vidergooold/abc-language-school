@@ -47,6 +47,7 @@ from app.api.v1 import (
     messages,
     audit,
     reports,
+    jobs,
 )
 
 
@@ -95,6 +96,7 @@ app.include_router(users.router, prefix="/api/v1")
 
 # Общедоступные ресурсы
 app.include_router(courses.router, prefix="/api/v1")
+app.include_router(jobs.router, prefix="/api/v1")
 app.include_router(news_router.router, prefix="/api/v1")
 app.include_router(enrollments.router, prefix="/api/v1")
 app.include_router(forms.router, prefix="/api/v1")
