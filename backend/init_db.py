@@ -14,9 +14,9 @@ from app.core.database import engine, Base
 from app.models import (
     User, Document, Teacher, Branch, EducationalProgram, Student,
     Classroom, Lesson, Group, Attendance, Enrollment, Payment,
-    News, Notification, WaitlistEntry, ChildForm, AdultForm,
-    PreschoolForm, TeacherForm, TestingForm, FeedbackForm,
-    Discount, RoomBooking, AuditLog, ReportCache
+    News, Notification, ChildForm, AdultForm, PreschoolForm,
+    TeacherForm, TestingForm, FeedbackForm, RoomBooking,
+    AuditLog, ReportCache
 )
 
 def init_database():
@@ -42,12 +42,11 @@ def init_database():
         print("  - attendance")
         print("  - news")
         print("  - notifications")
-        print("  - waitlist")
         print("  - reviews")
         print("  - materials")
         print("  - expenses")
         print("  - revenue_analytics")
-        print("\nTotal: 15 tables created")
+        print("\nSuccessfully created all configured tables")
         
     except Exception as e:
         print(f"\n✗ Error initializing database: {e}")

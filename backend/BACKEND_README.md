@@ -1,7 +1,7 @@
 # ABC Language School - Advanced Backend System
 
 ## Overview
-Comprehensive backend system for managing a language school with 15+ database tables, advanced scheduling logic, automated notifications, and detailed economic analytics.
+Comprehensive backend system for managing a language school with advanced scheduling logic, automated notifications, and detailed economic analytics.
 
 ## Deployment Infrastructure
 
@@ -11,7 +11,7 @@ Comprehensive backend system for managing a language school with 15+ database ta
 
 ## Database Architecture
 
-### 15 Comprehensive Tables:
+### Core application tables include:
 
 1. **Users** - Student, teacher, admin, and manager accounts
 2. **Courses** - Language courses with levels (beginner to advanced)
@@ -23,11 +23,10 @@ Comprehensive backend system for managing a language school with 15+ database ta
 8. **Attendance** - Student attendance records
 9. **News** - Article publishing system with draft/published states
 10. **Notifications** - Automated notification scheduling
-11. **Waitlist** - Course waitlist management
-12. **Reviews** - Course reviews and ratings
-13. **Materials** - Course materials and resources
-14. **Expenses** - Business expense tracking
-15. **Revenue Analytics** - Automated financial reports
+11. **Reviews** - Course reviews and ratings
+12. **Materials** - Course materials and resources
+13. **Expenses** - Business expense tracking
+14. **Revenue Analytics** - Automated financial reports
 
 ## Key Features
 
@@ -70,7 +69,7 @@ pip install -r requirements.txt
 
 ### 2. Set Up Database
 ```bash
-# Initialize database (creates all 15 tables)
+# Initialize database (creates all configured tables)
 python init_db.py
 
 # Populate with sample data
@@ -171,7 +170,7 @@ Response:
 
 ## Key Improvements Over Previous Version
 
-1. **More Tables**: Increased from basic setup to 15 comprehensive tables
+1. **More Tables**: Expanded beyond the initial basic setup with production tables for scheduling, messaging, analytics, and operations
 2. **Advanced Logic**: Conflict prevention, automated notifications, analytics
 3. **Business Features**: 
    - Article publishing with draft/published workflow
