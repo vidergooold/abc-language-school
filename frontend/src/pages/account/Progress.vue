@@ -284,7 +284,8 @@ function gradeClass(studentId: number, lesson: LessonSlot) {
 }
 
 function nextGrade(current: number | null) {
-  if (current == null) return 4
+  if (current == null) return 3
+  if (current === 3) return 4
   if (current === 4) return 5
   return null
 }

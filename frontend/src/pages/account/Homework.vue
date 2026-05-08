@@ -171,6 +171,7 @@ const scheduleSlots = computed(() => {
   const seen = new Set<string>()
   const result: string[] = []
   for (const item of scheduleItems.value) {
+    if (filters.group_id != null && item.group_id != null && item.group_id !== filters.group_id) continue
     const day = DAY_LABELS[item.day_of_week] || item.day_of_week || ''
     const time = (item.time_start || '').slice(0, 5)
     const key = `${day} ${time}`.trim()
