@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.core.security import require_admin, require_staff
+from app.core.security import require_admin
 from app.models.teacher import Teacher, TeacherGroup
 from app.models.schedule import Lesson, LessonStatus
 from app.models.group import Group, Course
@@ -32,9 +32,8 @@ class TeacherGroupOut(BaseModel):
 async def get_teachers(
     branch_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
-    _user=Depends(require_staff),
 ):
-    """Список активных преподавателей для сотрудников школы."""
+    """Публичный список активных преподавателей"""
     base_query = select(Teacher).where(Teacher.is_active == True)
 
     # Если выбран филиал, сначала пробуем отфильтровать по расписанию в этом филиале.

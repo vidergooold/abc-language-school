@@ -421,7 +421,7 @@ async def get_schedule(
     group_id: Optional[int] = None,
     teacher_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
-    _user=Depends(require_student),
+    _: None = Depends(require_staff),
 ):
     query = _build_schedule_query().where(
         Lesson.status.in_([LessonStatus.scheduled, LessonStatus.rescheduled])
