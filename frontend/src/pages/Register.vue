@@ -64,6 +64,7 @@
 import { ref } from 'vue'
 import http from '@/api/http'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const role = ref<'student' | 'staff'>('student')
 const fullName = ref('')
@@ -73,6 +74,7 @@ const error = ref<string | null>(null)
 const success = ref(false)
 const loading = ref(false)
 const router = useRouter()
+const auth = useAuthStore()
 
 async function submit() {
   error.value = null
@@ -90,6 +92,10 @@ async function submit() {
       full_name: fullName.value,
       password: password.value,
     })
+
+    // Никогда не оставляем текущую сессию (например, админскую) после публичной регистрации.
+    auth.logout()
+
     success.value = true
     setTimeout(() => router.push('/login'), 1500)
   } catch (e: any) {

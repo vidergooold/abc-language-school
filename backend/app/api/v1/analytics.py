@@ -9,7 +9,6 @@ from app.models.payment import Invoice, Payment, PaymentStatus
 from app.models.group import Group, Course, StudentGroup
 from app.models.schedule import Lesson, LessonStatus
 from app.models.attendance import Attendance
-from app.models.waitlist import WaitlistEntry, WaitlistStatus
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
@@ -238,11 +237,7 @@ async def get_course_popularity(
         groups_count = await db.scalar(
             select(func.count()).select_from(Group).where(Group.course_id == course.id)
         ) or 0
-        waitlist_count = await db.scalar(
-            select(func.count()).select_from(WaitlistEntry)
-            .where(and_(WaitlistEntry.course_id == course.id,
-                        WaitlistEntry.status == WaitlistStatus.waiting))
-        ) or 0
+        waitlist_count = 0
         max_capacity = groups_count * course.max_students if groups_count > 0 else course.max_students
         fill_rate = round(students_count / max_capacity * 100, 1) if max_capacity > 0 else 0
 
@@ -272,9 +267,7 @@ async def get_enrollment_funnel(
     """
     from app.models.forms import AdultForm
     total_forms = await db.scalar(select(func.count()).select_from(AdultForm)) or 0
-    waitlisted  = await db.scalar(
-        select(func.count()).select_from(WaitlistEntry)
-    ) or 0
+    waitlisted  = 0
     enrolled_ever = await db.scalar(
         select(func.count()).select_from(StudentGroup)
     ) or 0

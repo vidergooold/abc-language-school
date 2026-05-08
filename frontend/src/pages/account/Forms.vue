@@ -67,6 +67,11 @@
             <p>📞 {{ f.phone }}</p>
             <p v-if="f.email">📧 {{ f.email }}</p>
             <p v-if="f.comment">💬 {{ f.comment }}</p>
+            <div v-if="detailEntries(f).length" class="details-grid">
+              <p v-for="[key, value] in detailEntries(f)" :key="`${f.id}-${key}`">
+                <strong>{{ fieldLabel(key) }}:</strong> {{ fieldValue(value) }}
+              </p>
+            </div>
           </div>
           <div class="form-card__actions">
             <button v-if="f.status === 'new'" class="btn-process" @click="markProcessed(f.id)">✅ Отметить обработанной</button>
@@ -90,6 +95,54 @@ const search = ref('')
 const filterType = ref('')
 const filterStatus = ref('')
 
+const HIDDEN_DETAIL_KEYS = new Set(['phone', 'email', 'fio'])
+
+const FIELD_LABELS: Record<string, string> = {
+  age: 'Возраст',
+  birthdate: 'Дата рождения',
+  school: 'Школа',
+  grade: 'Класс',
+  shift: 'Смена',
+  extended: 'Продленка',
+  parent_fio: 'ФИО родителя',
+  parent_work: 'Место работы родителя',
+  address: 'Адрес',
+  studied_before: 'Изучал ранее',
+  where_how: 'Где и как изучал',
+  notes: 'Примечание',
+  kindergarten: 'Детский сад',
+  group: 'Группа',
+  pickup_time: 'Время, когда забирают',
+  work: 'Место работы',
+  birth_info: 'Дата и место рождения',
+  marital_status: 'Семейное положение',
+  education: 'Образование',
+  work_experience: 'Опыт работы',
+  language_level: 'Уровень языка',
+  skills: 'Навыки',
+  qualities: 'Личные качества',
+  test_level: 'Уровень тестирования',
+  payer_fio: 'ФИО плательщика',
+  payer_inn: 'ИНН плательщика',
+  payer_birthdate: 'Дата рождения плательщика',
+  payer_passport_series: 'Серия паспорта плательщика',
+  payer_passport_number: 'Номер паспорта плательщика',
+  payer_passport_date: 'Дата выдачи паспорта плательщика',
+  payer_department_code: 'Код подразделения плательщика',
+  payer_phone: 'Телефон плательщика',
+  student_fio: 'ФИО обучающегося',
+  student_inn: 'ИНН обучающегося',
+  student_birthdate: 'Дата рождения обучающегося',
+  student_doc_type: 'Тип документа обучающегося',
+  student_doc_series: 'Серия документа обучающегося',
+  student_doc_number: 'Номер документа обучающегося',
+  student_doc_date: 'Дата выдачи документа обучающегося',
+  period: 'Период',
+  cost: 'Стоимость',
+  has_contracts: 'Наличие договоров',
+  delivery_method: 'Способ получения',
+}
+
 const types = computed(() => [...new Set(forms.value.map((f: any) => f.type).filter(Boolean))])
 const filtered = computed(() =>
   forms.value
@@ -97,6 +150,25 @@ const filtered = computed(() =>
     .filter(f => !filterType.value || f.type === filterType.value)
     .filter(f => !filterStatus.value || f.status === filterStatus.value)
 )
+
+function fieldLabel(key: string): string {
+  if (FIELD_LABELS[key]) return FIELD_LABELS[key]
+  return key.split('_').join(' ')
+}
+
+function fieldValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '—'
+  if (typeof value === 'boolean') return value ? 'Да' : 'Нет'
+  return String(value)
+}
+
+function detailEntries(form: any): Array<[string, unknown]> {
+  if (!form?.details || typeof form.details !== 'object') return []
+  return Object.entries(form.details).filter(([key, value]) => {
+    if (HIDDEN_DETAIL_KEYS.has(key)) return false
+    return value !== null && value !== undefined && value !== ''
+  })
+}
 
 async function load() {
   try { const r = await http.get('/admin/forms'); forms.value = r.data } catch {}
@@ -139,6 +211,7 @@ onMounted(load)
 .status-new { background: #fff3cd; color: #856404; }
 .status-done { background: #d4edda; color: #155724; }
 .form-card__body p { font-size: 14px; color: #555; margin: 3px 0; }
+.details-grid { margin-top: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 6px 14px; }
 .form-card__actions { display: flex; gap: 10px; margin-top: 12px; }
 .btn-process { background: #d4edda; color: #155724; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
 .btn-del { background: #ffeaea; color: var(--brand-red); border: none; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }

@@ -3,6 +3,12 @@
 ## Overview
 Comprehensive backend system for managing a language school with 15+ database tables, advanced scheduling logic, automated notifications, and detailed economic analytics.
 
+## Deployment Infrastructure
+
+- Frontend: **Vercel**
+- Backend: **Railway**
+- Database: **Railway PostgreSQL plugin** (use standard Railway SSL with `sslmode=require`; custom CA certificates are not required)
+
 ## Database Architecture
 
 ### 15 Comprehensive Tables:
@@ -179,8 +185,9 @@ Response:
 backend/
 ├── app/
 │   ├── main.py              # Main application
-│   ├── database.py          # Database configuration  
-│   ├── models.py            # 15 SQLAlchemy models
+│   ├── core/
+│   │   └── database.py      # Database configuration
+│   ├── models/              # SQLAlchemy models
 │   └── routers/
 │       ├── scheduler.py     # Schedule management
 │       ├── notifications.py # Notification system

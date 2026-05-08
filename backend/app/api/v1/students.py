@@ -55,9 +55,9 @@ async def get_student(
 async def create_student(
     data: StudentCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    _=Depends(require_admin),
 ):
-    """Создать студента вручную — для сотрудников"""
+    """Создать студента вручную — только администратор"""
     student = Student(**data.model_dump())
     db.add(student)
     await db.commit()
@@ -70,7 +70,7 @@ async def update_student(
     student_id: int,
     data: StudentUpdate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    _=Depends(require_admin),
 ):
     result = await db.execute(select(Student).where(Student.id == student_id))
     student = result.scalar_one_or_none()

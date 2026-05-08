@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, date
 
 from app.core.database import get_db
 from app.core.security import require_admin
@@ -11,8 +12,11 @@ from app.models.forms import (
     TeacherForm,
     TestingForm,
     FeedbackForm,
+    TaxForm,
 )
 from app.models.group import Group
+from app.models.student import Student
+from app.models.teacher import Teacher
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -22,6 +26,23 @@ def _fmt_dt(dt):
     if dt is None:
         return None
     return dt.strftime("%d.%m.%Y %H:%M")
+
+
+def _serialize_form_details(row):
+    """Сериализация всех полей анкеты (кроме служебных) для админ-интерфейса."""
+    excluded = {"id", "status", "comment", "created_at"}
+    details = {}
+
+    for col in row.__table__.columns:
+        key = col.name
+        if key in excluded:
+            continue
+        value = getattr(row, key, None)
+        if isinstance(value, (datetime, date)):
+            value = _fmt_dt(value)
+        details[key] = value
+
+    return details
 
 
 # ---------------------------------------------------------------------------
@@ -42,19 +63,21 @@ async def get_all_forms(
         (PreschoolForm, "preschool"),
         (TeacherForm, "teacher"),
         (TestingForm, "testing"),
+        (TaxForm, "tax"),
     ]:
         result = await db.execute(select(model).order_by(model.id.desc()))
         for row in result.scalars().all():
             forms.append({
                 "id": row.id,
                 "type": type_label,
-                "fio": row.fio,
-                "phone": row.phone,
+                "fio": getattr(row, "fio", None) or getattr(row, "payer_fio", None) or "—",
+                "phone": getattr(row, "phone", None) or getattr(row, "payer_phone", None),
                 "email": getattr(row, "email", None),
                 "comment": getattr(row, "comment", None),
                 "status": getattr(row, "status", "new"),
                 "created_at": _fmt_dt(getattr(row, "created_at", None)),
                 "date": _fmt_dt(getattr(row, "created_at", None)),
+                "details": _serialize_form_details(row),
             })
 
     forms.sort(key=lambda x: x["created_at"] or "", reverse=True)
@@ -72,7 +95,7 @@ async def update_form(
     _=Depends(require_admin),
 ):
     """Обновить статус или комментарий анкеты."""
-    models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm]
+    models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm, TaxForm]
 
     for model in models:
         row = await db.get(model, form_id)
@@ -96,7 +119,7 @@ async def delete_form(
     _=Depends(require_admin),
 ):
     """Удалить анкету по ID во всех типах."""
-    models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm]
+    models = [ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm, TaxForm]
 
     for model in models:
         row = await db.get(model, form_id)
@@ -175,15 +198,19 @@ async def get_stats(
     preschool_count = await db.scalar(select(func.count()).select_from(PreschoolForm))
     teacher_count   = await db.scalar(select(func.count()).select_from(TeacherForm))
     testing_count   = await db.scalar(select(func.count()).select_from(TestingForm))
+    tax_count       = await db.scalar(select(func.count()).select_from(TaxForm))
     feedback_count  = await db.scalar(select(func.count()).select_from(FeedbackForm))
     groups_count    = await db.scalar(select(func.count()).select_from(Group))
+    student_count   = await db.scalar(select(func.count()).select_from(Student))
+    teacher_db_count = await db.scalar(select(func.count()).select_from(Teacher))
 
-    total_forms    = child_count + adult_count + preschool_count + teacher_count + testing_count
-    total_students = child_count + adult_count + preschool_count
+    total_forms    = child_count + adult_count + preschool_count + teacher_count + testing_count + tax_count
+    total_students = student_count
 
     return {
         "total_forms":     total_forms,
         "total_students":  total_students,
+        "total_teachers":  teacher_db_count,
         "total_feedback":  feedback_count,
         "schedule_groups": groups_count,
         "forms_by_type": {
@@ -192,6 +219,7 @@ async def get_stats(
             "preschool": preschool_count,
             "teacher":   teacher_count,
             "testing":   testing_count,
+            "tax":       tax_count,
         },
     }
 

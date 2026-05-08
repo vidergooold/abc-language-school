@@ -1,5 +1,16 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Enum as SAEnum, Time
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    Enum as SAEnum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Time,
+)
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
@@ -46,6 +57,12 @@ class Lesson(Base):
       3. аудитория уже занята в этот день+время
     """
     __tablename__ = "lessons"
+    __table_args__ = (
+        CheckConstraint("time_start < time_end", name="ck_lessons_time_range"),
+        Index("ix_lessons_group_slot", "group_id", "day_of_week", "time_start", "time_end"),
+        Index("ix_lessons_teacher_slot", "teacher_id", "day_of_week", "time_start", "time_end"),
+        Index("ix_lessons_classroom_slot", "classroom_id", "day_of_week", "time_start", "time_end"),
+        )
 
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)

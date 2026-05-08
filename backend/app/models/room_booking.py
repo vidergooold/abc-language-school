@@ -1,5 +1,17 @@
 from datetime import datetime, date, time
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SAEnum, Boolean, Text, Date, Time
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Enum as SAEnum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    Time,
+)
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
@@ -33,6 +45,9 @@ class RoomBooking(Base):
     - Автоматическая отмена если бронь не подтверждена за 24ч
     """
     __tablename__ = "room_bookings"
+    __table_args__ = (
+        CheckConstraint("time_start < time_end", name="ck_room_bookings_time_range"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     classroom_id = Column(Integer, ForeignKey("classrooms.id"), nullable=False)

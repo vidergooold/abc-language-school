@@ -30,22 +30,18 @@
               <th>Кабинет</th>
               <th>Филиал</th>
               <th>Программа</th>
-              <th>Тема</th>
-              <th>Статус</th>
               <th>Действия</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in filtered" :key="item.id">
-              <td class="col-group">{{ groupName(item.group_id) }}</td>
+              <td class="col-group">{{ shortGroupName(groupName(item.group_id)) }}</td>
               <td>{{ teacherName(item.teacher_id) }}</td>
-              <td class="col-days">{{ dayLabel(item.day_of_week) }}</td>
+              <td class="col-days">{{ groupDaysLabel(item.group_id) }}</td>
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
               <td>{{ branchName(item.branch_id) }}</td>
               <td>{{ programName(item.program_id) }}</td>
-              <td class="col-topic">{{ item.topic || '—' }}</td>
-              <td><span class="status-badge" :class="'s-' + item.status">{{ statusLabel(item.status) }}</span></td>
               <td class="col-actions">
                 <button class="btn-icon edit" @click="openEdit(item)" title="Редактировать">✏️</button>
                 <button
@@ -74,14 +70,14 @@
 
         <div class="form-grid">
           <label>Группа
-            <select v-model.number="form.group_id" required>
+            <select v-model.number="form.group_id" @change="onGroupSelect" required>
               <option value="">— выберите —</option>
-              <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
+              <option v-for="g in availableGroups" :key="g.id" :value="g.id">{{ shortGroupName(g.name) }}</option>
             </select>
           </label>
 
           <label>Преподаватель
-            <select v-model.number="form.teacher_id" required>
+            <select v-model.number="form.teacher_id" @change="onTeacherSelect" required>
               <option value="">— выберите —</option>
               <option v-for="t in teachers" :key="t.id" :value="t.id">{{ t.full_name || t.email }}</option>
             </select>
@@ -108,11 +104,13 @@
             </select>
           </label>
 
-          <label>День недели
-            <select v-model="form.day_of_week" required>
-              <option value="">— выберите —</option>
-              <option v-for="d in days" :key="d.key" :value="d.key">{{ d.label }}</option>
-            </select>
+          <label class="full">День недели
+            <div class="days-checkboxes">
+              <label v-for="d in dayOptions" :key="d.value">
+                <input type="checkbox" :value="d.value" v-model="form.day_of_week" />
+                {{ d.label }}
+              </label>
+            </div>
           </label>
 
           <label>Начало
@@ -199,13 +197,23 @@ const days = [
   { key: 'saturday',  label: 'Суббота' },
 ]
 
+const dayOptions = [
+  { value: 'monday',    label: 'Пн' },
+  { value: 'tuesday',   label: 'Вт' },
+  { value: 'wednesday', label: 'Ср' },
+  { value: 'thursday',  label: 'Чт' },
+  { value: 'friday',    label: 'Пт' },
+  { value: 'saturday',  label: 'Сб' },
+  { value: 'sunday',    label: 'Вс' },
+]
+
 const emptyForm = () => ({
   group_id: '' as number | '',
   teacher_id: '' as number | '',
   classroom_id: '' as number | '',
   branch_id: '' as number | '',
   program_id: '' as number | '',
-  day_of_week: '',
+  day_of_week: [] as string[],
   time_start: '',
   time_end: '',
   topic: '',
@@ -224,6 +232,16 @@ const filtered = computed(() =>
     .filter(i => !filterDay.value || i.day_of_week === filterDay.value)
 )
 
+const availableGroups = computed(() => {
+  if (!form.teacher_id) return groups.value
+  return groups.value.filter((group: any) => !group.teacher_id || group.teacher_id === form.teacher_id)
+})
+
+function shortGroupName(name: string) {
+  // Убираем " — Пн/Ср 09:00" и " Сб 09:00" и подобные суффиксы
+  const s = (name.split(' — ')[0] || name).replace(/ (Пн|Вт|Ср|Чт|Пт|Сб|Вс).*$/i, '')
+  return s.trim()
+}
 function groupName(id: number) {
   return groups.value.find(g => g.id === id)?.name || `Группа #${id}`
 }
@@ -240,15 +258,27 @@ function branchName(id: number) {
 function programName(id: number) {
   return programs.value.find(p => p.id === id)?.name || '—'
 }
+function groupDaysLabel(groupId: number): string {
+  const order = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
+  const short: Record<string, string> = {
+    monday: 'пн', tuesday: 'вт', wednesday: 'ср',
+    thursday: 'чт', friday: 'пт', saturday: 'сб', sunday: 'вс'
+  }
+  const days = [...new Set(
+    schedule.value
+      .filter((l: any) => l.group_id === groupId)
+      .map((l: any) => l.day_of_week as string)
+  )].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+  return days.map(d => short[d] || d).join('/')
+}
+
 function dayLabel(key: string) {
   return days.find(d => d.key === key)?.label || key
 }
 function fmt(t: string) {
   return t ? t.slice(0, 5) : ''
 }
-function statusLabel(s: string) {
-  return { scheduled: 'По расписанию', completed: 'Проведено', cancelled: 'Отменено', rescheduled: 'Перенесено' }[s] ?? s
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 function openCreate() {
   Object.assign(form, emptyForm())
@@ -258,14 +288,22 @@ function openCreate() {
   modal.value = true
 }
 
-function openEdit(item: any) {
+async function openEdit(item: any) {
+  let groupDays: string[] = []
+  try {
+    const res = await http.get('/schedule', { params: { group_id: item.group_id } })
+    const groupLessons = Array.isArray(res.data) ? res.data : []
+    groupDays = [...new Set(groupLessons.map((l: any) => l.day_of_week as string))]
+  } catch {
+    groupDays = [item.day_of_week]
+  }
   Object.assign(form, {
     group_id: item.group_id,
     teacher_id: item.teacher_id,
     classroom_id: item.classroom_id,
     branch_id: item.branch_id || '',
     program_id: item.program_id || '',
-    day_of_week: item.day_of_week,
+    day_of_week: groupDays,
     time_start: item.time_start.slice(0, 5),
     time_end: item.time_end.slice(0, 5),
     topic: item.topic || '',
@@ -277,12 +315,27 @@ function openEdit(item: any) {
   modal.value = true
 }
 
+function onTeacherSelect() {
+  if (!form.teacher_id) return
+  const currentGroup = groups.value.find((group: any) => group.id === form.group_id)
+  if (currentGroup && currentGroup.teacher_id && currentGroup.teacher_id !== form.teacher_id) {
+    form.group_id = ''
+  }
+}
+
+function onGroupSelect() {
+  const selectedGroup = groups.value.find((group: any) => group.id === form.group_id)
+  if (selectedGroup?.teacher_id) {
+    form.teacher_id = selectedGroup.teacher_id
+  }
+}
+
 function confirmCancel(item: any) {
   cancelTarget.value = item
 }
 
 async function saveLesson() {
-  if (!form.group_id || !form.teacher_id || !form.classroom_id || !form.day_of_week || !form.time_start || !form.time_end) {
+  if (!form.group_id || !form.teacher_id || !form.classroom_id || !form.day_of_week.length || !form.time_start || !form.time_end) {
     formError.value = 'Заполните все обязательные поля'
     return
   }
@@ -290,11 +343,14 @@ async function saveLesson() {
   formError.value = ''
   conflicts.value = []
   try {
-    const payload = { ...form }
     if (editingId.value) {
+      const payload = { ...form, day_of_week: form.day_of_week[0] }
       await http.put(`/schedule/${editingId.value}`, payload)
     } else {
-      await http.post('/schedule', payload)
+      for (const day of form.day_of_week) {
+        const payload = { ...form, day_of_week: day }
+        await http.post('/schedule', payload)
+      }
     }
     modal.value = false
     await loadSchedule()
@@ -415,6 +471,10 @@ onMounted(async () => {
 .form-grid input:focus, .form-grid select:focus { border-color: var(--brand-orange); }
 .checkbox-row { flex-direction: row !important; align-items: center; gap: 10px; }
 .checkbox-row input { width: 18px; height: 18px; }
+
+.days-checkboxes { display: flex; flex-wrap: wrap; gap: 10px; padding: 6px 0; }
+.days-checkboxes label { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.days-checkboxes input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 
 .conflict-box { background: #fff3dc; border-left: 4px solid #d9860a; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: 14px; }
 .conflict-box ul { margin: 6px 0 0 16px; }

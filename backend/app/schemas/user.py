@@ -14,5 +14,3 @@ class UserOut(BaseModel):
     full_name: Optional[str] = None
     role: Optional[str] = None
 
-    class Config:
-        from_attributes = True

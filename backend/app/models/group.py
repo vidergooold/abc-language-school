@@ -57,6 +57,7 @@ class Group(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)   # напр. "Группа A1-2024"
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
+    teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True)
     status = Column(SAEnum(GroupStatus), nullable=False, default=GroupStatus.recruiting)
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)
@@ -64,6 +65,7 @@ class Group(Base):
 
     # Связи
     course = relationship("Course", back_populates="groups")
+    teacher = relationship("Teacher", back_populates="groups")
     lessons = relationship("Lesson", back_populates="group", lazy="select")
     invoices = relationship("Invoice", back_populates="group", lazy="select")
     student_groups = relationship("StudentGroup", back_populates="group", lazy="select")

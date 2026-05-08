@@ -4,15 +4,29 @@
       <img src="/logo.png" alt="ABC Лингвоцентр" class="logo-img" />
     </RouterLink>
 
-    <nav class="nav">
-      <RouterLink to="/" class="nav-link">Главная</RouterLink>
+    <button
+      class="burger-btn"
+      type="button"
+      :aria-expanded="isMenuOpen"
+      :aria-label="isMenuOpen ? 'Закрыть меню' : 'Открыть меню'"
+      @click="isMenuOpen = !isMenuOpen"
+    >
+      ☰
+    </button>
+
+    <nav class="nav" :class="{ 'nav--open': isMenuOpen }">
+      <RouterLink to="/" class="nav-link" @click="closeAll">Главная</RouterLink>
 
       <div
         class="nav-item nav-dropdown"
         @mouseenter="openMenu('org')"
         @mouseleave="closeMenu('org')"
       >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'org' }">
+        <span
+          class="nav-dropdown__trigger"
+          :class="{ active: openMenuName === 'org' }"
+          @click.stop="toggleMenu('org')"
+        >
           Сведения об организации
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'org'">
@@ -39,7 +53,11 @@
         @mouseenter="openMenu('clients')"
         @mouseleave="closeMenu('clients')"
       >
-        <span class="nav-dropdown__trigger" :class="{ active: openMenuName === 'clients' }">
+        <span
+          class="nav-dropdown__trigger"
+          :class="{ active: openMenuName === 'clients' }"
+          @click.stop="toggleMenu('clients')"
+        >
           Действующим клиентам
         </span>
         <div class="nav-dropdown__menu" v-show="openMenuName === 'clients'">
@@ -51,11 +69,11 @@
         </div>
       </div>
 
-      <RouterLink to="/testing" class="nav-link">Пройти тестирование</RouterLink>
-      <RouterLink to="/enroll" class="nav-link">Стать участником</RouterLink>
-      <RouterLink to="/register" class="nav-link">Личный кабинет</RouterLink>
-      <RouterLink to="/jobs" class="nav-link">Хотите работать у нас?</RouterLink>
-      <a href="#feedback" class="nav-feedback" @click="scrollToFeedback">Обратная связь</a>
+      <RouterLink to="/testing" class="nav-link" @click="closeAll">Пройти тестирование</RouterLink>
+      <RouterLink to="/enroll" class="nav-link" @click="closeAll">Стать участником</RouterLink>
+      <RouterLink to="/register" class="nav-link" @click="closeAll">Личный кабинет</RouterLink>
+      <RouterLink to="/jobs" class="nav-link" @click="closeAll">Хотите работать у нас?</RouterLink>
+      <a href="#feedback" class="nav-feedback" @click="closeAllAndScrollToFeedback">Обратная связь</a>
     </nav>
   </header>
 </template>
@@ -65,6 +83,7 @@ import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 const openMenuName = ref<string | null>(null)
+const isMenuOpen = ref(false)
 
 function openMenu(name: string) {
   openMenuName.value = name
@@ -76,8 +95,12 @@ function closeMenu(name: string) {
 }
 function closeAll() {
   openMenuName.value = null
+  isMenuOpen.value = false
 }
-function scrollToFeedback(e: Event) {
+function toggleMenu(name: string) {
+  openMenuName.value = openMenuName.value === name ? null : name
+}
+function closeAllAndScrollToFeedback(e: Event) {
   e.preventDefault()
   closeAll()
   const el = document.getElementById('feedback')
@@ -217,5 +240,60 @@ function scrollToFeedback(e: Event) {
 .nav-feedback:hover {
   background: var(--brand-red);
   transform: translateY(-1px);
+}
+.burger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--brand-purple);
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 12px;
+    position: sticky;
+    overflow: visible;
+  }
+  .logo-img {
+    height: 56px;
+  }
+  .burger-btn {
+    display: flex;
+  }
+  .nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    z-index: 200;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  }
+  .nav.nav--open {
+    display: flex;
+  }
+  .nav-dropdown__menu {
+    position: static;
+    padding-top: 0;
+  }
+  .nav-dropdown__inner {
+    min-width: 100%;
+  }
+  .nav-dropdown__inner a {
+    white-space: normal;
+  }
+  .nav-feedback {
+    text-align: center;
+  }
 }
 </style>

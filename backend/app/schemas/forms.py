@@ -1,6 +1,7 @@
 from typing import Optional, Union
 from pydantic import BaseModel, field_validator
 
+
 class ChildFormCreate(BaseModel):
     fio: str
     age: Union[str, int, None] = None
@@ -18,7 +19,7 @@ class ChildFormCreate(BaseModel):
     whereHow: Optional[str] = None
     notes: Optional[str] = None
 
-    @field_validator('age', mode='before')
+    @field_validator("age", mode="before")
     @classmethod
     def convert_age_to_str(cls, v):
         if v is not None and isinstance(v, int):
@@ -60,14 +61,21 @@ class PreschoolFormCreate(BaseModel):
     pickupTime: Optional[str] = None
     notes: Optional[str] = None
 
+    @field_validator("age", mode="before")
+    @classmethod
+    def convert_age_to_str(cls, v):
+        if v is not None and isinstance(v, int):
+            return str(v)
+        return v
+
 
 class TeacherFormCreate(BaseModel):
     fio: str
-    birth_info: str
-    marital_status: str
+    birthInfo: str
+    maritalStatus: str
     education: str
-    work_experience: str
-    language_level: str
+    workExperience: str
+    languageLevel: str
     skills: Optional[str] = None
     qualities: Optional[str] = None
     address: str
@@ -91,8 +99,29 @@ class FeedbackFormCreate(BaseModel):
     message: Optional[str] = None
 
 
+class TaxFormCreate(BaseModel):
+    payerFio: str
+    payerInn: str
+    payerBirthdate: str
+    payerPassportSeries: str
+    payerPassportNumber: str
+    payerPassportDate: str
+    payerDepartmentCode: str
+    payerPhone: str
+
+    studentFio: str
+    studentInn: Optional[str] = None
+    studentBirthdate: str
+    studentDocType: str
+    studentDocSeries: str
+    studentDocNumber: str
+    studentDocDate: str
+
+    period: str
+    cost: Optional[str] = None
+    hasContracts: str
+    deliveryMethod: str
+
+
 class FormResponse(BaseModel):
     id: int
-
-    class Config:
-        from_attributes = True

@@ -15,6 +15,7 @@
 """
 from datetime import datetime, timedelta
 from typing import Optional
+import os
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -26,9 +27,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.user import User, UserRole
 
-SECRET_KEY = "super-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 часов
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not set in environment. Set it in .env or environment variables.")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))  # 8 часов
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
@@ -89,6 +92,10 @@ async def get_current_user(
 async def require_student(current_user: User = Depends(get_current_user)) -> User:
     """Любой аутентифицированный пользователь (student | teacher | admin)."""
     return current_user
+
+
+# Псевдоним для удобства: любой аутентифицированный пользователь
+require_auth = require_student
 
 
 async def require_staff(current_user: User = Depends(get_current_user)) -> User:
