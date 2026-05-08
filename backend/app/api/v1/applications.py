@@ -15,7 +15,7 @@ router = APIRouter(prefix="/applications", tags=["Applications"])
 @router.get("", response_model=List[EnrollmentListOut])
 async def list_applications(
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    _user=Depends(require_admin),
 ):
     """Админский список заявок (алиас для enrollment-заявок)."""
     result = await db.execute(select(Enrollment).order_by(Enrollment.created_at.desc()))

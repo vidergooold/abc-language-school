@@ -32,7 +32,7 @@ class TeacherGroupOut(BaseModel):
 async def get_teachers(
     branch_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    _user=Depends(require_staff),
 ):
     """Список активных преподавателей для сотрудников школы."""
     base_query = select(Teacher).where(Teacher.is_active == True)
