@@ -238,12 +238,22 @@ async function loadMatrix() {
     const params: Record<string, string> = {}
     if (filters.date_from) params.date_from = filters.date_from
     if (filters.date_to) params.date_to = filters.date_to
-    const res = await http.get(`/attendance/group/${filters.group_id}/grades`, { params })
-    groupInfo.value = res.data.group
-    students.value = res.data.students || []
-    lessons.value = res.data.lessons || []
-    records.value = res.data.records || {}
-    attentionIds.value = new Set<number>(res.data.attention_student_ids || [])
+    params.group_id = String(filters.group_id)
+
+    let payload: any = null
+    try {
+      const res = await http.get('/progress', { params })
+      payload = res.data
+    } catch {
+      const fallback = await http.get('/students', { params: { ...params, with_grades: true } })
+      payload = fallback.data
+    }
+
+    groupInfo.value = payload?.group || null
+    students.value = payload?.students || []
+    lessons.value = payload?.lessons || []
+    records.value = payload?.records || {}
+    attentionIds.value = new Set<number>(payload?.attention_student_ids || [])
   } catch {
     resetMatrix()
   } finally {

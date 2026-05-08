@@ -101,10 +101,20 @@ async function loadUsers() {
   loading.value = true
   error.value = ''
   try {
-    const res = await http.get('/admin/users')
-    users.value = Array.isArray(res.data) ? res.data : []
+    const res = await http.get('/applications', { params: { status: 'pending' } })
+    const rows = Array.isArray(res.data) ? res.data : []
+    users.value = rows.map((row: any) => {
+      const user = row.user || row
+      return {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name ?? null,
+        role: user.role ?? 'student',
+        is_active: user.is_active ?? true,
+      }
+    })
   } catch (e: any) {
-    error.value = e?.response?.data?.detail || 'Не удалось загрузить список пользователей'
+    error.value = e?.response?.data?.detail || 'Не удалось загрузить заявки'
     users.value = []
   } finally {
     loading.value = false

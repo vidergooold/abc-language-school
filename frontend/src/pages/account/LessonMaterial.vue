@@ -255,7 +255,7 @@ async function loadLessons() {
   if (!filters.group_id) { lessons.value = []; return }
   loading.value = true
   try {
-    lessons.value = (await http.get('/schedule', { params: { group_id: filters.group_id } })).data
+    lessons.value = (await http.get('/materials', { params: { group_id: filters.group_id } })).data
   } catch { lessons.value = [] }
   finally { loading.value = false }
 }

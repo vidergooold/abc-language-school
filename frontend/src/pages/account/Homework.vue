@@ -1,6 +1,30 @@
 <template>
   <div class="homework-page">
     <h1>Домашнее задание</h1>
+    <template v-if="auth.isStudent">
+      <div v-if="loading" class="skeleton-list">
+        <div class="skeleton-card" v-for="n in 4" :key="n"></div>
+      </div>
+      <div v-else-if="studentError" class="empty-state">
+        <p>{{ studentError }}</p>
+      </div>
+      <div v-else-if="sortedHomeworks.length" class="journal-wrap">
+        <div class="journal-head">
+          <div class="jh-date">Дата</div>
+          <div class="jh-task">Задание</div>
+        </div>
+        <div v-for="hw in sortedHomeworks" :key="hw.id" class="journal-row">
+          <div class="jr-date">{{ formatDateTime(hw.lesson_date || hw.created_at) }}</div>
+          <div class="jr-task">
+            <span class="task-text">{{ hw.description || hw.title || '—' }}</span>
+          </div>
+        </div>
+      </div>
+      <div v-else class="empty-state">
+        <p>Нет данных</p>
+      </div>
+    </template>
+    <template v-else>
 
     <!-- Оранжевая панель фильтров -->
     <div class="filters-card report-filters">
@@ -123,6 +147,7 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -138,6 +163,7 @@ const saving = ref(false)
 const modal = ref(false)
 const editingId = ref<number | null>(null)
 const formError = ref('')
+const studentError = ref('')
 
 const branches = ref<any[]>([])
 const teachers = ref<any[]>([])
@@ -215,9 +241,27 @@ function clearFilters() {
 }
 
 onMounted(async () => {
+  if (auth.isStudent) {
+    await loadMyHomeworks()
+    return
+  }
   await Promise.all([loadBranches()])
   if (auth.isTeacher) await resolveMyTeacherId()
 })
+
+async function loadMyHomeworks() {
+  loading.value = true
+  studentError.value = ''
+  try {
+    const res = await http.get('/homeworks/my')
+    homeworks.value = Array.isArray(res.data) ? res.data : []
+  } catch {
+    homeworks.value = []
+    studentError.value = 'Не удалось загрузить домашние задания'
+  } finally {
+    loading.value = false
+  }
+}
 
 async function resolveMyTeacherId() {
   try {

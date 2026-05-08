@@ -228,8 +228,7 @@ const availableGroups = computed(() => {
 
 async function load() {
   try {
-    const url = auth.user?.role === 'admin' ? '/teachers/all' : '/teachers'
-    const res = await http.get(url)
+    const res = await http.get('/teachers')
     teachers.value = res.data
   } catch {
     teachers.value = []
@@ -455,4 +454,3 @@ onMounted(load)
 .btn-add-group:hover:not(:disabled) { background: #e55a00; }
 .btn-add-group:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
-
