@@ -100,8 +100,8 @@ The following model tables **exist in Python models but have NO `op.create_table
 
 | File | Issue | Fixed |
 |------|-------|-------|
-| `backend/app/core/security.py` | `SECRET_KEY = "super-secret-key"` hardcoded | ✅ Fixed — now reads `os.getenv("SECRET_KEY", "super-secret-key")` |
-| `backend/app/core/scheduler.py` | `http://127.0.0.1:8000/api/v1/admin/news/publish-scheduled` hardcoded | ✅ Fixed — now reads `APP_BASE_URL` from environment |
+| `backend/app/core/security.py` | `SECRET_KEY = "super-secret-key"` hardcoded | ✅ Fixed — now raises `RuntimeError` if `SECRET_KEY` env var is not set |
+| `backend/app/core/scheduler.py` | `http://127.0.0.1:8000/api/v1/admin/news/publish-scheduled` hardcoded | ✅ Fixed — reads `APP_BASE_URL` from env; logs a warning if unset |
 | `backend/app/api/main.py` | `http://localhost:5173` and `http://localhost:3000` in old CORS config | ℹ️ Not an issue — an older version had this; current `main.py` uses `allow_origins=["*"]` |
 | `backend/requirements.txt` | `python-dotenv>=1.0.0` listed twice (duplicate line) | ⚠️ Minor — harmless but should be cleaned up |
 

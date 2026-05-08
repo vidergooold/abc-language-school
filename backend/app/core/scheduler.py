@@ -8,7 +8,11 @@ scheduler = AsyncIOScheduler()
 
 def _get_base_url() -> str:
     """Возвращает базовый URL приложения из переменной окружения."""
-    return os.getenv("APP_BASE_URL", "http://127.0.0.1:8000")
+    url = os.getenv("APP_BASE_URL")
+    if not url:
+        print("[Scheduler] WARNING: APP_BASE_URL is not set; falling back to http://127.0.0.1:8000")
+        return "http://127.0.0.1:8000"
+    return url
 
 async def publish_scheduled_news():
     """Вызывает эндпоинт публикации каждые 5 минут."""
