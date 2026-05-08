@@ -221,7 +221,6 @@ async def get_course_popularity(
     Популярность курсов:
     - Количество активных студентов
     - Количество групп
-    - Количество человек в листе ожидания
     - Доля заполненности групп
     """
     courses_result = await db.execute(select(Course).where(Course.is_active == True))
@@ -237,7 +236,6 @@ async def get_course_popularity(
         groups_count = await db.scalar(
             select(func.count()).select_from(Group).where(Group.course_id == course.id)
         ) or 0
-        waitlist_count = 0
         max_capacity = groups_count * course.max_students if groups_count > 0 else course.max_students
         fill_rate = round(students_count / max_capacity * 100, 1) if max_capacity > 0 else 0
 
@@ -248,7 +246,6 @@ async def get_course_popularity(
             "level":          course.level,
             "students_count": students_count,
             "groups_count":   groups_count,
-            "waitlist_count": waitlist_count,
             "fill_rate_pct":  fill_rate,
             "price_per_month": course.price_per_month,
         })
@@ -262,12 +259,11 @@ async def get_enrollment_funnel(
 ):
     """
     Воронка записи:
-    1. Заявки (forms) → 2. Лист ожидания → 3. Зачислены → 4. Активны сейчас
+    1. Заявки (forms) → 2. Зачислены → 3. Активны сейчас
     Показывает конверсию на каждом шаге.
     """
     from app.models.forms import AdultForm
     total_forms = await db.scalar(select(func.count()).select_from(AdultForm)) or 0
-    waitlisted  = 0
     enrolled_ever = await db.scalar(
         select(func.count()).select_from(StudentGroup)
     ) or 0
@@ -280,7 +276,6 @@ async def get_enrollment_funnel(
 
     return [
         {"stage": "Заявки",            "count": total_forms,   "conversion_pct": 100},
-        {"stage": "Лист ожидания",     "count": waitlisted,    "conversion_pct": conv(waitlisted, total_forms)},
         {"stage": "Когда-либо зачислен","count": enrolled_ever, "conversion_pct": conv(enrolled_ever, total_forms)},
         {"stage": "Активны сейчас",    "count": active_now,    "conversion_pct": conv(active_now, total_forms)},
     ]
