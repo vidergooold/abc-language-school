@@ -1,4 +1,3 @@
-from .homework import Homework
 # Импорт всех моделей для корректной инициализации маппера SQLAlchemy.
 # Порядок важен: сначала независимые модели, затем те, что ссылаются на них.
 
@@ -15,12 +14,11 @@ from app.models.enrollment import Enrollment
 from app.models.payment import Payment
 from app.models.news import News
 from app.models.notification import Notification
-from app.models.waitlist import WaitlistEntry, WaitlistStatus
 from app.models.forms import ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm, FeedbackForm, TaxForm
-from app.models.discount import Discount, DiscountType, DiscountReason
 from app.models.room_booking import RoomBooking, BookingStatus, BookingPurpose
 from app.models.audit import AuditLog
 from app.models.report import ReportCache
+from app.models.message import Message
 
 __all__ = [
     "User",
@@ -48,8 +46,6 @@ __all__ = [
     "Payment",
     "News",
     "Notification",
-    "WaitlistEntry",
-    "WaitlistStatus",
     "ChildForm",
     "AdultForm",
     "PreschoolForm",
@@ -57,15 +53,10 @@ __all__ = [
     "TestingForm",
     "FeedbackForm",
     "TaxForm",
-    "Discount",
-    "DiscountType",
-    "DiscountReason",
     "RoomBooking",
     "BookingStatus",
     "BookingPurpose",
     "AuditLog",
     "ReportCache",
-    "Homework",
+    "Message",
 ]
-
-from .message import Message
