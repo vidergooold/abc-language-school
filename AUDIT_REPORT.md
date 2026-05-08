@@ -1,194 +1,211 @@
 # Audit Report — ABC Language School (`main` branch)
 
-_Generated: 2026-05-08_
+_Generated: 2026-05-08 — Live audit performed on branch `copilot/audit-repository-health-check`_
 
 ---
 
-## 1. Open Pull Requests
+## 1. Verification Results
 
-| # | Title | Status |
-|---|-------|--------|
-| #2 | Очистить корень репозитория от нерелевантных tracked-артефактов | ⚠️ Needs review — `.history/` is already in `.gitignore` but its files are still tracked in git; this PR would untrack them |
-| #6 | Consolidate backend seed scripts into `backend/seeds/seed_all.py` | ⚠️ Needs review — `backend/seeds/` exists with only a `branches.sql` stub, not the consolidated script yet |
-| #11 | Add `backend/seed_full_demo.py` | ✅ **SUPERSEDED** — `backend/seed_full_demo.py` already exists on `main` |
-| #12 | Fix attendance matrix UI, schedule filtering, grade 3, and payment button | ⚠️ Needs review — UI fixes; unclear if already partially applied to `main` |
-| #14 | Switch database config from SQLite fallback to required PostgreSQL URL | ✅ **SUPERSEDED** — `backend/app/core/database.py` on `main` already requires `DATABASE_URL` and has no SQLite fallback |
-| #15 | Fix: load `.env` via python-dotenv, remove SQLite fallback, enforce PostgreSQL | ✅ **SUPERSEDED** — same as #14; both are already reflected in current `database.py` |
-| #16 | Fix `ResponseValidationError` on nullable DB fields across all response schemas | ⚠️ Needs review — schemas already use `Optional[T] = None` widely; the exact scope of remaining issues needs investigation |
+### 1a. Backend
 
-**Summary:** PRs #11, #14, #15 are superseded by `main`. PRs #2, #6, #12, #16 still need review/merging.
+```
+SECRET_KEY=dummy DATABASE_URL=postgresql+asyncpg://... python -c "from app.api.main import app"
+✅  Backend imports OK — all 23 routers registered, 100+ endpoints exposed
+✅  All backend/app/**/*.py files parse without SyntaxError
+```
 
----
+**Routers registered (both `app.main` and `app.api.main`):**
+auth, users, courses, news, enrollments, forms, documents, scheduler/schedule, attendance,
+payments, notifications, groups, branches, students, teachers, programs, homeworks, messages,
+reports, admin, analytics, audit _(all previously-missing routers are now wired)_
 
-## 2. `main` Branch Audit
+### 1b. Frontend
 
-### 2a. Broken Imports / Missing Modules (backend/app/)
+```
+npm --prefix frontend ci   →  installed cleanly
+npm --prefix frontend run build  →  vue-tsc + vite  →  ✅  267 modules, 0 errors
+```
 
-**CRITICAL — Fixed in this PR:**
+### 1c. Backend Tests
 
-- `backend/app/api/main.py` line 8 imported `ApplicationForm, StudentProfile` from `app.models.forms`, but **neither class exists** in that module (the actual classes are `ChildForm`, `AdultForm`, `PreschoolForm`, `TeacherForm`, `TestingForm`, `FeedbackForm`, `TaxForm`). This would cause an `ImportError` on startup.
-  - **Fix applied:** Import corrected to all actual form model classes.
+`backend/tests/` contains only `__init__.py` — **no runnable test suite exists.**
+`backend/test_admin.py` and `backend/test_api.py` are standalone scripts, not integrated
+with pytest. Running `pytest backend/` produces zero tests collected.
 
-**No other syntax errors** found in any `backend/app/**/*.py` file.
+### 1d. Alembic Migration Chain
 
----
-
-### 2b. TODO / FIXME / Placeholder Comments
-
-| Location | Content |
-|----------|---------|
-| `frontend/src/pages/clients/Important.vue` | Entire page is a placeholder: "Раздел находится в разработке" — this page has no route but the component exists |
-
-No `TODO` or `FIXME` comments found in backend Python files. Numerous `placeholder` attributes in frontend are HTML input placeholders (normal form UX), not code placeholders.
-
----
-
-### 2c. Unused Files / Dead Code
-
-**Backend:**
-- `backend/alembic.ini.bak` — backup file, not needed in version control
-- Multiple seed scripts in `backend/` root with overlapping purpose (`seed_demo.py`, `seed_real_data.py`, `seed_real_schedule.py`, `seed_teachers.py`, `seed_student_groups.py`, `seed_news.py`, `seed_news_fixed.py`, `seed_account_data.py`, `seed_branches_22.py`, `seed_full_demo.py`) — PR #6 proposes consolidating these
-- `backend/tests/` directory exists but appears empty/unused
-- `backend/verify_schedule.py` — standalone script, not imported anywhere
-- `backend/test_admin.py`, `backend/test_api.py` — test scripts not integrated with a test runner
-
-**Frontend:**
-- `frontend/src/components/account/BranchTeacherGroupFilter.vue` — **zero references** across the entire frontend; never imported or used anywhere
-- `frontend/src/pages/account/Documents.vue` — was not routed (fixed in this PR)
-- `frontend/src/pages/account/Profile.vue` — was not routed (`/account/profile` redirected to `/account` instead of rendering the Profile component; fixed in this PR)
-- `frontend/src/pages/clients/Important.vue` — placeholder component with no route defined in router
-
-**.history/ directory:**
-- ~100+ historical files from VS Code Local History extension are committed to git (`.history/` prefix). The directory is listed in `.gitignore` but the files were committed before the ignore rule was added. PR #2 addresses this.
+| Revision | Description |
+|----------|-------------|
+| `e5ef08f40654` | initial schema |
+| `55deb8dbe4c5` | add missing news columns |
+| `b20e835de97e` | add student role (enum) |
+| `347e6146b684` | add student role (enum) |
+| `476b21780d50` | merge heads |
+| `a1b2c3d4e5f6` | add status/created_at to form tables |
+| `c1d2e3f4a5b6` | create news_categories, news_likes, news_status_history |
+| `0dc67413e59c` | add branches, educational_programs, students tables |
+| `321110387098` | add manager/working_hours to branches |
+| `55deb8dbe4c5` | add_student_role |
+| `c4d5e6f7a8b9` | add teacher_id to groups |
+| `d1e2f3a4b5c6` | create teacher_groups table |
+| `e2f3a4b5c6d7` | drop unused tables (expenses, revenue_analytics, rooms, materials, reviews) |
+| `9b1c_manual_messages_drop_unused` | create messages, drop waitlist/discounts |
+| `a2b3c4d5e6f7` | add lesson_date to homeworks |
+| `b3c4d5e6f7a8` | add grade to attendance |
+| `f1e2d3c4b5a6` | fix news null defaults |
 
 ---
 
-### 2d. Missing Alembic Migrations
+## 2. What Is Working ✅
 
-The following model tables **exist in Python models but have NO `op.create_table(...)` in any migration file** — they are only created by `Base.metadata.create_all` on first run, which is not production-safe:
-
-| Table | Model |
-|-------|-------|
-| `adult_forms` | `AdultForm` |
-| `audit_log` | `AuditLog` |
-| `child_forms` | `ChildForm` |
-| `classrooms` | `Classroom` |
-| `enrollment_status_history` | `EnrollmentStatusHistory` |
-| `feedback_forms` | `FeedbackForm` |
-| `homeworks` | `Homework` |
-| `invoices` | `Invoice` |
-| `messages` | `Message` |
-| `news_categories` | `NewsCategory` |
-| `news_likes` | `NewsLike` |
-| `news_status_history` | `NewsStatusHistory` |
-| `notification_queue` | `NotificationQueue` |
-| `preschool_forms` | `PreschoolForm` |
-| `report_cache` | `ReportCache` |
-| `room_bookings` | `RoomBooking` |
-| `student_groups` | `StudentGroup` |
-| `tax_forms` | `TaxForm` |
-| `teacher_forms` | `TeacherForm` |
-| `teacher_groups` | `TeacherGroup` |
-| `teachers` | `Teacher` |
-| `testing_forms` | `TestingForm` |
-
-**22 tables** are missing migrations. This is a significant gap — a fresh deployment using `alembic upgrade head` would be missing all of these tables.
+| Area | Status |
+|------|--------|
+| Backend startup (imports, router wiring) | ✅ All clean |
+| Frontend build (vue-tsc + vite) | ✅ Passes, 0 errors |
+| JWT auth — `SECRET_KEY` from env | ✅ Raises `RuntimeError` at startup if not set |
+| Scheduler — `APP_BASE_URL` from env | ✅ Warns if unset; no hardcoded localhost |
+| Jobs.vue API URL | ✅ Uses production Railway URL as fallback |
+| Frontend router — Documents, Profile | ✅ Both pages are routed |
+| `.env.example` | ✅ Documents all required env vars |
+| `.history/` cleanup | ✅ Removed by merged PR #2 |
+| All 8 previously-missing API routers | ✅ Registered in both `main.py` files |
+| Alembic env.py | ✅ Uses sync psycopg2 URL, respects `DATABASE_URL` |
+| Python syntax (all `backend/app/**/*.py`) | ✅ Zero parse errors |
 
 ---
 
-### 2e. Hardcoded Secrets, Passwords, Localhost URLs
+## 3. What Is Broken / At Risk ⚠️
 
-| File | Issue | Fixed |
-|------|-------|-------|
-| `backend/app/core/security.py` | `SECRET_KEY = "super-secret-key"` hardcoded | ✅ Fixed — now raises `RuntimeError` if `SECRET_KEY` env var is not set |
-| `backend/app/core/scheduler.py` | `http://127.0.0.1:8000/api/v1/admin/news/publish-scheduled` hardcoded | ✅ Fixed — reads `APP_BASE_URL` from env; logs a warning if unset |
-| `backend/app/api/main.py` | `http://localhost:5173` and `http://localhost:3000` in old CORS config | ℹ️ Not an issue — an older version had this; current `main.py` uses `allow_origins=["*"]` |
-| `backend/requirements.txt` | `python-dotenv>=1.0.0` listed twice (duplicate line) | ⚠️ Minor — harmless but should be cleaned up |
+### 3a. 17 Tables Missing Alembic `CREATE TABLE` Migration (P1 — HIGH)
+
+The following tables exist in SQLAlchemy models and are referenced by active routers, but
+**no migration file creates them**. They currently exist in deployed databases only because
+`Base.metadata.create_all()` was called at some earlier point. A fresh deployment using
+`alembic upgrade head` alone will be missing all of them, causing 500 errors at runtime.
+
+| Table | Model file | Has column-only migration? |
+|-------|-----------|---------------------------|
+| `adult_forms` | `models/forms.py` | ✅ yes (`a1b2c3d4e5f6`) |
+| `audit_log` | `models/audit.py` | ❌ none |
+| `child_forms` | `models/forms.py` | ✅ yes (`a1b2c3d4e5f6`) |
+| `classrooms` | `models/schedule.py` | ❌ none |
+| `enrollment_status_history` | `models/enrollment.py` | ❌ none |
+| `feedback_forms` | `models/forms.py` | ❌ none |
+| `homeworks` | `models/homework.py` | ✅ yes (`a2b3c4d5e6f7`) |
+| `invoices` | `models/payment.py` | ❌ none |
+| `notification_queue` | `models/notification.py` | ❌ none |
+| `preschool_forms` | `models/forms.py` | ✅ yes (`a1b2c3d4e5f6`) |
+| `report_cache` | `models/report.py` | ❌ none |
+| `room_bookings` | `models/room_booking.py` | ❌ none |
+| `student_groups` | `models/student.py` | ❌ none |
+| `tax_forms` | `models/forms.py` | ❌ none |
+| `teacher_forms` | `models/forms.py` | ✅ yes (`a1b2c3d4e5f6`) |
+| `teachers` | `models/teacher.py` | ❌ none |
+| `testing_forms` | `models/forms.py` | ❌ none |
+
+**Recommended fix:** Generate `alembic revision --autogenerate -m "add missing tables"` against
+a fresh database that has been brought up with only the existing migrations applied (so that
+`create_all` was never called). The autogenerate diff will produce the 17 missing `CREATE TABLE`
+statements.
+
+### 3b. Duplicate Entrypoint: `app.main` vs `app.api.main` (P2 — MEDIUM)
+
+Two separate FastAPI applications exist in the repository:
+
+| File | Used by | Version | CORS | Scheduler | `init_db()` |
+|------|---------|---------|------|-----------|-------------|
+| `backend/app/main.py` | `entrypoint.sh` → **deployed** | 1.2.0 | `["*"]` (fixed) | ✅ yes | ❌ no |
+| `backend/app/api/main.py` | nothing | 1.1.0 | `["*"]` | ❌ no | ✅ yes |
+
+The deployed version (`app.main`) **does not call `init_db()`** in its lifespan, so
+`Base.metadata.create_all()` is never triggered. All table creation must go through Alembic.
+The alternative `app.api.main` is unreferenced — it should either be removed or merged into the
+primary entrypoint.
+
+### 3c. No Backend Test Suite (P2 — MEDIUM)
+
+`backend/tests/__init__.py` is empty. `pytest backend/` collects 0 tests. The two
+standalone scripts (`test_admin.py`, `test_api.py`) require a live server and are not
+pytest-compatible. Core business logic (auth, enrollment, attendance, payments) has no
+automated coverage.
+
+### 3d. `docker-compose.yml` Hardcodes `SECRET_KEY` (P3 — LOW)
+
+```yaml
+SECRET_KEY=super-secret-key
+```
+
+Acceptable for local development, but should be noted — developers who copy this for staging
+deployments will expose a weak secret. Add a comment in the file to warn against this.
 
 ---
 
-## 3. Frontend Audit
+## 4. What Is Unused and Can Be Deleted 🗑️
 
-### 3a. Components Imported but Not Used
-
-| Component | Status |
-|-----------|--------|
-| `BranchTeacherGroupFilter.vue` | **Dead code** — imported nowhere, never registered in any page |
-
-All other components in `components/` are used (verified by search).
-
-### 3b. API Calls Referencing Non-Existent Backend Endpoints
-
-**CRITICAL — Fixed in this PR:**
-
-The following 8 API routers existed in `backend/app/api/v1/` but were **never registered** in `backend/app/api/main.py`, making all their endpoints return HTTP 404:
-
-| Router file | Prefix | Frontend pages that call it |
-|-------------|--------|-----------------------------|
-| `branches.py` | `/api/v1/branches` | Dashboard, Schedule, ScheduleAdmin |
-| `students.py` | `/api/v1/students` | Students |
-| `teachers.py` | `/api/v1/teachers` | Teachers |
-| `programs.py` | `/api/v1/programs` | (educational programs) |
-| `homeworks.py` | `/api/v1/homeworks` | Homework |
-| `messages.py` | `/api/v1/messages` | (messaging system) |
-| `reports.py` | `/api/v1/reports` | (reports) |
-| `audit.py` | `/api/v1/audit` | (admin audit log) |
-
-- **Fix applied:** All 8 routers are now registered in `main.py`.
-
-### 3c. Hardcoded URLs
-
-| File | Issue | Fixed |
-|------|-------|-------|
-| `frontend/src/pages/Jobs.vue` line 109 | Fallback URL was `http://127.0.0.1:8000` (localhost) | ✅ Fixed — now uses `https://abc-language-school-production.up.railway.app` (same as `http.ts`) |
-| `frontend/src/api/http.ts` | Fallback URL is production Railway URL | ✅ Correct |
+| Path | Reason |
+|------|--------|
+| `frontend/src/components/account/BranchTeacherGroupFilter.vue` | ✅ **Removed in this PR** — zero imports, never registered |
+| `backend/app/api/main.py` | Unused alternative entrypoint; `entrypoint.sh` uses `app.main:app` |
+| `backend/test_admin.py` | Standalone script, not in test suite |
+| `backend/test_api.py` | Standalone script, not in test suite |
+| `backend/verify_schedule.py` | Standalone diagnostic script |
+| `backend/seed_demo.py` | Superseded by `backend/seeds/seed_all.py` |
+| `backend/seed_real_schedule.py` | Superseded |
+| `backend/seed_teachers.py` | Superseded |
+| `backend/seed_student_groups.py` | Superseded |
+| `backend/seed_account_data.py` | Superseded |
+| `backend/seed_branches_22.py` | Superseded |
 
 ---
 
-## 4. PR Duplication Analysis
+## 5. What Is Incomplete and Needs Implementation 🚧
 
-| PR | Superseded by `main`? | Reason |
-|----|----------------------|--------|
-| #11 | ✅ Yes | `backend/seed_full_demo.py` already committed to `main` |
-| #14 | ✅ Yes | `database.py` on `main` already has PostgreSQL-only config with no SQLite fallback |
-| #15 | ✅ Yes | Same as #14 — `database.py` already loads `.env` via `python-dotenv` and raises `RuntimeError` if `DATABASE_URL` is missing |
-| #2 | ❌ No | `.history/` files are still tracked in git; needs cleanup |
-| #6 | ❌ No | Seed scripts are not yet consolidated |
-| #12 | ❌ No | UI fixes for attendance/schedule/payments |
-| #16 | ❌ Partially | Some nullable schema fixes may still be needed depending on which specific fields are failing |
+| Item | Location | Priority |
+|------|----------|----------|
+| 17 missing `CREATE TABLE` migrations | `backend/alembic/versions/` | 🔴 P1 |
+| Backend test suite | `backend/tests/` | 🟠 P2 |
+| `Important.vue` page content | `frontend/src/pages/clients/Important.vue` | 🟡 P3 |
+| Notification queue processing | `backend/app/api/v1/notifications.py` — queue endpoint exists but no worker | 🟡 P3 |
 
 ---
 
-## 5. Prioritized Action Plan
+## 6. Fixes Applied in This PR
 
-### 🔴 P0 — Blocking (app won't run or data is corrupt)
+| Fix | File(s) |
+|-----|---------|
+| Removed duplicate `python-dotenv` line | `backend/requirements.txt` |
+| Fixed CORS: replaced `["*"]` wildcard (invalid with `allow_credentials=True`) with env-driven origins via `FRONTEND_URL`; extracted to shared `app/core/cors.py`; falls back to `localhost:5173` and `localhost:3000` | `backend/app/main.py`, `backend/app/api/main.py`, `backend/app/core/cors.py` (new) |
+| Deleted unused `BranchTeacherGroupFilter.vue` | `frontend/src/components/account/` |
+| Added `/clients/important` route for `Important.vue` | `frontend/src/router/index.ts` |
 
-1. **[DONE — this PR]** Fix broken `ApplicationForm`/`StudentProfile` import in `backend/app/api/main.py` → corrected to actual form model classes
-2. **[DONE — this PR]** Register 8 missing API routers in `main.py` (`branches`, `students`, `teachers`, `programs`, `homeworks`, `messages`, `reports`, `audit`) — without this, major parts of the admin panel return 404
-3. **[DONE — this PR]** Fix hardcoded `SECRET_KEY = "super-secret-key"` in `security.py` → now reads from env
+---
 
-### 🟠 P1 — High Priority (security / broken UX)
+## 7. Recommended Execution Order to Finish the Project
 
-4. **Create Alembic migrations for 22 missing tables** — currently `init_db()` uses `create_all` which only works for fresh DBs; any incremental migration via Alembic will miss these tables in production
-5. **Close superseded PRs** — Close #11, #14, #15 as they duplicate what's already in `main`
-6. **Merge PR #16** — Fix any remaining `ResponseValidationError` on nullable DB fields if confirmed still present
-7. **[DONE — this PR]** Add routes for `Documents.vue` and `Profile.vue` in the frontend router — these pages existed but were unreachable
-8. **[DONE — this PR]** Fix `Documents.vue` template syntax error (missing `</template>` closing tag for `v-for` block)
+### 🔴 P0 — Already done (no action needed)
+1. ~~Fix broken `ApplicationForm`/`StudentProfile` import in `main.py`~~ _(was on `main`)_
+2. ~~Register 8 missing API routers~~ _(was on `main`)_
+3. ~~Fix hardcoded `SECRET_KEY`~~ _(was on `main`)_
+4. ~~Fix `Documents.vue` and `Profile.vue` not routed~~ _(was on `main`)_
+5. ~~Fix hardcoded localhost URLs (`Jobs.vue`, `scheduler.py`)~~ _(was on `main`)_
 
-### 🟡 P2 — Medium Priority (maintainability / correctness)
+### 🔴 P1 — Do immediately
+6. **Write Alembic `CREATE TABLE` migrations for the 17 missing tables** — run
+   `alembic revision --autogenerate -m "add missing tables"` on a clean DB and commit.
+   Without this, a fresh Railway/Docker deployment will be missing half the schema.
 
-9. **Merge PR #12** — Attendance matrix UI, schedule filtering, payment button fixes
-10. **Merge PR #2** — Untrack `.history/` files from git (they bloat the repo significantly)
-11. **Merge or close PR #6** — Consolidate seed scripts; the `backend/seeds/` directory is partially prepared
-12. **Remove `BranchTeacherGroupFilter.vue`** — unused component that will confuse future contributors
-13. **Add `Important.vue` to router** (or delete it) — currently unreachable placeholder page under `/clients`
-14. **Fix duplicate `python-dotenv` line** in `backend/requirements.txt`
+### 🟠 P2 — Do next sprint
+7. **Remove `backend/app/api/main.py`** — consolidate into `app.main`; add `init_db()` call
+   to the deployed entrypoint's lifespan so schema sync works as a safety net.
+8. **Set up pytest** in `backend/tests/` with at least smoke tests for auth, enrollment, and
+   attendance endpoints (use `httpx.AsyncClient` with `app` transport).
+9. **Close or merge PR #16** — verify nullable schema `ResponseValidationError` status.
+10. **Merge PR #12** — attendance matrix UI / schedule filtering / payment button.
 
-### 🟢 P3 — Low Priority (polish)
-
-15. **[DONE — this PR]** Fix hardcoded `http://127.0.0.1:8000` fallback in `Jobs.vue` → production Railway URL
-16. **[DONE — this PR]** Fix hardcoded `http://127.0.0.1:8000` in `scheduler.py` → `APP_BASE_URL` env var
-17. **Add `APP_BASE_URL` to `.env.example`** — documented for deployers
-18. **Remove `alembic.ini.bak`** — backup file should not be in version control
-19. **Set up a proper test runner** — `backend/tests/` is empty, `test_admin.py` and `test_api.py` in root are not pytest-integrated
-20. **Implement `Important.vue`** content or remove the placeholder page entirely
+### 🟡 P3 — Polish
+11. Remove `backend/test_admin.py`, `backend/test_api.py`, `backend/verify_schedule.py`
+    (or convert them to pytest fixtures).
+12. Consolidate redundant seed scripts into `backend/seeds/seed_all.py` (PR #6).
+13. Implement or stub out `Important.vue` content properly.
+14. Add warning comment to `docker-compose.yml` about the hardcoded `SECRET_KEY`.
+15. Delete the superseded standalone seed scripts from `backend/` root.

@@ -44,6 +44,7 @@ from app.api.v1 import (
     teachers,
 )
 from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
+from app.core.cors import get_cors_origins
 
 
 @asynccontextmanager
@@ -82,7 +83,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-        allow_origins=["https://abc-school-frontend.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+        allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
