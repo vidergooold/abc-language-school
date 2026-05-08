@@ -1,218 +1,126 @@
-# ABC Language School - Advanced Backend System
+# ABC Language School — Backend
 
-## Overview
-Comprehensive backend system for managing a language school with advanced scheduling logic, automated notifications, and detailed economic analytics.
+FastAPI backend for the ABC Language School management system. Handles authentication, scheduling, attendance, payments, notifications, and analytics.
 
 ## Deployment Infrastructure
 
-- Frontend: **Vercel**
-- Backend: **Railway**
-- Database: **Railway PostgreSQL plugin** (use standard Railway SSL with `sslmode=require`; custom CA certificates are not required)
+- **Backend**: Railway (start command: `entrypoint.sh` → `uvicorn app.main:app`)
+- **Database**: Railway PostgreSQL plugin (`sslmode=require`; no custom CA needed)
+- **Frontend**: Vercel (see root `README.md`)
 
-## Database Architecture
-
-### Core application tables include:
-
-1. **Users** - Student, teacher, admin, and manager accounts
-2. **Courses** - Language courses with levels (beginner to advanced)
-3. **Groups** - Course groups with enrollment tracking
-4. **Lessons** - Individual lessons with schedule management
-5. **Rooms** - Classroom management and availability
-6. **Enrollments** - Student course enrollments
-7. **Payments** - Payment processing and tracking
-8. **Attendance** - Student attendance records
-9. **News** - Article publishing system with draft/published states
-10. **Notifications** - Automated notification scheduling
-11. **Reviews** - Course reviews and ratings
-12. **Materials** - Course materials and resources
-13. **Expenses** - Business expense tracking
-14. **Revenue Analytics** - Automated financial reports
-
-## Key Features
-
-### 1. Advanced Schedule Management (routers/scheduler.py)
-- **Conflict Prevention**: Automatic detection of scheduling conflicts
-  - Teacher cannot have overlapping lessons
-  - Rooms cannot be double-booked
-  - Groups cannot have conflicting schedules
-- **Time Overlap Validation**: Smart time range conflict detection
-- **Available Room Finder**: Real-time room availability checking
-- **Teacher Schedule View**: Complete teacher schedule management
-
-### 2. Automated Notification System (routers/notifications.py)
-- **Scheduled Notifications**: Background task processing
-- **Bulk Notifications**: Mass notifications for announcements
-- **Role-Based Targeting**: Send to specific user roles
-- **Multiple Channels**: Email, SMS, push notification support
-- **Statistics & Monitoring**: Track sent/pending/failed notifications
-- **Cron-Compatible**: Endpoint for scheduled notification sending
-
-### 3. Economic Analytics (routers/analytics.py)
-- **Revenue Reports**: Comprehensive financial analysis
-  - Total revenue, expenses, net profit
-  - Profit margins
-  - Revenue per student
-- **Monthly Breakdowns**: Year-over-year analysis
-- **Course Profitability**: Revenue analysis by course
-- **Expense Categorization**: Detailed expense breakdowns
-- **Payment Statistics**: Success rates and average amounts
-- **Student Lifetime Value**: Customer value calculations
-- **Automated Report Generation**: Saved analytics reports
+---
 
 ## Installation
 
-### 1. Install Dependencies
+### 1. Install dependencies
+
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-### 2. Set Up Database
-```bash
-# Initialize database (creates all configured tables)
-python init_db.py
+### 2. Set environment variables
 
-# Populate with sample data
+Copy the root `.env.example` to `.env` and fill in all values. The backend reads the following variables at startup:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | ✅ | PostgreSQL connection URL (Railway sets this automatically). Use the `postgresql+asyncpg://...` scheme — Alembic's `env.py` strips the driver prefix automatically when running migrations. |
+| `SECRET_KEY` | ✅ | JWT signing secret. Backend raises `RuntimeError` at startup if missing. |
+| `ALGORITHM` | optional | JWT algorithm (default: `HS256`). |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | optional | Token lifetime in minutes (default: `480`). |
+| `APP_BASE_URL` | optional | Public backend URL used by the APScheduler for internal HTTP calls. Logs a warning if unset. |
+| `FRONTEND_URL` | optional | Allowed CORS origin (default: `localhost:5173`, `localhost:3000`). |
+| `ADMIN_EMAIL` | optional | Admin account email created by seed scripts. |
+| `ADMIN_PASSWORD` | optional | Admin account password. |
+| `MIGRATION_KEY` | optional | Secret header for the `POST /api/v1/admin/run-migrations` endpoint. |
+| `SMTP_SERVER` | optional | SMTP host for outgoing email. |
+| `SMTP_PORT` | optional | SMTP port. |
+| `SMTP_USERNAME` | optional | SMTP login. |
+| `SMTP_PASSWORD` | optional | SMTP app password. |
+
+### 3. Run database migrations
+
+```bash
+alembic upgrade head
+```
+
+Alembic reads `DATABASE_URL` from the environment and applies all migration files in `alembic/versions/` in order.
+
+### 4. Seed the database
+
+```bash
+# All-in-one (recommended):
 python seeds/seed_all.py
-# Канонический seed-поток: добавляет demo/schedule данные
-# и заполняет student_groups для всех созданных групп.
+
+# Or step by step:
+python seed_real_schedule.py   # Step 1 — users, groups, schedule
+python seed_student_groups.py  # Step 2 — populate student_groups (fixes attendance matrix)
 ```
 
-### 3. Run the Server
+`seed_student_groups.py` is idempotent — safe to run multiple times.
+
+### 5. Start the server
+
 ```bash
-cd app
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
-### 4. Run Backend Smoke Tests
+API available at http://localhost:8000. Interactive docs at http://localhost:8000/docs.
+
+---
+
+## API Authentication
+
+All protected endpoints require a **JWT Bearer token** in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+Obtain a token by posting credentials to `POST /api/v1/auth/login`:
+
+```json
+{
+  "username": "user@example.com",
+  "password": "secret"
+}
+```
+
+Response includes `access_token` and `token_type: "bearer"`. Token lifetime is controlled by `ACCESS_TOKEN_EXPIRE_MINUTES` (default 480 minutes).
+
+Three roles are supported: `student`, `teacher`, `admin`. Admin-only endpoints return `403 Forbidden` for lower roles.
+
+---
+
+## Project Structure
+
+```
+backend/
+├── app/
+│   ├── main.py              # Deployed entrypoint (v1.2.0, APScheduler)
+│   ├── core/
+│   │   ├── database.py      # Async SQLAlchemy engine + session
+│   │   ├── security.py      # JWT helpers, password hashing
+│   │   ├── cors.py          # CORS origins from FRONTEND_URL env var
+│   │   └── scheduler.py     # APScheduler setup
+│   ├── models/              # SQLAlchemy ORM models
+│   └── api/
+│       └── v1/              # All API routers
+├── alembic/                 # Alembic migration environment
+│   └── versions/            # Migration files
+├── seeds/
+│   └── seed_all.py          # Canonical all-in-one seed
+├── entrypoint.sh            # Railway start command
+└── requirements.txt
+```
+
+---
+
+## Running Tests
+
 ```bash
 pytest backend/tests -q
 ```
 
-## API Endpoints
-
-### Scheduler
-- `POST /api/v1/scheduler/lessons` - Create lesson with conflict check
-- `POST /api/v1/scheduler/check-conflicts` - Check for conflicts
-- `GET /api/v1/scheduler/lessons` - Get lessons with filters
-- `GET /api/v1/scheduler/available-rooms` - Find available rooms
-- `GET /api/v1/scheduler/teacher-schedule/{id}` - Teacher schedule
-
-### Notifications
-- `POST /api/v1/notifications/` - Schedule single notification
-- `POST /api/v1/notifications/bulk` - Bulk notifications
-- `GET /api/v1/notifications/` - Get notifications
-- `GET /api/v1/notifications/pending` - Get pending notifications
-- `POST /api/v1/notifications/send-pending` - Trigger sending
-- `GET /api/v1/notifications/stats` - Notification statistics
-
-### Analytics
-- `GET /api/v1/analytics/revenue-report` - Comprehensive revenue report
-- `GET /api/v1/analytics/monthly-breakdown` - Monthly data
-- `GET /api/v1/analytics/course-revenue` - Revenue by course
-- `GET /api/v1/analytics/expense-breakdown` - Expense categories
-- `GET /api/v1/analytics/payment-stats` - Payment statistics
-- `GET /api/v1/analytics/student-lifetime-value` - LTV analysis
-- `POST /api/v1/analytics/generate-period-report` - Save report
-
-## Business Logic Examples
-
-### Example 1: Create Lesson with Conflict Prevention
-```python
-# Automatically checks for:
-# - Teacher availability
-# - Room availability  
-# - Group schedule conflicts
-POST /api/v1/scheduler/lessons
-{
-    "group_id": 1,
-    "teacher_id": 5,
-    "room_id": 3,
-    "date": "2025-02-15",
-    "start_time": "14:00",
-    "end_time": "15:30",
-    "topic": "Business English"
-}
-```
-
-### Example 2: Send Bulk Notification
-```python
-# Send to all students
-POST /api/v1/notifications/bulk
-{
-    "title": "School Holiday Announcement",
-    "message": "School will be closed next Monday",
-    "notification_type": "email",
-    "scheduled_at": "2025-02-10T09:00:00",
-    "role_filter": "student"
-}
-```
-
-### Example 3: Generate Revenue Report
-```python
-# Get detailed financial analysis
-GET /api/v1/analytics/revenue-report?start_date=2025-01-01&end_date=2025-01-31
-
-Response:
-{
-    "total_revenue": 450000.00,
-    "total_expenses": 280000.00,
-    "net_profit": 170000.00,
-    "profit_margin": 37.78,
-    "active_students": 150,
-    "new_students": 25,
-    "revenue_per_student": 3000.00
-}
-```
-
-## Technologies
-
-- **FastAPI** - Modern web framework
-- **SQLAlchemy** - ORM and database management
-- **PostgreSQL** - Primary database
-- **Pydantic** - Data validation
-- **Python 3.9+** - Programming language
-
-## Key Improvements Over Previous Version
-
-1. **More Tables**: Expanded beyond the initial basic setup with production tables for scheduling, messaging, analytics, and operations
-2. **Advanced Logic**: Conflict prevention, automated notifications, analytics
-3. **Business Features**: 
-   - Article publishing with draft/published workflow
-   - Automated notification scheduling
-   - Economic analysis and reporting
-4. **Real Data**: Integration with Excel data from actual school operations
-5. **Production-Ready**: Proper error handling, validation, and documentation
-
-## Development
-
-### Project Structure
-```
-backend/
-├── app/
-│   ├── main.py              # Main application
-│   ├── core/
-│   │   └── database.py      # Database configuration
-│   ├── models/              # SQLAlchemy models
-│   └── routers/
-│       ├── scheduler.py     # Schedule management
-│       ├── notifications.py # Notification system
-│       └── analytics.py     # Financial analytics
-├── init_db.py              # Database initialization
-├── seeds/
-│   └── seed_all.py         # Unified seed script
-└── requirements.txt        # Python dependencies
-```
-
-## Future Enhancements
-
-- Real-time notification delivery (WebSockets)
-- Advanced reporting dashboards
-- Machine learning for student success prediction
-- Integration with payment gateways
-- Mobile app API endpoints
-- Multi-language support
-
-## License
-
-This project is part of the ABC Language School graduation project.
+The test suite bootstraps `DATABASE_URL` and `SECRET_KEY` defaults in `backend/tests/conftest.py` so import-only smoke checks work without a live database.
