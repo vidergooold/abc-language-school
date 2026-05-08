@@ -467,4 +467,50 @@ function restart() {
   font-weight: 600;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .testing-page {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+
+  .test-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .test-card--center {
+    grid-column: auto;
+    max-width: none;
+  }
+
+  .test-header,
+  .test-nav,
+  .result-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .test-title {
+    font-size: 22px;
+  }
+
+  .question-block {
+    padding: 18px 14px;
+  }
+
+  .btn-back,
+  .btn-next,
+  .btn-enroll,
+  .btn-restart {
+    width: 100%;
+    text-align: center;
+  }
+
+  .result-level {
+    font-size: 32px;
+  }
+}
 </style>

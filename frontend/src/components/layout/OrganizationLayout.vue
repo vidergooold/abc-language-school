@@ -74,4 +74,32 @@ import { RouterLink } from 'vue-router'
 .org-content {
   overflow: hidden;
 }
+
+@media (max-width: 768px) {
+  .org-layout {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+
+  .sections-nav {
+    width: 100%;
+    float: none;
+    margin-right: 0;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    flex-direction: row;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .nav-link {
+    white-space: nowrap;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
 </style>

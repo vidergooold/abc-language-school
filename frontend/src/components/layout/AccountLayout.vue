@@ -113,5 +113,34 @@ function logout() {
   .account-layout { flex-direction: column; }
   .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #ffe3cf; }
   .content { padding: 20px 16px; }
+  .sidebar nav {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+  .sidebar-link,
+  .sidebar-logout {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .sidebar-divider,
+  .sidebar-section {
+    display: none;
+  }
+  .sidebar__name {
+    white-space: normal;
+  }
+  .content :deep(.block-grid) {
+    grid-template-columns: 1fr;
+  }
+  .content :deep(.table-wrap),
+  .content :deep(.matrix-table-wrap),
+  .content :deep(.report-table-wrap) {
+    overflow-x: auto;
+  }
 }
 </style>

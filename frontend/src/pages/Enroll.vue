@@ -178,4 +178,39 @@ async function submitPreschool() {
 .submit-btn { width: 100%; padding: 14px; background: var(--brand-orange); color: #fff; border: none; border-radius: 999px; font-size: 18px; font-weight: 600; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
 .submit-btn:hover:not(:disabled) { background: #e55a10; }
 .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+  .enroll-page {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+
+  .tabs {
+    flex-direction: column;
+    border-bottom: none;
+    gap: 10px;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+  }
+
+  .tab.active {
+    border-color: var(--brand-orange);
+  }
+
+  .form {
+    padding: 16px;
+  }
+
+  .form-section h2 {
+    font-size: 18px;
+  }
+}
 </style>

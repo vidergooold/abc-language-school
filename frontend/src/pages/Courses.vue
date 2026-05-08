@@ -64,4 +64,14 @@ const filteredCourses = computed(() => {
   font-size: 26px;
   margin-bottom: 24px;
 }
+
+@media (max-width: 768px) {
+  .courses-page {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+}
 </style>

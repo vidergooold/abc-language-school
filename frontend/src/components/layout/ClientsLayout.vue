@@ -75,4 +75,33 @@ import { RouterLink } from 'vue-router'
   border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
+@media (max-width: 768px) {
+  .clients-layout {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+
+  .sections-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 12px;
+    margin-bottom: 20px;
+  }
+
+  .nav-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .clients-content {
+    width: 100%;
+    padding: 20px 16px;
+  }
+}
 </style>
