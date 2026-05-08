@@ -1,3 +1,4 @@
+import logging
 import os
 import secrets
 import subprocess
@@ -50,11 +51,19 @@ from app.api.v1 import (
 from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
 from app.core.cors import get_cors_origins
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if hasattr(sys.stdout, "reconfigure"):
+    try:
         sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError, OSError) as exc:
+        logger.warning(
+            "Failed to reconfigure stdout to UTF-8 (%s); continuing with system default encoding",
+            type(exc).__name__,
+            exc_info=True,
+        )
     start_scheduler()
     yield
     shutdown_scheduler()

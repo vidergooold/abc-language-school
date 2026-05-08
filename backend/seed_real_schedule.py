@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from typing import Optional
 """
 Seed реального расписания ABC Language School.
 
@@ -7,6 +5,7 @@ Seed реального расписания ABC Language School.
 потому что в БД email хранится в формате «temlyakova@abc-school.ru»,
 а не «anna.temlyakova@abc-school.ru».
 """
+from typing import Optional
 import asyncio
 from datetime import time
 
