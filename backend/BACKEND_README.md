@@ -84,6 +84,11 @@ cd app
 uvicorn main:app --reload
 ```
 
+### 4. Run Backend Smoke Tests
+```bash
+pytest backend/tests -q
+```
+
 ## API Endpoints
 
 ### Scheduler
