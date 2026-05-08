@@ -7,6 +7,7 @@ transport — no real HTTP calls are made to external servers.
 Run with:
     python -m pytest backend/tests/test_smoke.py -v
 """
+import os
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -340,3 +341,41 @@ async def test_student_cannot_access_applications(client: AsyncClient, student_t
         "/api/v1/applications", headers=auth_headers(student_token)
     )
     assert response.status_code == 403
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Group 6 — CORS preflight (OPTIONS) for the Vercel frontend origin
+# ═══════════════════════════════════════════════════════════════════════════
+
+async def test_cors_preflight_vercel_origin(client: AsyncClient):
+    """OPTIONS /api/v1/auth/login from the Vercel frontend must return 200.
+
+    This guards against the 400 Bad Request regression caused by the Vercel
+    origin missing from allow_origins when allow_credentials=True is set.
+    ALLOWED_ORIGINS (or the legacy FRONTEND_URL) must be set to include
+    https://abc-school-frontend.vercel.app in production.
+    The conftest sets ALLOWED_ORIGINS before the app is imported so the
+    CORSMiddleware is initialized with the production-like origin list.
+    """
+    vercel_origin = "https://abc-school-frontend.vercel.app"
+
+    from app.core.cors import get_cors_origins
+    assert vercel_origin in get_cors_origins(), (
+        "Vercel frontend origin must appear in get_cors_origins() when "
+        "ALLOWED_ORIGINS is set.  Check cors.py."
+    )
+
+    response = await client.options(
+        "/api/v1/auth/login",
+        headers={
+            "Origin": vercel_origin,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    # FastAPI CORSMiddleware returns 200 for valid preflight, not 400/403
+    assert response.status_code == 200, (
+        f"OPTIONS preflight from {vercel_origin} returned "
+        f"{response.status_code}, expected 200."
+    )
+

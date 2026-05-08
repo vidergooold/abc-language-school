@@ -30,7 +30,8 @@ Copy the root `.env.example` to `.env` and fill in all values. The backend reads
 | `ALGORITHM` | optional | JWT algorithm (default: `HS256`). |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | optional | Token lifetime in minutes (default: `480`). |
 | `APP_BASE_URL` | optional | Public backend URL used by the APScheduler for internal HTTP calls. Logs a warning if unset. |
-| `FRONTEND_URL` | optional | Allowed CORS origin (default: `localhost:5173`, `localhost:3000`). |
+| `ALLOWED_ORIGINS` | optional | Comma-separated list of allowed CORS origins (e.g. `https://abc-school-frontend.vercel.app`). Takes precedence over `FRONTEND_URL`. |
+| `FRONTEND_URL` | optional | Legacy CORS origin alias. Use `ALLOWED_ORIGINS` instead. Defaults to `localhost:5173`, `localhost:3000` if neither is set. |
 | `ADMIN_EMAIL` | optional | Admin account email created by seed scripts. |
 | `ADMIN_PASSWORD` | optional | Admin account password. |
 | `MIGRATION_KEY` | optional | Secret header for the `POST /api/v1/admin/run-migrations` endpoint. |
@@ -102,7 +103,7 @@ backend/
 │   ├── core/
 │   │   ├── database.py      # Async SQLAlchemy engine + session
 │   │   ├── security.py      # JWT helpers, password hashing
-│   │   ├── cors.py          # CORS origins from FRONTEND_URL env var
+│   │   ├── cors.py          # CORS origins from ALLOWED_ORIGINS env var
 │   │   └── scheduler.py     # APScheduler setup
 │   ├── models/              # SQLAlchemy ORM models
 │   └── api/

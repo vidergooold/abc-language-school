@@ -77,7 +77,8 @@ Copy `.env.example` to `.env` and fill in the values listed below.
 | `ALGORITHM` | JWT signing algorithm (default: `HS256`). |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Token lifetime in minutes (default: `480`). |
 | `APP_BASE_URL` | Public URL of the deployed backend, used by the internal scheduler (e.g. `https://your-app.railway.app`). |
-| `FRONTEND_URL` | Frontend origin for CORS (e.g. `https://abc-school-frontend.vercel.app`). Falls back to `localhost:5173` / `localhost:3000` if not set. |
+| `ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins (e.g. `https://abc-school-frontend.vercel.app`). Takes precedence over `FRONTEND_URL`. Falls back to `localhost:5173` / `localhost:3000` if neither is set. |
+| `FRONTEND_URL` | Legacy CORS origin alias. Use `ALLOWED_ORIGINS` instead. |
 | `ADMIN_EMAIL` | Email for the initial admin account created by seed scripts. |
 | `ADMIN_PASSWORD` | Password for the initial admin account. |
 | `MIGRATION_KEY` | Secret header value that protects the `POST /api/v1/admin/run-migrations` endpoint. |
