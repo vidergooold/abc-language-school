@@ -162,10 +162,8 @@ async def test_public_courses(client: AsyncClient):
     assert isinstance(response.json(), list)
 
 
-@pytest.mark.xfail(reason="GET /api/v1/jobs endpoint does not exist yet")
 async def test_public_jobs(client: AsyncClient):
-    """GET /api/v1/jobs should return a list of job openings (200).
-    Currently missing — no jobs router is registered in the application."""
+    """GET /api/v1/jobs returns a list of job openings (200)."""
     response = await client.get("/api/v1/jobs")
     assert response.status_code == 200
 
