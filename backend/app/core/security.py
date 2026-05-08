@@ -91,6 +91,10 @@ async def require_student(current_user: User = Depends(get_current_user)) -> Use
     return current_user
 
 
+# Псевдоним для удобства: любой аутентифицированный пользователь
+require_auth = require_student
+
+
 async def require_staff(current_user: User = Depends(get_current_user)) -> User:
     """Только teacher или admin. Для внутренних данных школы."""
     if current_user.role not in (UserRole.admin, UserRole.teacher):
