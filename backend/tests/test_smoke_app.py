@@ -1,11 +1,9 @@
-from fastapi import FastAPI
-
-
 def test_app_module_imports_successfully():
     import app.main as main_module  # noqa: F401
 
 
 def test_fastapi_app_instance_exists():
+    from fastapi import FastAPI
     from app.main import app
 
     assert isinstance(app, FastAPI)
