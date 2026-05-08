@@ -51,6 +51,7 @@
           </a>
         </div>
       </section>
+      </template>
 
       <!-- Пустое состояние -->
       <div v-if="!personal.length && !publicDocs.length" class="no-docs">
