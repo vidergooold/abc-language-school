@@ -120,4 +120,24 @@ import NewsSection from '@/components/home/NewsSection.vue'
   background: transparent;
   padding: 0;
 }
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 36px 20px;
+  }
+  .hero__text {
+    font-size: 18px;
+  }
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .btn {
+    width: 100%;
+    white-space: nowrap;
+    font-size: 16px;
+    padding: 14px 20px;
+  }
+}
 </style>

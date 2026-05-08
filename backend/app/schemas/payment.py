@@ -26,10 +26,16 @@ class InvoiceOut(BaseModel):
     due_date: datetime
     status: PaymentStatus
     notes: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+
+class InvoiceCellStatusUpdate(BaseModel):
+    group_id: int
+    student_group_id: int
+    student_name: str
+    period: str
+    status: PaymentStatus
+    amount: Optional[Decimal] = None
 
 
 class PaymentCreate(BaseModel):
@@ -48,9 +54,7 @@ class PaymentOut(BaseModel):
     student_name: str
     amount: Decimal
     method: PaymentMethod
-    paid_at: datetime
+    paid_at: Optional[datetime] = None
     comment: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True

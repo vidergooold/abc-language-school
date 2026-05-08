@@ -28,10 +28,7 @@ class NotificationOut(BaseModel):
     sent_at: Optional[datetime] = None
     status: NotificationStatus
     error_message: Optional[str] = None
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+    created_at: Optional[datetime] = None
 
 
 class BulkNotificationCreate(BaseModel):

@@ -1,16 +1,24 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import require_admin, require_staff
 from app.models.group import Course, Group, StudentGroup, GroupStatus
+from app.models.schedule import Lesson
+from app.models.teacher import Teacher
 from app.schemas.group import (
     CourseCreate, CourseOut,
     GroupCreate, GroupOut,
     StudentGroupCreate, StudentGroupOut,
 )
+
+
+class GroupWithCourseOut(GroupOut):
+    course: Optional[CourseOut] = None
+
+    model_config = {"from_attributes": True}
 
 router = APIRouter(tags=["Groups"])
 
@@ -61,11 +69,36 @@ async def update_course(
 
 @router.get("/groups", response_model=List[GroupOut])
 async def get_groups(
+    branch_id: Optional[int] = Query(None),
+    teacher_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),  # учитель тоже может видеть группы
+    _=Depends(require_staff),
 ):
-    result = await db.execute(select(Group).order_by(Group.created_at.desc()))
+    query = select(Group)
+    if teacher_id is not None:
+        query = query.where(Group.teacher_id == teacher_id)
+    if branch_id is not None:
+        query = query.join(Lesson, Lesson.group_id == Group.id)
+        query = query.where(Lesson.branch_id == branch_id)
+        query = query.distinct()
+    result = await db.execute(query.order_by(Group.created_at.desc()))
     return result.scalars().all()
+
+
+@router.get("/groups/{group_id}", response_model=GroupWithCourseOut)
+async def get_group(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_staff),
+):
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Group).options(selectinload(Group.course)).where(Group.id == group_id)
+    )
+    group = result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=404, detail="Группа не найдена")
+    return group
 
 
 @router.post("/groups", response_model=GroupOut)
@@ -77,6 +110,10 @@ async def create_group(
     course = await db.execute(select(Course).where(Course.id == data.course_id))
     if not course.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Курс не найден")
+    if data.teacher_id is not None:
+        teacher = await db.execute(select(Teacher).where(Teacher.id == data.teacher_id, Teacher.is_active == True))
+        if not teacher.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Преподаватель не найден")
     group = Group(**data.model_dump())
     db.add(group)
     await db.commit()

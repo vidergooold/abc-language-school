@@ -5,7 +5,7 @@ from app.core.database import init_db
 
 # Импортируем все модели чтобы Base.metadata знал о всех таблицах
 from app.models import user, news  # noqa: F401
-from app.models.forms import ApplicationForm, StudentProfile  # noqa: F401
+from app.models.forms import ChildForm, AdultForm, PreschoolForm, TeacherForm, TestingForm, FeedbackForm, TaxForm  # noqa: F401
 from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.document import Document  # noqa: F401
 from app.models.schedule import Lesson, Classroom  # noqa: F401
@@ -13,6 +13,15 @@ from app.models.attendance import Attendance  # noqa: F401
 from app.models.payment import Payment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.group import Group  # noqa: F401
+from app.models.student import Student  # noqa: F401
+from app.models.teacher import Teacher  # noqa: F401
+from app.models.branch import Branch  # noqa: F401
+from app.models.educational_program import EducationalProgram  # noqa: F401
+from app.models.homework import Homework  # noqa: F401
+from app.models.message import Message  # noqa: F401
+from app.models.audit import AuditLog  # noqa: F401
+from app.models.report import ReportCache  # noqa: F401
+from app.models.room_booking import RoomBooking  # noqa: F401
 
 from app.api.v1 import (
     auth,
@@ -22,13 +31,21 @@ from app.api.v1 import (
     enrollments,
     forms,
     documents,
-    schedule,
+    scheduler,
     attendance,
     payments,
     notifications,
     groups,
     admin,
     analytics,
+    branches,
+    students,
+    teachers,
+    programs,
+    homeworks,
+    messages,
+    audit,
+    reports,
 )
 
 
@@ -83,15 +100,25 @@ app.include_router(forms.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
 
 # Личный кабинет / начальник / преподаватель
-app.include_router(schedule.router, prefix="/api/v1")
+app.include_router(scheduler.router, prefix="/api/v1")
 app.include_router(attendance.router, prefix="/api/v1")
 app.include_router(payments.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(groups.router, prefix="/api/v1")
 
+# Справочники и управление данными
+app.include_router(branches.router, prefix="/api/v1")
+app.include_router(students.router, prefix="/api/v1")
+app.include_router(teachers.router, prefix="/api/v1")
+app.include_router(programs.router, prefix="/api/v1")
+app.include_router(homeworks.router, prefix="/api/v1")
+app.include_router(messages.router, prefix="/api/v1")
+app.include_router(reports.router, prefix="/api/v1")
+
 # Админ
 app.include_router(admin.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(audit.router, prefix="/api/v1")
 
 
 @app.get("/", tags=["root"])

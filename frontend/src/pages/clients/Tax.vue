@@ -94,7 +94,11 @@
         </div>
       </div>
 
-      <button class="submit-btn" type="submit" :disabled="!form.consent2 || !form.consentPrivacy || !form.consentPersonalData">Отправить</button>
+      <button class="submit-btn" type="submit" :disabled="submitting || !form.consent2 || !form.consentPrivacy || !form.consentPersonalData">
+        {{ submitting ? 'Отправка...' : 'Отправить' }}
+      </button>
+      <p v-if="successMsg" class="success-msg">{{ successMsg }}</p>
+      <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
       <p class="note">* - обязательное для заполнения поле</p>
     </form>
   </div>
@@ -103,6 +107,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import http from '@/api/http'
 
 const form = ref({
   payerFio: '',
@@ -129,8 +134,42 @@ const form = ref({
   consentPersonalData: false,
 })
 
-function submitTaxForm() {
-  alert('Заявка на получение справки отправлена!')
+const submitting = ref(false)
+const successMsg = ref('')
+const errorMsg = ref('')
+
+async function submitTaxForm() {
+  submitting.value = true
+  successMsg.value = ''
+  errorMsg.value = ''
+  try {
+    await http.post('/forms/tax', {
+      payerFio: form.value.payerFio,
+      payerInn: form.value.payerInn,
+      payerBirthdate: form.value.payerBirthdate,
+      payerPassportSeries: form.value.payerPassportSeries,
+      payerPassportNumber: form.value.payerPassportNumber,
+      payerPassportDate: form.value.payerPassportDate,
+      payerDepartmentCode: form.value.payerDepartmentCode,
+      payerPhone: form.value.payerPhone,
+      studentFio: form.value.studentFio,
+      studentInn: form.value.studentInn || null,
+      studentBirthdate: form.value.studentBirthdate,
+      studentDocType: form.value.studentDocType,
+      studentDocSeries: form.value.studentDocSeries,
+      studentDocNumber: form.value.studentDocNumber,
+      studentDocDate: form.value.studentDocDate,
+      period: form.value.period,
+      cost: form.value.cost || null,
+      hasContracts: form.value.hasContracts,
+      deliveryMethod: form.value.deliveryMethod,
+    })
+    successMsg.value = 'Заявка на получение справки успешно отправлена.'
+  } catch (e: any) {
+    errorMsg.value = e?.response?.data?.detail || 'Не удалось отправить заявку. Попробуйте позже.'
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -254,6 +293,22 @@ p { margin-bottom: 16px; }
 
 .submit-btn:hover:not(:disabled) { background: #e55a10; }
 .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+.success-msg {
+  margin-top: 12px;
+  color: #155724;
+  background: #d4edda;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.error-msg {
+  margin-top: 12px;
+  color: #8a1f2d;
+  background: #fbe4e8;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
 
 .note {
   margin-top: 12px;

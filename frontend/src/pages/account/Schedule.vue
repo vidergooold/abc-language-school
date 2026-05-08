@@ -1,6 +1,6 @@
 <template>
   <div class="schedule-page">
-    <h1>Моё расписание</h1>
+    <h1>{{ auth.user?.role === 'admin' ? 'Расписание' : 'Моё расписание' }}</h1>
 
     <div v-if="loading" class="loading">Загрузка...</div>
 
@@ -28,61 +28,20 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import http from '@/api/http'
+import { useAuthStore } from '@/stores/auth'
 
+const auth = useAuthStore()
 const loading = ref(true)
 
-// Полное расписание из данных школы (загружается из API или хранится как справочник)
-const allSchedule = [
-  { id: 1, day: 'Пн / Ср', course: 'Английский язык AS1', time: '12:20–13:10 / 11:50–12:40', teacher: 'Лукьянова С.Я.', place: '5 гимназия, каб. 109', level: 'AS1' },
-  { id: 2, day: 'Вт / Чт', course: 'Английский язык FH1', time: '12:00–12:50', teacher: 'Лукьянова С.Я.', place: '121 школа, каб. 214', level: 'FH1' },
-  { id: 3, day: 'Вт / Чт', course: 'Английский язык AS1', time: '13:10–14:00', teacher: 'Лукьянова С.Я.', place: '121 школа, каб. 214', level: 'AS1' },
-  { id: 4, day: 'Пн / Ср', course: 'Английский язык AS2', time: '11:00–12:00 / 10:30–11:30', teacher: 'Белова А.А.', place: '7 гимназия, каб. 119', level: 'AS2' },
-  { id: 5, day: 'Пн / Ср', course: 'Английский язык FH1', time: '12:30–13:20 / 11:30–12:20', teacher: 'Белова А.А.', place: '7 гимназия, каб. 119', level: 'FH1' },
-  { id: 6, day: 'Вт / Чт', course: 'Английский язык GWB1', time: '15:30–17:00 / 15:15–16:45', teacher: 'Белова А.А.', place: 'ЛИТ, каб. библ., 116', level: 'GWB1' },
-  { id: 7, day: 'Пн / Чт', course: 'Английский язык FH1', time: '12:00–12:50', teacher: 'Зудяева Н.А.', place: '56 школа, каб. 3/10', level: 'FH1' },
-  { id: 8, day: 'Пн / Чт', course: 'Английский язык AS1', time: '13:00–13:50', teacher: 'Зудяева Н.А.', place: '56 школа, каб. 3/10', level: 'AS1' },
-  { id: 9, day: 'Пн / Чт', course: 'Английский язык AS1', time: '9:50–10:40', teacher: 'Осинина С.Н.', place: '11 гимназия, каб. 113', level: 'AS1' },
-  { id: 10, day: 'Пн / Чт', course: 'Английский язык AS2', time: '10:50–11:50', teacher: 'Осинина С.Н.', place: '11 гимназия, каб. 113', level: 'AS2' },
-  { id: 11, day: 'Пн / Ср', course: 'Английский язык GWB1+', time: '11:35–13:05', teacher: 'Пасикан А.С.', place: '11 гимназия, каб. 114', level: 'GWB1+' },
-  { id: 12, day: 'Вт / Чт', course: 'Английский язык GWA2', time: '12:00–13:15', teacher: 'Пасикан А.С.', place: '11 гимназия, каб. 114', level: 'GWA2' },
-  { id: 13, day: 'Пн / Пт', course: 'Английский язык AS1', time: '10:20–11:10', teacher: 'Фомина С.О.', place: '217 школа, каб. 314А', level: 'AS1' },
-  { id: 14, day: 'Пн / Пт', course: 'Английский язык AS2', time: '14:20–15:20', teacher: 'Фомина С.О.', place: '217 школа, каб. 314А', level: 'AS2' },
-  { id: 15, day: 'Пн / Ср', course: 'Английский язык AS1', time: '10:30–11:15', teacher: 'Колесник Л.Н.', place: '218 школа, каб. АВС', level: 'AS1' },
-  { id: 16, day: 'Вт / Чт', course: 'Английский язык AS2', time: '10:10–11:10', teacher: 'Колесник Л.Н.', place: '218 школа, каб. АВС', level: 'AS2' },
-  { id: 17, day: 'Пн / Ср', course: 'Английский язык FH1', time: '12:00–12:50', teacher: 'Данилова М.А.', place: '221 школа, каб. 128/311', level: 'FH1' },
-  { id: 18, day: 'Вт / Чт', course: 'Английский язык FH1', time: '12:20–12:50 / 11:35–12:45', teacher: 'Данилова М.А.', place: '188 школа, каб. АВС', level: 'FH1' },
-  { id: 19, day: 'Пн / Пт', course: 'Английский язык FH1', time: '11:50–12:40 / 11:15–12:05', teacher: 'Позднякова В.С.', place: '188 школа, каб. АВС', level: 'FH1' },
-  { id: 20, day: 'Пн / Пт', course: 'Английский язык GWB1', time: '16:05–17:35', teacher: 'Позднякова В.С.', place: '188 школа, каб. АВС', level: 'GWB1' },
-  { id: 21, day: 'Пн / Ср', course: 'Английский язык AS2', time: '10:30–11:30', teacher: 'Рубе Д.В.', place: '186 школа, каб. 409', level: 'AS2' },
-  { id: 22, day: 'Пн / Ср', course: 'Английский язык AS1', time: '9:00–9:50', teacher: 'Куцых М.Е.', place: '199 школа, вахта', level: 'AS1' },
-  { id: 23, day: 'Вт / Чт', course: 'Английский язык GWB1+', time: '9:15–10:45', teacher: 'Пасикан А.С.', place: 'Офис, каб. 4', level: 'GWB1+' },
-  { id: 24, day: 'Пн / Ср', course: 'Английский язык GWB1', time: '19:15–20:45', teacher: 'Рубе Д.В.', place: 'Офис', level: 'GWB1' },
-  { id: 25, day: 'Вт / Чт', course: 'Английский язык AS3', time: '10:10–11:10', teacher: 'Евдокимова П.Е.', place: 'Офис, каб. 2', level: 'AS3' },
-  { id: 26, day: 'Пн / Ср', course: 'Английский язык GWB2+', time: '17:20–18:50', teacher: 'Караваева А.Д.', place: 'Офис, каб. 2', level: 'GWB2+' },
-  { id: 27, day: 'Вт / Чт', course: 'Английский язык GWB1', time: '9:30–11:10', teacher: 'Митина О.С.', place: 'Офис, каб. 3', level: 'GWB1' },
-  { id: 28, day: 'Вт / Чт', course: 'Английский язык FH1', time: '18:00–18:50', teacher: 'Федорова А.В.', place: 'Офис, каб. 5', level: 'FH1' },
-  { id: 29, day: 'Пн / Ср', course: 'Английский язык FH1', time: '11:35–12:25', teacher: 'Федорова А.В.', place: '11 школа, каб. 203', level: 'FH1' },
-  { id: 30, day: 'Пн / Ср', course: 'Английский язык FH1', time: '12:10–13:00', teacher: 'Тихвинская В.О.', place: 'ЭКЛ, Крылова 44', level: 'FH1' },
-  { id: 31, day: 'Вт / Чт', course: 'Английский язык AS1', time: '12:10–13:00', teacher: 'Походная А.И.', place: 'ЭКЛ, каб. АВС', level: 'AS1' },
-  { id: 32, day: 'Пн', course: 'Английский язык FH1', time: '12:10–13:00', teacher: 'Родина Т.П.', place: '9 гимназия, каб. 37', level: 'FH1' },
-  { id: 33, day: 'Пт', course: 'Английский язык FH1', time: '12:10–13:00', teacher: 'Козлова Е.Г.', place: '9 гимназия, каб. 41', level: 'FH1' },
-  { id: 34, day: 'Вт / Ср', course: 'Английский язык AS1', time: '18:00–18:50 / 11:10–12:00', teacher: 'Переведенцева А.А.', place: '155 школа, каб. 426', level: 'AS1' },
-  { id: 35, day: 'Пн / Ср', course: 'Английский язык GWB1+', time: '9:30–11:00', teacher: 'Темлякова А.М.', place: '216 школа, каб. 317/1', level: 'GWB1+' },
-  { id: 36, day: 'Пн / Ср', course: 'Английский язык GWB1', time: '9:45–11:15', teacher: 'Арнгольд В.Е.', place: '216 школа, каб. 410', level: 'GWB1' },
-  { id: 37, day: 'Пт', course: 'Английский язык (1–2 класс)', time: '12:10–14:00', teacher: 'Быковская М.Э.', place: '13 школа, каб. 18', level: 'Нач.' },
-  { id: 38, day: 'Сб', course: 'Английский язык (3 класс)', time: '11:00–13:10', teacher: 'Турабова Д.Д.', place: '222 школа, каб. 191', level: 'Нач.' },
-  { id: 39, day: 'Пн / Ср', course: 'Английский язык (2–1 класс)', time: '11:30–13:20', teacher: 'Винокурова Е.А.', place: '195 школа, каб. 229', level: 'Нач.' },
-  { id: 40, day: 'Пн / Ср', course: 'Английский язык (2 класс)', time: '12:00–12:50', teacher: 'Воронцова А.В.', place: '167 школа, каб. 211', level: 'Нач.' },
-]
-
-const schedule = ref(allSchedule)
+const schedule = ref<any[]>([])
 
 onMounted(async () => {
   try {
     const res = await http.get('/schedule/my')
-    if (res.data && res.data.length) schedule.value = res.data
-  } catch {
-    // fallback: показываем полное расписание
+    schedule.value = res.data
+  } catch (err) {
+    console.error('Failed to load schedule:', err)
+    // Показываем пустое расписание
   } finally {
     loading.value = false
   }

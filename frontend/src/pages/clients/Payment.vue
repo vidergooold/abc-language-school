@@ -80,8 +80,16 @@
       любом другом случае возврат средств за учебный материал не производится или
       производится частично (на усмотрение администрации Лингвоцентра).
     </p>
+
+    <RouterLink to="/clients/tax" class="tax-btn">
+      Оформление налогового вычета
+    </RouterLink>
   </div>
 </template>
+
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
+</script>
 
 <style scoped>
 .clients-section {
@@ -124,5 +132,21 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+.tax-btn {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--brand-orange);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.tax-btn:hover {
+  background: #e55a10;
+  text-decoration: none;
 }
 </style>

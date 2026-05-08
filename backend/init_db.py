@@ -10,11 +10,13 @@ import os
 # Add the app directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
-from app.database import engine, Base
+from app.core.database import engine, Base
 from app.models import (
-    User, Course, Group, Lesson, Room, Enrollment,
-    Payment, Attendance, News, Notification, Waitlist,
-    Review, Material, Expense, RevenueAnalytics
+    User, Document, Teacher, Branch, EducationalProgram, Student,
+    Classroom, Lesson, Group, Attendance, Enrollment, Payment,
+    News, Notification, WaitlistEntry, ChildForm, AdultForm,
+    PreschoolForm, TeacherForm, TestingForm, FeedbackForm,
+    Discount, RoomBooking, AuditLog, ReportCache
 )
 
 def init_database():
@@ -56,5 +58,5 @@ if __name__ == "__main__":
     print("ABC Language School - Database Initialization")
     print("="*60)
     init_database()
-    print("\nYou can now run 'python seed_real_data.py' to populate with sample data")
+    print("\nYou can now run 'python seeds/seed_all.py' to populate with sample data")
     print("="*60)

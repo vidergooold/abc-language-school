@@ -3,6 +3,12 @@
 ## Overview
 Comprehensive backend system for managing a language school with 15+ database tables, advanced scheduling logic, automated notifications, and detailed economic analytics.
 
+## Deployment Infrastructure
+
+- Frontend: **Vercel**
+- Backend: **Railway**
+- Database: **Railway PostgreSQL plugin** (use standard Railway SSL with `sslmode=require`; custom CA certificates are not required)
+
 ## Database Architecture
 
 ### 15 Comprehensive Tables:
@@ -67,8 +73,8 @@ pip install -r requirements.txt
 # Initialize database (creates all 15 tables)
 python init_db.py
 
-# Populate with sample data from Excel
-python seed_real_data.py
+# Populate with sample data
+python seeds/seed_all.py
 ```
 
 ### 3. Run the Server
@@ -179,14 +185,16 @@ Response:
 backend/
 ├── app/
 │   ├── main.py              # Main application
-│   ├── database.py          # Database configuration  
-│   ├── models.py            # 15 SQLAlchemy models
+│   ├── core/
+│   │   └── database.py      # Database configuration
+│   ├── models/              # SQLAlchemy models
 │   └── routers/
 │       ├── scheduler.py     # Schedule management
 │       ├── notifications.py # Notification system
 │       └── analytics.py     # Financial analytics
 ├── init_db.py              # Database initialization
-├── seed_real_data.py       # Sample data from Excel
+├── seeds/
+│   └── seed_all.py         # Unified seed script
 └── requirements.txt        # Python dependencies
 ```
 

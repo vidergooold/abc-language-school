@@ -1,14 +1,16 @@
+import os
+import secrets
+import subprocess
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import init_db
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 
 # Импортируем все модели чтобы Base.metadata знал о всех таблицах
 from app.models import user, news  # noqa: F401
 from app.models.forms import (  # noqa: F401
     ChildForm, AdultForm, PreschoolForm,
-    TeacherForm, TestingForm, FeedbackForm,
+    TeacherForm, TestingForm, FeedbackForm, TaxForm,
 )
 from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.document import Document  # noqa: F401
@@ -20,6 +22,9 @@ from app.models.attendance import Attendance  # noqa: F401
 from app.models.payment import Payment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.group import Group  # noqa: F401
+from app.models.homework import Homework  # noqa: F401
+from app.models.teacher import Teacher, TeacherGroup  # noqa: F401
+from app.models.message import Message  # noqa: F401
 
 from app.api.v1 import (
     auth,
@@ -29,7 +34,7 @@ from app.api.v1 import (
     enrollments,
     forms,
     documents,
-    schedule,
+    scheduler,
     attendance,
     payments,
     notifications,
@@ -38,12 +43,11 @@ from app.api.v1 import (
     analytics,
     teachers,
 )
-from app.api.v1 import branches, programs, students
+from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
     start_scheduler()
     yield
     shutdown_scheduler()
@@ -78,7 +82,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+        allow_origins=["https://abc-school-frontend.vercel.app", "http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -98,17 +102,21 @@ app.include_router(branches.router,      prefix="/api/v1")
 app.include_router(programs.router,      prefix="/api/v1")
 
 # Личный кабинет / преподаватель
-app.include_router(schedule.router,      prefix="/api/v1")
+app.include_router(scheduler.router,     prefix="/api/v1")
 app.include_router(attendance.router,    prefix="/api/v1")
 app.include_router(payments.router,      prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(groups.router,        prefix="/api/v1")
 app.include_router(teachers.router,      prefix="/api/v1")
 app.include_router(students.router,      prefix="/api/v1")
+app.include_router(homeworks.router,     prefix="/api/v1")
 
 # Админ
 app.include_router(admin.router,         prefix="/api/v1")
 app.include_router(analytics.router,     prefix="/api/v1")
+app.include_router(audit.router,         prefix="/api/v1")
+app.include_router(reports.router,       prefix="/api/v1")
+app.include_router(messages.router,      prefix="/api/v1")
 
 
 @app.get("/", tags=["root"])
@@ -119,3 +127,15 @@ async def root():
         "docs": "/docs",
         "status": "running",
     }
+
+
+@app.post("/api/v1/admin/run-migrations", tags=["admin"])
+def run_migrations(x_migration_key: str = Header(...)):
+    migration_key = os.environ.get("MIGRATION_KEY")
+    if not migration_key or not secrets.compare_digest(x_migration_key, migration_key):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    result = subprocess.run(
+        ["alembic", "upgrade", "head"],
+        capture_output=True, text=True, cwd="/app", timeout=120
+    )
+    return {"stdout": result.stdout, "stderr": result.stderr, "returncode": result.returncode}
