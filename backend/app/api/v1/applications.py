@@ -17,5 +17,6 @@ async def list_applications(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
+    """Админский список заявок (алиас для enrollment-заявок)."""
     result = await db.execute(select(Enrollment).order_by(Enrollment.created_at.desc()))
     return result.scalars().all()

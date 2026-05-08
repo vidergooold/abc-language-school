@@ -34,7 +34,7 @@ async def get_teachers(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
-    """Публичный список активных преподавателей"""
+    """Список активных преподавателей для сотрудников школы."""
     base_query = select(Teacher).where(Teacher.is_active == True)
 
     # Если выбран филиал, сначала пробуем отфильтровать по расписанию в этом филиале.
