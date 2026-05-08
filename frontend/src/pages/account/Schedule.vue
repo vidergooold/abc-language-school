@@ -3,6 +3,7 @@
     <h1>{{ auth.user?.role === 'admin' ? 'Расписание' : 'Моё расписание' }}</h1>
 
     <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-else-if="error" class="loading">{{ error }}</div>
 
     <div v-else-if="schedule.length" class="schedule-list">
       <div class="schedule-card" v-for="item in schedule" :key="item.id">
@@ -18,7 +19,7 @@
     </div>
 
     <div v-else class="no-schedule">
-      <p>У вас пока нет активных курсов.</p>
+      <p>Нет данных</p>
       <RouterLink to="/enroll" class="btn-enroll">Записаться на курс →</RouterLink>
     </div>
   </div>
@@ -32,16 +33,42 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const loading = ref(true)
+const error = ref('')
 
 const schedule = ref<any[]>([])
 
+function formatTimeValue(value: string | null | undefined): string {
+  const raw = String(value || '').trim()
+  const parts = raw.split(':')
+  if (parts.length < 2) return raw
+  const hh = (parts[0] || '').padStart(2, '0').slice(0, 2)
+  const mm = (parts[1] || '').padStart(2, '0').slice(0, 2)
+  return `${hh}:${mm}`
+}
+
 onMounted(async () => {
   try {
-    const res = await http.get('/schedule/my')
-    schedule.value = res.data
+    const studentGroupId = (auth.user as { group_id?: number } | null)?.group_id
+    const params = studentGroupId ? { group_id: studentGroupId } : undefined
+    const res = await http.get('/schedule', { params })
+    const rows = Array.isArray(res.data) ? res.data : []
+    schedule.value = rows.map((item: any) => {
+      const timeStart = formatTimeValue(item.time_start)
+      const timeEnd = formatTimeValue(item.time_end)
+      const fallbackTime = timeStart && timeEnd ? `${timeStart}–${timeEnd}` : '—'
+      return {
+        id: item.id,
+        day: item.day ?? item.day_of_week ?? '—',
+        course: item.course ?? item.course_name ?? '—',
+        time: item.time ?? fallbackTime,
+        teacher: item.teacher ?? item.teacher_name ?? '—',
+        place: item.place ?? item.classroom_name ?? '—',
+        level: item.level ?? '—',
+      }
+    })
   } catch (err) {
-    console.error('Failed to load schedule:', err)
-    // Показываем пустое расписание
+    schedule.value = []
+    error.value = 'Не удалось загрузить расписание'
   } finally {
     loading.value = false
   }

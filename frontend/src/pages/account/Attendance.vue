@@ -10,6 +10,10 @@
         <div class="skeleton-card" v-for="n in 5" :key="n"></div>
       </div>
 
+      <div v-else-if="loadError" class="no-records">
+        <p>{{ loadError }}</p>
+      </div>
+
       <template v-else-if="records.length">
         <div class="stats-bar">
           <div class="stat" v-for="s in statCards" :key="s.label">
@@ -55,8 +59,7 @@
 
       <div v-else class="no-records">
         <div class="no-records-icon no-icon"></div>
-        <p>Записей о посещаемости пока нет.</p>
-        <p class="no-records-hint">Они появятся здесь, когда преподаватель начнёт отмечать занятия.</p>
+        <p>Нет данных</p>
       </div>
     </template>
 
@@ -331,6 +334,7 @@ const defaultDateFrom = new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString
 // ── СТУДЕНТ: своя посещаемость ────────────────────────────────────────────────
 const loading      = ref(true)
 const records      = ref<any[]>([])
+const loadError    = ref('')
 const activeFilter = ref('all')
 
 const counts = computed(() => ({
@@ -963,8 +967,14 @@ function getGrade(studentId: number, lessonId: number, slotDate: string): string
 // ── INIT ──────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   if (auth.isStudent) {
-    try { const res = await http.get('/attendance/my'); records.value = res.data }
-    catch { records.value = [] }
+    try {
+      loadError.value = ''
+      const res = await http.get('/attendance/my')
+      records.value = Array.isArray(res.data) ? res.data : []
+    } catch {
+      records.value = []
+      loadError.value = 'Не удалось загрузить посещаемость'
+    }
     finally { loading.value = false }
   } else if (auth.isStaff) {
     await Promise.all([

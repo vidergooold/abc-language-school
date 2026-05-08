@@ -2,6 +2,8 @@
   <div class="news-admin">
     <h1>📣 Управление новостями</h1>
     <p class="subtitle">Доступно только администратору.</p>
+    <div v-if="loading" class="news-empty">Загрузка...</div>
+    <div v-else-if="error" class="news-empty">{{ error }}</div>
 
     <button class="btn-add" @click="addNews">+ Добавить новость</button>
 
@@ -43,9 +45,9 @@
     </div>
 
     <!-- Список новостей -->
-    <div v-if="newsList.length === 0" class="news-empty">Новостей пока нет. Добавьте первую!</div>
+    <div v-if="!loading && !error && newsList.length === 0" class="news-empty">Нет данных</div>
 
-    <div v-else class="news-list">
+    <div v-else-if="!loading && !error" class="news-list">
       <div v-for="n in newsList" :key="n.id" class="news-card">
         <div class="news-card-header">
           <div class="news-meta">
@@ -79,6 +81,8 @@ const editing = ref<number | null>(null)
 const publishMode = ref<'now' | 'scheduled' | 'archive'>('now')
 const form = ref({ title: '', tag: '', body: '', publish_at: '' })
 const newsList = ref<any[]>([])
+const loading = ref(false)
+const error = ref('')
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Черновик',
@@ -98,11 +102,17 @@ function formatDateTime(dt: string): string {
 }
 
 async function load() {
+  loading.value = true
+  error.value = ''
   try {
-    const r = await http.get('/admin/news')
-    newsList.value = r.data
-  } catch (e) {
-    console.error('Error loading news:', e)
+    const r = await http.get('/news')
+    const payload = r.data
+    newsList.value = Array.isArray(payload) ? payload : (payload?.items || [])
+  } catch {
+    newsList.value = []
+    error.value = 'Не удалось загрузить новости'
+  } finally {
+    loading.value = false
   }
 }
 
@@ -431,4 +441,3 @@ onMounted(() => {
   margin: 0;
 }
 </style>
-
