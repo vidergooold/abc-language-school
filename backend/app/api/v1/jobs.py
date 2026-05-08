@@ -12,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("")
-async def get_jobs(db: AsyncSession = Depends(get_db)) -> list[dict]:
+async def get_jobs(db: AsyncSession = Depends(get_db)) -> list[dict[str, object]]:
+    """Return vacancies from `job_vacancies` or [] when the table is absent."""
     try:
-        def _load_job_vacancies(sync_session):
+        def _load_job_vacancies(sync_session) -> Table:
+            """Load reflected `job_vacancies` table metadata using the bound DB."""
             bind = sync_session.get_bind()
             return Table("job_vacancies", MetaData(), autoload_with=bind)
 
