@@ -15,54 +15,56 @@
 
     <div v-if="error" class="error">{{ error }}</div>
 
-    <table v-if="filteredUsers.length" class="users-table">
-      <thead>
-        <tr>
-          <th>Имя</th>
-          <th>Email</th>
-          <th>Текущая роль</th>
-          <th>Статус</th>
-          <th>Действия</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="u in filteredUsers" :key="u.id">
-          <td>{{ u.full_name || '—' }}</td>
-          <td>{{ u.email }}</td>
-          <td>
-            <span class="role-badge" :class="`role-${u.role}`">{{ roleLabel(u.role) }}</span>
-          </td>
-          <td>
-            <span :class="['status', u.is_active ? 'active' : 'inactive']">
-              {{ u.is_active ? 'Активен' : 'Заблокирован' }}
-            </span>
-          </td>
-          <td class="actions">
-            <button
-              class="btn teacher"
-              @click="setRole(u.id, 'teacher')"
-              :disabled="u.role === 'teacher' || assigningId === u.id"
-            >
-              Назначить преподавателем
-            </button>
-            <button
-              class="btn admin"
-              @click="setRole(u.id, 'admin')"
-              :disabled="u.role === 'admin' || assigningId === u.id"
-            >
-              Назначить админом
-            </button>
-            <button
-              class="btn student"
-              @click="setRole(u.id, 'student')"
-              :disabled="u.role === 'student' || assigningId === u.id"
-            >
-              Оставить учеником
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-if="filteredUsers.length" class="table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Имя</th>
+            <th>Email</th>
+            <th>Текущая роль</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="u in filteredUsers" :key="u.id">
+            <td>{{ u.full_name || '—' }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="role-badge" :class="`role-${u.role}`">{{ roleLabel(u.role) }}</span>
+            </td>
+            <td>
+              <span :class="['status', u.is_active ? 'active' : 'inactive']">
+                {{ u.is_active ? 'Активен' : 'Заблокирован' }}
+              </span>
+            </td>
+            <td class="actions">
+              <button
+                class="btn teacher"
+                @click="setRole(u.id, 'teacher')"
+                :disabled="u.role === 'teacher' || assigningId === u.id"
+              >
+                Назначить преподавателем
+              </button>
+              <button
+                class="btn admin"
+                @click="setRole(u.id, 'admin')"
+                :disabled="u.role === 'admin' || assigningId === u.id"
+              >
+                Назначить админом
+              </button>
+              <button
+                class="btn student"
+                @click="setRole(u.id, 'student')"
+                :disabled="u.role === 'student' || assigningId === u.id"
+              >
+                Оставить учеником
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <p v-else class="empty">Нет пользователей для отображения.</p>
   </div>
@@ -196,6 +198,10 @@ h1 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
+.table-wrap {
+  overflow-x: auto;
+}
+
 .users-table th,
 .users-table td {
   padding: 10px;
@@ -275,5 +281,15 @@ h1 {
 .empty {
   color: #888;
   margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 24px;
+  }
+
+  .users-table {
+    min-width: 760px;
+  }
 }
 </style>

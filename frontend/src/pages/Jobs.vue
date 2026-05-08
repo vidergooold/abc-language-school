@@ -317,4 +317,26 @@ async function submit() {
   background: #ccc;
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+  .jobs-page {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .captcha-image {
+    width: 100%;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+}
 </style>

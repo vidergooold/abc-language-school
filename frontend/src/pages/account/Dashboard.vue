@@ -691,4 +691,10 @@ async function save() {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .block-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

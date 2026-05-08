@@ -1469,6 +1469,7 @@ watch(() => [rf.date_from, rf.date_to], () => {
   margin: 0;
 }
 .materials-table-wrap {
+  overflow-x: auto;
   border: 1px solid #d9d9d9;
   background: #f4f4f4;
 }

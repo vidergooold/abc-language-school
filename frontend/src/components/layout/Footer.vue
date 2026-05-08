@@ -93,6 +93,9 @@ function scrollToFeedback() {
   color: #ffffff;
   font-size: 18px;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .footer__docs {
@@ -107,6 +110,9 @@ function scrollToFeedback() {
   font-size: 14px;
   text-decoration: underline;
   transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .footer__doc-link:hover { color: #ffffff; }
 
@@ -167,5 +173,37 @@ function scrollToFeedback() {
 }
 .footer__admin-link:hover {
   color: rgba(255,255,255,0.7);
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 28px 16px 16px;
+  }
+
+  .footer__content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .footer__left h2 {
+    font-size: 24px;
+  }
+
+  .footer__right,
+  .footer__map {
+    min-height: 260px;
+  }
+
+  .footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .footer__admin-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 </style>
