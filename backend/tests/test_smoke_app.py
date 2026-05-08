@@ -1,4 +1,4 @@
-def test_app_module_imports_successfully():
+def test_app_main_imports_successfully():
     import app.main as main_module
 
     assert hasattr(main_module, "app")
