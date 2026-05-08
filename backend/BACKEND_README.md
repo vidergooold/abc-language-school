@@ -170,7 +170,7 @@ Response:
 
 ## Key Improvements Over Previous Version
 
-1. **More Tables**: Expanded beyond the initial basic setup with a broader production data model
+1. **More Tables**: Expanded beyond the initial basic setup with production tables for scheduling, messaging, analytics, and operations
 2. **Advanced Logic**: Conflict prevention, automated notifications, analytics
 3. **Business Features**: 
    - Article publishing with draft/published workflow

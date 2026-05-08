@@ -46,7 +46,7 @@ def init_database():
         print("  - materials")
         print("  - expenses")
         print("  - revenue_analytics")
-        print("\nCreated all configured tables")
+        print("\nSuccessfully created all configured tables")
         
     except Exception as e:
         print(f"\n✗ Error initializing database: {e}")
