@@ -1,33 +1,15 @@
-from datetime import datetime
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from sqlalchemy import select, func
+from typing import Optional, List
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import require_auth
 from app.models.message import Message
 from app.models.user import User, UserRole
+from app.schemas.message import MessageCreate, MessageRead, UnreadCount
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
-
-
-# ─── Pydantic схемы ──────────────────────────────────────────────
-
-class MessageCreate(BaseModel):
-    body: str
-
-
-class MessageOut(BaseModel):
-    id: int
-    sender_id: int
-    recipient_id: int
-    body: str
-    is_read: bool
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
 
 
 # ─── Вспомогательная функция ─────────────────────────────────────
@@ -45,9 +27,28 @@ async def _get_admin(db: AsyncSession) -> User:
 
 # ─── Эндпоинты ───────────────────────────────────────────────────
 
-@router.post("/", response_model=MessageOut, status_code=201)
+@router.get("/", response_model=List[MessageRead])
+async def list_messages(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_auth),
+):
+    """Все сообщения, где текущий пользователь является отправителем или получателем."""
+    result = await db.execute(
+        select(Message)
+        .where(
+            or_(
+                Message.sender_id == current_user.id,
+                Message.recipient_id == current_user.id,
+            )
+        )
+        .order_by(Message.created_at.desc())
+    )
+    return result.scalars().all()
+
+
+@router.post("/", response_model=MessageRead, status_code=status.HTTP_201_CREATED)
 async def send_message(
-    data: MessageCreate,
+    payload: MessageCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_auth),
 ):
@@ -55,14 +56,19 @@ async def send_message(
     if current_user.role != UserRole.teacher:
         raise HTTPException(status_code=403, detail="Только преподаватели могут отправлять сообщения")
     admin = await _get_admin(db)
-    msg = Message(sender_id=current_user.id, recipient_id=admin.id, body=data.body)
-    db.add(msg)
+    item = Message(
+        sender_id=current_user.id,
+        recipient_id=admin.id,
+        body=payload.body,
+        is_read=False,
+    )
+    db.add(item)
     await db.commit()
-    await db.refresh(msg)
-    return msg
+    await db.refresh(item)
+    return item
 
 
-@router.get("/inbox", response_model=List[MessageOut])
+@router.get("/inbox", response_model=List[MessageRead])
 async def get_inbox(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_auth),
@@ -76,35 +82,38 @@ async def get_inbox(
     return result.scalars().all()
 
 
-@router.patch("/{message_id}/read", response_model=MessageOut)
+@router.get("/unread-count", response_model=UnreadCount)
+async def unread_count(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_auth),
+):
+    """Количество непрочитанных сообщений для текущего пользователя."""
+    result = await db.execute(
+        select(func.count(Message.id)).where(
+            Message.recipient_id == current_user.id,
+            Message.is_read.is_(False),
+        )
+    )
+    return {"unread": result.scalar() or 0}
+
+
+@router.patch("/{message_id}/read", response_model=MessageRead)
 async def mark_as_read(
     message_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_auth),
 ):
     """Пометить сообщение как прочитанное. Только получатель."""
-    result = await db.execute(select(Message).where(Message.id == message_id))
-    msg = result.scalar_one_or_none()
-    if not msg:
-        raise HTTPException(status_code=404, detail="Сообщение не найдено")
-    if msg.recipient_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Нет доступа к этому сообщению")
-    msg.is_read = True
-    await db.commit()
-    await db.refresh(msg)
-    return msg
-
-
-@router.get("/unread-count")
-async def unread_count(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_auth),
-):
-    """Количество непрочитанных сообщений для текущего пользователя."""
-    count = await db.scalar(
-        select(func.count()).select_from(Message).where(
+    result = await db.execute(
+        select(Message).where(
+            Message.id == message_id,
             Message.recipient_id == current_user.id,
-            Message.is_read == False,
         )
     )
-    return {"unread": count or 0}
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Сообщение не найдено")
+    item.is_read = True
+    await db.commit()
+    await db.refresh(item)
+    return item

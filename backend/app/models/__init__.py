@@ -18,6 +18,7 @@ from app.models.forms import ChildForm, AdultForm, PreschoolForm, TeacherForm, T
 from app.models.room_booking import RoomBooking, BookingStatus, BookingPurpose
 from app.models.audit import AuditLog
 from app.models.report import ReportCache
+from app.models.homework import Homework
 from app.models.message import Message
 
 __all__ = [
@@ -58,5 +59,6 @@ __all__ = [
     "BookingPurpose",
     "AuditLog",
     "ReportCache",
+    "Homework",
     "Message",
 ]

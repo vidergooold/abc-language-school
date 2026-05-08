@@ -24,8 +24,6 @@ from app.models.notification import Notification  # noqa: F401
 from app.models.group import Group  # noqa: F401
 from app.models.homework import Homework  # noqa: F401
 from app.models.teacher import Teacher, TeacherGroup  # noqa: F401
-
-from app.api.v1 import audit, reports, messages
 from app.models.message import Message  # noqa: F401
 
 from app.api.v1 import (
@@ -45,7 +43,7 @@ from app.api.v1 import (
     analytics,
     teachers,
 )
-from app.api.v1 import branches, programs, students, homeworks
+from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
 
 
 @asynccontextmanager
@@ -116,9 +114,9 @@ app.include_router(homeworks.router,     prefix="/api/v1")
 # Админ
 app.include_router(admin.router,         prefix="/api/v1")
 app.include_router(analytics.router,     prefix="/api/v1")
-app.include_router(messages.router,      prefix="/api/v1")
-app.include_router(reports.router,       prefix="/api/v1")
 app.include_router(audit.router,         prefix="/api/v1")
+app.include_router(reports.router,       prefix="/api/v1")
+app.include_router(messages.router,      prefix="/api/v1")
 
 
 @app.get("/", tags=["root"])
