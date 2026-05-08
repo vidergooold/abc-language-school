@@ -251,3 +251,5 @@ alembic/versions/*.pyc
 .vercel
 .env*.local
 frontend/.env.production
+
+*.bak
