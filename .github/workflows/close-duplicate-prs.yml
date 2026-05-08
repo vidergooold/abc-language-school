@@ -3,7 +3,7 @@ name: Close Duplicate PRs
 on:
   push:
     branches:
-      - copilot/close-duplicate-pull-requests
+      - main
   workflow_dispatch:
 
 permissions:
