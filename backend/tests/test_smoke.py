@@ -150,6 +150,13 @@ async def test_public_root(client: AsyncClient):
     assert "project" in data or "status" in data
 
 
+async def test_public_root_utf8_content_type(client: AsyncClient):
+    """GET / returns JSON with explicit UTF-8 charset in Content-Type."""
+    response = await client.get("/")
+    assert response.status_code == 200
+    assert "charset=utf-8" in response.headers["content-type"].lower()
+
+
 async def test_public_news(client: AsyncClient):
     """GET /api/v1/news returns a paginated list (200) without authentication."""
     response = await client.get("/api/v1/news")
@@ -348,4 +355,3 @@ async def test_cors_preflight_vercel_origin(client: AsyncClient):
         f"OPTIONS preflight from {vercel_origin} returned "
         f"{response.status_code}, expected 200."
     )
-

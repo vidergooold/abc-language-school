@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Optional
 """
 Seed реального расписания ABC Language School.

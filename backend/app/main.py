@@ -1,8 +1,10 @@
 import os
 import secrets
 import subprocess
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 
@@ -51,9 +53,15 @@ from app.core.cors import get_cors_origins
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     start_scheduler()
     yield
     shutdown_scheduler()
+
+
+class UTF8JSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
 
 
 app = FastAPI(
@@ -81,6 +89,7 @@ app = FastAPI(
         "email": "info@abc-school.ru",
     },
     lifespan=lifespan,
+    default_response_class=UTF8JSONResponse,
 )
 
 app.add_middleware(
