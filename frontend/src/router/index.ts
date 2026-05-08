@@ -50,6 +50,8 @@ import AccountTeachers from '@/pages/account/Teachers.vue'
 import AccountRoleRequests from '@/pages/account/RoleRequests.vue'
 import AccountNews from '@/pages/account/News.vue'
 import AccountAttendance from '@/pages/account/Attendance.vue'
+import AccountDocuments from '@/pages/account/Documents.vue'
+import AccountProfile from '@/pages/account/Profile.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -106,7 +108,8 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: '', name: 'account', component: AccountDashboard },
-        { path: 'profile', redirect: '/account' },
+        { path: 'profile', name: 'account-profile', component: AccountProfile },
+        { path: 'documents', name: 'account-documents', component: AccountDocuments },
         { path: 'schedule', name: 'account-schedule', component: AccountSchedule },
         { path: 'attendance', name: 'account-attendance', component: AccountAttendance },
         { path: 'lesson-material', name: 'account-lesson-material', component: AccountLessonMaterial, meta: { requiresAuth: true, requiresStaff: true } },
