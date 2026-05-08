@@ -327,13 +327,6 @@ async def test_student_cannot_access_teachers_list(client: AsyncClient, student_
     assert response.status_code == 403
 
 
-@pytest.mark.xfail(
-    reason=(
-        "GET /api/v1/applications endpoint does not exist.  Applications / "
-        "enrollment management lives at /api/v1/enrollments/. "
-        "A dedicated /applications route has not been implemented yet."
-    )
-)
 async def test_student_cannot_access_applications(client: AsyncClient, student_token: str):
     """GET /api/v1/applications with a student token should return 403.
     The endpoint does not exist yet; enrollments are at /api/v1/enrollments/."""
