@@ -75,6 +75,8 @@ python init_db.py
 
 # Populate with sample data
 python seeds/seed_all.py
+# Канонический seed-поток: добавляет demo/schedule данные
+# и заполняет student_groups для всех созданных групп.
 ```
 
 ### 3. Run the Server

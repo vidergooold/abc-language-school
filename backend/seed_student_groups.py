@@ -50,7 +50,7 @@ async def seed_student_groups() -> None:
         groups = groups_result.scalars().all()
 
         if not groups:
-            print("⚠️  Таблица groups пуста. Сначала запустите seed_demo.py или seed_real_schedule.py.")
+            print("⚠️  Таблица groups пуста. Запустите канонический seed: python seeds/seed_all.py")
             return
 
         # Загружаем всех активных студентов
@@ -60,7 +60,7 @@ async def seed_student_groups() -> None:
         all_students = students_result.scalars().all()
 
         if not all_students:
-            print("⚠️  Таблица students пуста. Сначала запустите seed_demo.py.")
+            print("⚠️  Таблица students пуста. Запустите канонический seed: python seeds/seed_all.py")
             return
 
         # Группируем студентов по типу для быстрого доступа
