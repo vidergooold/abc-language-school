@@ -32,6 +32,7 @@ import OrgInternational from '@/pages/organization/International.vue'
 
 import ClientsLayout from '@/components/layout/ClientsLayout.vue'
 import ClientsHolidays from '@/pages/clients/Holidays.vue'
+import ClientsImportant from '@/pages/clients/Important.vue'
 import ClientsPayment from '@/pages/clients/Payment.vue'
 import ClientsTax from '@/pages/clients/Tax.vue'
 
@@ -93,6 +94,7 @@ const router = createRouter({
       component: ClientsLayout,
       children: [
         { path: 'holidays', name: 'clients-holidays', component: ClientsHolidays },
+        { path: 'important', name: 'clients-important', component: ClientsImportant },
         { path: 'payment', name: 'clients-payment', component: ClientsPayment },
         {
           path: 'tax',
