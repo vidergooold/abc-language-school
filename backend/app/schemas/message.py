@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel
 
 
 class MessageCreate(BaseModel):
-    recipient_id: int
     body: str
 
 

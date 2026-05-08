@@ -116,6 +116,7 @@ app.include_router(admin.router,         prefix="/api/v1")
 app.include_router(analytics.router,     prefix="/api/v1")
 app.include_router(audit.router,         prefix="/api/v1")
 app.include_router(reports.router,       prefix="/api/v1")
+app.include_router(messages.router,      prefix="/api/v1")
 
 
 @app.get("/", tags=["root"])
@@ -138,5 +139,3 @@ def run_migrations(x_migration_key: str = Header(...)):
         capture_output=True, text=True, cwd="/app", timeout=120
     )
     return {"stdout": result.stdout, "stderr": result.stderr, "returncode": result.returncode}
-
-app.include_router(messages.router,     prefix="/api/v1")

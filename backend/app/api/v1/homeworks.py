@@ -4,7 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin, require_staff
+from app.core.security import require_admin, require_staff, require_auth
+from app.models.group import StudentGroup
 from app.models.homework import Homework
 from app.models.teacher import Teacher
 from app.models.user import User, UserRole
@@ -35,6 +36,30 @@ async def get_homeworks(
         q = q.where(Homework.teacher_id == teacher_id)
     q = q.order_by(Homework.due_date.desc())
     result = await db.execute(q)
+    return result.scalars().all()
+
+
+@router.get("/my", response_model=List[HomeworkOut])
+async def get_my_homeworks(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_auth),
+):
+    """Получить домашние задания для текущего студента по его группам."""
+    # Ищем активные группы студента по email
+    groups_result = await db.execute(
+        select(StudentGroup.group_id).where(
+            StudentGroup.student_email == current_user.email,
+            StudentGroup.is_active == True,
+        )
+    )
+    group_ids = groups_result.scalars().all()
+    if not group_ids:
+        return []
+    result = await db.execute(
+        select(Homework)
+        .where(Homework.group_id.in_(group_ids))
+        .order_by(Homework.due_date.desc())
+    )
     return result.scalars().all()
 
 
