@@ -37,21 +37,35 @@ const error = ref('')
 
 const schedule = ref<any[]>([])
 
+function formatTimeValue(value: string | null | undefined): string {
+  const raw = String(value || '').trim()
+  const parts = raw.split(':')
+  if (parts.length < 2) return raw
+  const hh = (parts[0] || '').padStart(2, '0').slice(0, 2)
+  const mm = (parts[1] || '').padStart(2, '0').slice(0, 2)
+  return `${hh}:${mm}`
+}
+
 onMounted(async () => {
   try {
-    const studentGroupId = (auth.user as any)?.group_id
+    const studentGroupId = (auth.user as { group_id?: number } | null)?.group_id
     const params = studentGroupId ? { group_id: studentGroupId } : undefined
     const res = await http.get('/schedule', { params })
     const rows = Array.isArray(res.data) ? res.data : []
-    schedule.value = rows.map((item: any) => ({
-      id: item.id,
-      day: item.day ?? item.day_of_week ?? '—',
-      course: item.course ?? item.course_name ?? '—',
-      time: item.time ?? `${(item.time_start || '').slice(0, 5)}–${(item.time_end || '').slice(0, 5)}`,
-      teacher: item.teacher ?? item.teacher_name ?? '—',
-      place: item.place ?? item.classroom_name ?? '—',
-      level: item.level ?? '—',
-    }))
+    schedule.value = rows.map((item: any) => {
+      const timeStart = formatTimeValue(item.time_start)
+      const timeEnd = formatTimeValue(item.time_end)
+      const fallbackTime = timeStart && timeEnd ? `${timeStart}–${timeEnd}` : '—'
+      return {
+        id: item.id,
+        day: item.day ?? item.day_of_week ?? '—',
+        course: item.course ?? item.course_name ?? '—',
+        time: item.time ?? fallbackTime,
+        teacher: item.teacher ?? item.teacher_name ?? '—',
+        place: item.place ?? item.classroom_name ?? '—',
+        level: item.level ?? '—',
+      }
+    })
   } catch (err) {
     schedule.value = []
     error.value = 'Не удалось загрузить расписание'

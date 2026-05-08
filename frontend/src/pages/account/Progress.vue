@@ -228,6 +228,14 @@ async function onTeacherChange() {
   }
 }
 
+async function loadProgressPayload(params: Record<string, string>) {
+  try {
+    return (await http.get('/progress', { params })).data
+  } catch {
+    return (await http.get('/students', { params: { ...params, with_grades: true } })).data
+  }
+}
+
 async function loadMatrix() {
   if (!filters.group_id) {
     resetMatrix()
@@ -240,14 +248,7 @@ async function loadMatrix() {
     if (filters.date_to) params.date_to = filters.date_to
     params.group_id = String(filters.group_id)
 
-    let payload: any = null
-    try {
-      const res = await http.get('/progress', { params })
-      payload = res.data
-    } catch {
-      const fallback = await http.get('/students', { params: { ...params, with_grades: true } })
-      payload = fallback.data
-    }
+    const payload: any = await loadProgressPayload(params)
 
     groupInfo.value = payload?.group || null
     students.value = payload?.students || []
