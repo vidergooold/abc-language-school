@@ -1,4 +1,8 @@
-"""Единый seed-скрипт для заполнения базовых данных."""
+"""Единый (канонический) seed-скрипт для демо-данных.
+
+Заполняет базовые справочники и запускает demo/schedule seed-поток,
+после чего гарантированно дополняет student_groups для всех групп.
+"""
 
 import asyncio
 import sys
@@ -14,6 +18,9 @@ if str(BACKEND_DIR) not in sys.path:
 from app.core.database import AsyncSessionLocal, init_db
 from app.models.group import Course, CourseCategory, CourseLevel
 from app.models.news import News
+from seed_demo import seed as seed_demo
+from seed_real_schedule import seed_real_schedule
+from seed_student_groups import seed_student_groups
 
 COURSES_DATA = [
     {
@@ -137,6 +144,10 @@ async def seed_all() -> None:
     async with AsyncSessionLocal() as db:
         await seed_courses(db)
         await seed_news(db)
+    # Канонический поток демо-данных для матрицы посещаемости.
+    await seed_demo()
+    await seed_real_schedule()
+    await seed_student_groups()
 
 
 if __name__ == "__main__":
