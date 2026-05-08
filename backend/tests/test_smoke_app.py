@@ -1,5 +1,7 @@
 def test_app_module_imports_successfully():
-    import app.main as main_module  # noqa: F401
+    import app.main as main_module
+
+    assert main_module is not None
 
 
 def test_fastapi_app_instance_exists():
