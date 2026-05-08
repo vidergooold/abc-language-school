@@ -1,7 +1,7 @@
 def test_app_module_imports_successfully():
     import app.main as main_module
 
-    assert main_module is not None
+    assert hasattr(main_module, "app")
 
 
 def test_fastapi_app_instance_exists():
