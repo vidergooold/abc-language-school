@@ -65,7 +65,7 @@ class LessonManageOut(BaseModel):
     status: LessonStatus
     is_recurring: bool
     lesson_date: Optional[datetime] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 

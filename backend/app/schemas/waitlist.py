@@ -27,6 +27,6 @@ class WaitlistOut(BaseModel):
     comment:       Optional[str]
     notified_at:   Optional[datetime]
     enrolled_at:   Optional[datetime]
-    created_at:    datetime
+    created_at:    Optional[datetime] = None
 
     model_config = {"from_attributes": True}

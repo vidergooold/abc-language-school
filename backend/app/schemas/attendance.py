@@ -31,7 +31,7 @@ class AttendanceOut(BaseModel):
     grade: Optional[int] = None
     note: Optional[str] = None
     lesson_date: datetime
-    marked_at: datetime
+    marked_at: Optional[datetime] = None
 
 
 class AttendanceStats(BaseModel):
