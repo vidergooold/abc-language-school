@@ -21,6 +21,7 @@ async def _resolve_teacher_id(db: AsyncSession, current_user: User) -> Optional[
     return result.scalar_one_or_none()
 
 
+@router.get("", response_model=List[HomeworkOut])
 @router.get("/", response_model=List[HomeworkOut])
 async def get_homeworks(
     db: AsyncSession = Depends(get_db),

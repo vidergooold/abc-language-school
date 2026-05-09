@@ -27,6 +27,7 @@ async def _get_admin(db: AsyncSession) -> User:
 
 # ─── Эндпоинты ───────────────────────────────────────────────────
 
+@router.get("", response_model=List[MessageRead])
 @router.get("/", response_model=List[MessageRead])
 async def list_messages(
     db: AsyncSession = Depends(get_db),

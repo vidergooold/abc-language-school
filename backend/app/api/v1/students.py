@@ -11,6 +11,7 @@ from app.schemas.student import StudentCreate, StudentUpdate, StudentOut
 router = APIRouter(prefix="/students", tags=["Students"])
 
 
+@router.get("", response_model=List[StudentOut])
 @router.get("/", response_model=List[StudentOut])
 async def get_students(
     db: AsyncSession = Depends(get_db),

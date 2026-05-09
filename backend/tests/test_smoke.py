@@ -316,6 +316,15 @@ async def test_student_homeworks_my(client: AsyncClient, student_token: str):
     assert response.status_code == 200
 
 
+async def test_teacher_students_without_trailing_slash(client: AsyncClient, teacher_token: str):
+    """GET /api/v1/students must work without trailing slash for staff users."""
+    response = await client.get(
+        "/api/v1/students", headers=auth_headers(teacher_token)
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
 async def test_student_news(client: AsyncClient, student_token: str):
     """GET /api/v1/news with a student token returns 200 (public endpoint)."""
     response = await client.get(

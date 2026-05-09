@@ -201,6 +201,7 @@ async def create_tax_form(
 
 # ─── GET эндпоинт — только для admin и teacher ────────────────────────────────
 
+@router.get("")
 @router.get("/")
 async def get_all_forms(
     db: AsyncSession = Depends(get_db),
