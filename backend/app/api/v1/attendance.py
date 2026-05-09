@@ -770,8 +770,9 @@ async def get_materials_by_group(
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
 ):
-    """
-    Список материалов (тем) уроков для группы в указанном периоде.
+    """Return lesson materials for a group in a date range.
+
+    Raises HTTPException(404) if the group does not exist.
     """
     group_result = await db.execute(select(Group).where(Group.id == group_id))
     if not group_result.scalar_one_or_none():

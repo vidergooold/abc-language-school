@@ -1,4 +1,4 @@
-"""Materials endpoint — alias for GET /attendance/group/{group_id}/materials."""
+"""Top-level materials endpoint that reuses attendance materials query logic."""
 from datetime import date
 from typing import Optional
 
