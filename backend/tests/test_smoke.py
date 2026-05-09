@@ -632,6 +632,25 @@ async def test_publish_scheduled_news_inserts_status_history(
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# Group 8 — Forms smoke regressions
+# ═══════════════════════════════════════════════════════════════════════════
+
+async def test_post_adult_form_returns_success(client: AsyncClient):
+    """POST /api/v1/forms/adult with minimal valid payload returns success."""
+    payload = {
+        "fio": "Петров Иван Иванович",
+        "phone": "+79001234567",
+        "address": "ул. Пушкина, 10",
+    }
+    response = await client.post("/api/v1/forms/adult", json=payload)
+    assert response.status_code == 200, (
+        f"POST /api/v1/forms/adult failed ({response.status_code}): {response.text}"
+    )
+    body = response.json()
+    assert body.get("id") is not None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Group 8 — Teacher form snake_case field names (regression guard for 422)
 # ═══════════════════════════════════════════════════════════════════════════
 
