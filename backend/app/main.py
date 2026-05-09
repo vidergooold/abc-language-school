@@ -49,7 +49,7 @@ from app.api.v1 import (
     applications,
     progress,
 )
-from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
+from app.api.v1 import branches, programs, students, homeworks, materials, audit, reports, messages
 from app.core.cors import get_cors_origins
 
 logger = logging.getLogger(__name__)
@@ -135,6 +135,7 @@ app.include_router(teachers.router,      prefix="/api/v1")
 app.include_router(applications.router,  prefix="/api/v1")
 app.include_router(students.router,      prefix="/api/v1")
 app.include_router(homeworks.router,     prefix="/api/v1")
+app.include_router(materials.router,     prefix="/api/v1")
 app.include_router(progress.router,      prefix="/api/v1")
 
 # Админ

@@ -44,6 +44,7 @@ from app.api.v1 import (
     teachers,
     programs,
     homeworks,
+    materials,
     messages,
     audit,
     reports,
@@ -116,6 +117,7 @@ app.include_router(students.router, prefix="/api/v1")
 app.include_router(teachers.router, prefix="/api/v1")
 app.include_router(programs.router, prefix="/api/v1")
 app.include_router(homeworks.router, prefix="/api/v1")
+app.include_router(materials.router, prefix="/api/v1")
 app.include_router(messages.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
 app.include_router(progress.router, prefix="/api/v1")
