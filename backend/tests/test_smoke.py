@@ -200,7 +200,7 @@ async def test_auth_login_valid(client: AsyncClient, student_token):
 
 async def test_auth_login_trailing_slash_no_redirect(client: AsyncClient):
     """POST /api/v1/auth/login/ must not redirect with 307."""
-    payload = {"email": "student@smoke-tests.example.com", "password": "StudentPass123"}
+    payload = {"email": "trailing-slash-check@example.invalid", "password": "NotUsed123!"}
     response = await client.post("/api/v1/auth/login/", json=payload)
     assert response.status_code == 404
 
