@@ -485,59 +485,63 @@ onMounted(loadBranches)
 
 /* Таблица журнала */
 .journal-wrap {
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
+  border: 1px solid #ffe3cf;
+  border-radius: 12px;
+  background: #fff;
   overflow: hidden;
 }
 
 .journal-head {
   display: grid;
   grid-template-columns: 180px 1fr 54px;
-  background: #f7e2c8;
-  border-bottom: 1px solid #d1d5db;
+  background: #fff0e4;
+  border-bottom: 1px solid #ffe3cf;
 }
 
 .jh-date, .jh-topic {
-  padding: 10px 14px;
-  font-size: 14px;
+  padding: 8px 12px;
+  font-size: 12px;
   font-weight: 700;
-  color: #111;
+  color: var(--brand-purple);
+  text-transform: uppercase;
+  letter-spacing: .05em;
 }
 
 .jh-date {
-  border-right: 1px solid #d1d5db;
+  border-right: 1px solid #ffe3cf;
 }
 
 .jh-action {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-left: 1px solid #d1d5db;
+  border-left: 1px solid #ffe3cf;
 }
 
 .journal-row {
   display: grid;
   grid-template-columns: 180px 1fr 54px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #ffe3cf;
   background: #fff;
 }
 
 .journal-row:last-child { border-bottom: none; }
 
-.journal-row:nth-child(even) { background: #fafafa; }
+.journal-row:nth-child(even) { background: #fff7f0; }
 
 .jr-date {
-  border-right: 1px solid #e5e7eb;
-  padding: 12px 14px;
+  border-right: 1px solid #ffe3cf;
+  padding: 8px 12px;
   font-size: 14px;
-  font-weight: 700;
-  color: #111;
+  font-weight: 600;
+  color: #333;
   display: flex;
   align-items: flex-start;
+  background: #fff7f0;
 }
 
 .jr-topic {
-  padding: 10px 14px;
+  padding: 8px 12px;
   display: flex;
   align-items: flex-start;
 }
@@ -558,11 +562,11 @@ onMounted(loadBranches)
 }
 
 .jr-action {
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid #ffe3cf;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 .btn-plus {
@@ -570,7 +574,7 @@ onMounted(loadBranches)
   height: 30px;
   border: none;
   border-radius: 999px;
-  background: #f59e0b;
+  background: var(--brand-orange);
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -581,7 +585,7 @@ onMounted(loadBranches)
   justify-content: center;
 }
 
-.btn-plus:hover { background: #d97706; }
+.btn-plus:hover { background: #e55a10; }
 .btn-plus:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-pencil {

@@ -458,7 +458,9 @@ function formatRub(value: number) {
 
 .table-wrap {
   overflow-x: auto;
-  border: 1px solid #d1d5db;
+  border: 1px solid #ffe3cf;
+  border-radius: 12px;
+  background: #fff;
 }
 
 .payment-table {
@@ -469,15 +471,18 @@ function formatRub(value: number) {
 
 .payment-table th,
 .payment-table td {
-  border: 1px solid #d7dbe0;
+  border: 1px solid #ffe3cf;
   padding: 8px;
 }
 
 .payment-table thead th {
-  background: #f7e2c8;
+  background: #fff0e4;
   text-align: center;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
+  color: var(--brand-purple);
+  text-transform: uppercase;
+  letter-spacing: .05em;
 }
 
 .payment-table tbody tr:nth-child(odd) {
@@ -485,7 +490,7 @@ function formatRub(value: number) {
 }
 
 .payment-table tbody tr:nth-child(even) {
-  background: #f8fafc;
+  background: #fff7f0;
 }
 
 .col-num {
@@ -494,6 +499,15 @@ function formatRub(value: number) {
 
 .col-name {
   min-width: 220px;
+  font-weight: 600;
+}
+
+.payment-table tbody tr td:nth-child(2) {
+  background: #fff7f0;
+}
+
+.payment-table tbody tr.attention td:nth-child(2) {
+  background: #fde8ef;
 }
 
 .center {

@@ -672,7 +672,9 @@ async function saveLessonNote() {
 
 .matrix-wrap {
   overflow-x: auto;
-  border: 1px solid #d1d5db;
+  border: 1px solid #ffe3cf;
+  border-radius: 12px;
+  background: #fff;
 }
 
 .progress-table {
@@ -683,15 +685,18 @@ async function saveLessonNote() {
 
 .progress-table th,
 .progress-table td {
-  border: 1px solid #d7dbe0;
+  border: 1px solid #ffe3cf;
   padding: 8px;
 }
 
 .progress-table thead th {
-  background: #f7e2c8;
+  background: #fff0e4;
   text-align: center;
   font-size: 12px;
   font-weight: 700;
+  color: var(--brand-purple);
+  text-transform: uppercase;
+  letter-spacing: .05em;
 }
 
 .col-student {
@@ -724,7 +729,7 @@ async function saveLessonNote() {
 .delete-date-btn {
   border: none;
   background: transparent;
-  color: #dc2626;
+  color: #e03c3c;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -737,12 +742,14 @@ async function saveLessonNote() {
 }
 
 .add-date-btn {
-  border: 1px solid #d1d5db;
+  border: 2px solid var(--brand-orange);
   background: #fff;
+  color: var(--brand-orange);
   width: 28px;
   height: 28px;
-  border-radius: 999px;
+  border-radius: 10px;
   font-size: 18px;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
 }
@@ -755,7 +762,7 @@ async function saveLessonNote() {
   z-index: 5;
   width: 190px;
   background: #fff;
-  border: 1px solid #d1d5db;
+  border: 1px solid #ffe3cf;
   border-radius: 10px;
   padding: 10px;
   display: flex;
@@ -776,6 +783,7 @@ async function saveLessonNote() {
 
 .student-cell {
   font-weight: 600;
+  background: #fff7f0;
 }
 
 .progress-table tbody tr:nth-child(odd) {
@@ -783,7 +791,7 @@ async function saveLessonNote() {
 }
 
 .progress-table tbody tr:nth-child(even) {
-  background: #f8fafc;
+  background: #fff7f0;
 }
 
 .progress-table tbody tr.attention {
