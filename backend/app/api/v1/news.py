@@ -116,7 +116,7 @@ async def get_news(
     )
 
 
-@router.get("/news/categories", response_model=List[NewsCategoryOut], summary="Список категорий")
+@router.get("/news/categories/", response_model=List[NewsCategoryOut], summary="Список категорий")
 async def get_categories(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(NewsCategory).order_by(NewsCategory.name))
     return result.scalars().all()

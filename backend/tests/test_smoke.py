@@ -165,7 +165,7 @@ async def test_public_news(client: AsyncClient):
 
 async def test_public_news_categories(client: AsyncClient):
     """GET /api/v1/news/categories/ returns category list JSON, not int parsing."""
-    response = await client.get("/api/v1/news/categories/", follow_redirects=True)
+    response = await client.get("/api/v1/news/categories/")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
