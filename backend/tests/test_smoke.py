@@ -9,6 +9,7 @@ Run with:
 """
 from datetime import datetime, time
 import os
+from uuid import uuid4
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -148,6 +149,7 @@ async def _seed_progress_group(db_engine) -> int:
         bind=db_engine, class_=AsyncSession, expire_on_commit=False
     )
     async with SessionLocal() as session:
+        unique_suffix = uuid4().hex
         course = Course(
             name="Smoke Progress Course",
             language="English",
@@ -157,7 +159,7 @@ async def _seed_progress_group(db_engine) -> int:
         )
         teacher = Teacher(
             full_name="Smoke Progress Teacher",
-            email="progress-teacher@smoke-tests.example.com",
+            email=f"progress-teacher-{unique_suffix}@smoke-tests.example.com",
         )
         classroom = Classroom(name="Smoke Progress Room")
         session.add_all([course, teacher, classroom])
@@ -334,6 +336,34 @@ async def test_staff_progress_endpoint_not_404(client: AsyncClient, db_engine, t
     data = response.json()
     assert data["group"]["id"] == group_id
     assert data["students"][0]["student_name"] == "Smoke Progress Student"
+
+
+async def test_staff_attendance_group_grades_with_date_range(client: AsyncClient, db_engine, teacher_token):
+    """GET /api/v1/attendance/group/{group_id}/grades returns 200 for staff with date filters."""
+    group_id = await _seed_progress_group(db_engine)
+
+    response = await client.get(
+        f"/api/v1/attendance/group/{group_id}/grades",
+        params={"date_from": "2025-09-01", "date_to": "2025-09-30"},
+        headers=auth_headers(teacher_token),
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["group"]["id"] == group_id
+
+
+async def test_student_progress_endpoint_forbidden(client: AsyncClient, db_engine, student_token):
+    """GET /api/v1/progress with a student token returns 403 (staff-only endpoint)."""
+    group_id = await _seed_progress_group(db_engine)
+
+    response = await client.get(
+        "/api/v1/progress",
+        params={"group_id": group_id, "date_from": "2025-09-01", "date_to": "2025-09-30"},
+        headers=auth_headers(student_token),
+    )
+
+    assert response.status_code == 403
 
 
 async def test_no_token_messages_inbox(client: AsyncClient):

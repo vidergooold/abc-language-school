@@ -18,12 +18,11 @@ async def get_progress(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(require_staff),
+    _=Depends(require_staff),
 ):
     return await get_group_grades(
         group_id=group_id,
         date_from=date_from,
         date_to=date_to,
         db=db,
-        _=current_user,
     )
