@@ -322,6 +322,21 @@ async def test_no_token_homeworks_my(client: AsyncClient):
     assert response.status_code == 401
 
 
+async def test_materials_endpoint_not_404(client: AsyncClient):
+    """GET /api/v1/materials?group_id=1 must return 200 or 401, never 404.
+
+    Regression guard: the frontend LessonMaterial.vue page calls
+    GET /api/v1/materials?group_id={id} which was previously unregistered,
+    causing a 404.  After the fix the route exists and returns 401 when called
+    without a token (staff-only endpoint).
+    """
+    response = await client.get("/api/v1/materials", params={"group_id": 1})
+    assert response.status_code in (200, 401), (
+        f"GET /api/v1/materials?group_id=1 returned {response.status_code}, "
+        "expected 200 or 401 (not 404)"
+    )
+
+
 async def test_staff_progress_endpoint_not_404(client: AsyncClient, db_engine, teacher_token):
     """GET /api/v1/progress returns the progress payload for staff instead of 404."""
     group_id = await _seed_progress_group(db_engine)
