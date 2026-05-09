@@ -635,6 +635,22 @@ async def test_publish_scheduled_news_inserts_status_history(
 # Group 8 — Teacher form snake_case field names (regression guard for 422)
 # ═══════════════════════════════════════════════════════════════════════════
 
+async def test_post_adult_form_minimal_payload_not_500(client: AsyncClient):
+    """POST /api/v1/forms/adult with minimal valid payload must succeed (not 500)."""
+    response = await client.post(
+        "/api/v1/forms/adult",
+        json={
+            "fio": "Петров Петр Петрович",
+            "phone": "+79001234567",
+            "address": "ул. Пушкина, д. 1",
+        },
+    )
+    assert response.status_code == 200, (
+        f"POST /api/v1/forms/adult failed ({response.status_code}): {response.text}"
+    )
+    assert response.json().get("id") is not None
+
+
 async def test_post_teacher_form_snake_case_fields_not_422(client: AsyncClient):
     """POST /api/v1/forms/teacher with snake_case field names must not return 422.
 

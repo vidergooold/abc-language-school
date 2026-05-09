@@ -7,7 +7,7 @@ class ChildForm(Base):
     """Анкета школьника"""
     __tablename__ = "child_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     fio = Column(String, nullable=False)
     age = Column(String, nullable=True)
     birthdate = Column(String, nullable=True)
@@ -32,7 +32,7 @@ class AdultForm(Base):
     """Анкета взрослого"""
     __tablename__ = "adult_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     fio = Column(String, nullable=False)
     age = Column(String, nullable=True)
     birthdate = Column(String, nullable=True)
@@ -52,7 +52,7 @@ class PreschoolForm(Base):
     """Анкета дошкольника"""
     __tablename__ = "preschool_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     fio = Column(String, nullable=False)
     age = Column(String, nullable=True)
     birthdate = Column(String, nullable=True)
@@ -74,7 +74,7 @@ class TeacherForm(Base):
     """Анкета преподавателя"""
     __tablename__ = "teacher_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     fio = Column(String, nullable=False)
     birth_info = Column(Text, nullable=False)
     marital_status = Column(String, nullable=False)
@@ -95,7 +95,7 @@ class TestingForm(Base):
     """Заявка на тестирование"""
     __tablename__ = "testing_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     fio = Column(String, nullable=False)
     age = Column(String, nullable=False)
     school = Column(String, nullable=False)
@@ -111,7 +111,7 @@ class FeedbackForm(Base):
     """Форма обратной связи"""
     __tablename__ = "feedback_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     email = Column(String, nullable=True)
@@ -124,7 +124,7 @@ class TaxForm(Base):
     """Заявка на налоговый вычет"""
     __tablename__ = "tax_forms"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
 
     payer_fio = Column(String, nullable=False)
     payer_inn = Column(String, nullable=False)
