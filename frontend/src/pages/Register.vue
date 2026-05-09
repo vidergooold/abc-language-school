@@ -26,8 +26,8 @@
       </div>
 
       <div class="field">
-        <label>Имя и фамилия</label>
-        <input v-model="fullName" type="text" placeholder="Иванова Мария" required />
+        <label>ФИО</label>
+        <input v-model="fio" type="text" placeholder="Иванов Иван Иванович" required />
       </div>
 
       <div class="field">
@@ -67,7 +67,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const role = ref<'student' | 'staff'>('student')
-const fullName = ref('')
+const fio = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref<string | null>(null)
@@ -89,7 +89,7 @@ async function submit() {
   try {
     await http.post('/auth/register', {
       email: email.value,
-      full_name: fullName.value,
+      full_name: fio.value,
       password: password.value,
     })
 
