@@ -87,6 +87,7 @@ async def write_audit_log(
 
 
 # ── Эндпоинты ───────────────────────────────────────────────────────────────────
+@router.get("", response_model=AuditLogListOut, summary="[Админ] Журнал действий")
 @router.get("/", response_model=AuditLogListOut, summary="[Админ] Журнал действий")
 async def get_audit_log(
     entity_type: Optional[str]  = Query(None, description="Фильтр по типу: news, groups, payments…"),
