@@ -43,9 +43,9 @@ async def seed_account_data():
         branch, _ = await _get_or_create(
             session,
             Branch,
-            {"name": "Офис (главный)"},
+            {"name": "Офис"},
             {
-                "address": "г. Новосибирск, ул. Бориса Богаткова, 208/2",
+                "address": "г. Новосибирск, ул. Бориса Богаткова, 208/2, офис 4, 5",
                 "phone": "+79139121809",
                 "email": "info@abc-school.ru",
                 "manager_name": "Андрюнина Марина Викторовна",
