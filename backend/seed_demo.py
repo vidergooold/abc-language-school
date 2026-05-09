@@ -33,11 +33,11 @@ async def seed():
         branch = await get_or_create(
             session,
             Branch,
-            name="Филиал Центр",
+            name="Офис",
             defaults={
-                "address": "г. Новосибирск, ул. Ленина, 18",
-                "phone": "+73832090099",
-                "email": "center@abc-school.ru",
+                "address": "г. Новосибирск, ул. Бориса Богаткова, 208/2, офис 4, 5",
+                "phone": "+79139121809",
+                "email": "info@abc-school.ru",
                 "is_active": True,
             },
         )
