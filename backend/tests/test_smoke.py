@@ -163,6 +163,13 @@ async def test_public_news(client: AsyncClient):
     assert response.status_code == 200
 
 
+async def test_public_news_categories(client: AsyncClient):
+    """GET /api/v1/news/categories/ returns category list JSON, not int parsing."""
+    response = await client.get("/api/v1/news/categories/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
 async def test_public_courses(client: AsyncClient):
     """GET /api/v1/courses returns a list of courses (200) without authentication."""
     response = await client.get("/api/v1/courses")
@@ -388,6 +395,7 @@ async def test_admin_create_news_inserts_status_history(
     )
     data = response.json()
     assert data.get("id") is not None, "Created news must have a non-null id"
+    assert data.get("slug") == f"regression-status-history-id-test-{data['id']}"
     # status_history is returned in the NewsOut schema; verify at least one entry
     assert len(data.get("status_history", [])) >= 1, (
         "NewsStatusHistory insert failed — status_history must contain the "

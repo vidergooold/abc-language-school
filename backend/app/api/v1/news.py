@@ -116,6 +116,24 @@ async def get_news(
     )
 
 
+@router.get("/news/categories/", response_model=List[NewsCategoryOut], summary="Список категорий")
+async def get_categories(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(NewsCategory).order_by(NewsCategory.name))
+    return result.scalars().all()
+
+
+@router.get("/news/categories/{slug}", response_model=NewsCategoryOut, summary="Категория по slug")
+async def get_category_by_slug(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(NewsCategory).where(NewsCategory.slug == slug))
+    category = result.scalar_one_or_none()
+    if not category:
+        raise HTTPException(status_code=404, detail="Категория не найдена")
+    return category
+
+
 @router.get("/news/{news_id}", response_model=NewsOut, summary="Одна новость")
 async def get_news_item(
     news_id: int,
@@ -219,8 +237,9 @@ async def admin_create_news(
     db.add(news)
     await db.flush()  # получаем id до commit
 
-    # Генерируем slug
-    news.slug = _make_slug(data.title, news.id)
+    # Генерируем slug, если не задан
+    if not news.slug:
+        news.slug = _make_slug(data.title, news.id)
 
     # Записываем первый переход в историю (создание → начальный статус)
     history = NewsStatusHistory(
@@ -410,12 +429,6 @@ async def admin_delete_news(
 # ═══════════════════════════════════════════════════════════════════════
 # КАТЕГОРИИ
 # ═══════════════════════════════════════════════════════════════════════
-
-@router.get("/news/categories", response_model=List[NewsCategoryOut], summary="Список категорий")
-async def get_categories(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(NewsCategory).order_by(NewsCategory.name))
-    return result.scalars().all()
-
 
 @router.post("/admin/news/categories", response_model=NewsCategoryOut, status_code=201, summary="[Админ] Создать категорию")
 async def admin_create_category(
