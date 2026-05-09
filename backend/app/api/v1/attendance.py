@@ -764,16 +764,15 @@ async def get_attendance_report(
 
 
 # ─── Вкладка: Материал урока ──────────────────────────────────────────────────
-@router.get("/group/{group_id}/materials")
-async def get_group_materials(
+async def get_materials_by_group(
     group_id: int,
-    date_from: Optional[date] = Query(None),
-    date_to: Optional[date] = Query(None),
-    db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    db: AsyncSession,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
 ):
-    """
-    Список материалов (тем) уроков для группы в указанном периоде.
+    """Return lesson materials for a group in a date range.
+
+    Raises HTTPException(404) if the group does not exist.
     """
     group_result = await db.execute(select(Group).where(Group.id == group_id))
     if not group_result.scalar_one_or_none():
@@ -811,6 +810,27 @@ async def get_group_materials(
                 })
 
     return materials
+
+
+@router.get("/group/{group_id}/materials")
+async def get_group_materials(
+    group_id: int,
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_staff),
+):
+    """Return lesson materials for a group via path-based `group_id`.
+
+    Optional `date_from` and `date_to` query parameters narrow the lesson
+    period; when omitted, defaults are applied by shared query logic.
+    """
+    return await get_materials_by_group(
+        group_id=group_id,
+        date_from=date_from,
+        date_to=date_to,
+        db=db,
+    )
 
 
 # ─── Вкладка: Домашнее задание ─────────────────────────────────────────────
