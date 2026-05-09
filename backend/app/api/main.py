@@ -48,6 +48,7 @@ from app.api.v1 import (
     audit,
     reports,
     jobs,
+    progress,
 )
 
 
@@ -117,6 +118,7 @@ app.include_router(programs.router, prefix="/api/v1")
 app.include_router(homeworks.router, prefix="/api/v1")
 app.include_router(messages.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
+app.include_router(progress.router, prefix="/api/v1")
 
 # Админ
 app.include_router(admin.router, prefix="/api/v1")

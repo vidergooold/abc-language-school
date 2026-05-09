@@ -47,6 +47,7 @@ from app.api.v1 import (
     teachers,
     jobs,
     applications,
+    progress,
 )
 from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
 from app.core.cors import get_cors_origins
@@ -134,6 +135,7 @@ app.include_router(teachers.router,      prefix="/api/v1")
 app.include_router(applications.router,  prefix="/api/v1")
 app.include_router(students.router,      prefix="/api/v1")
 app.include_router(homeworks.router,     prefix="/api/v1")
+app.include_router(progress.router,      prefix="/api/v1")
 
 # Админ
 app.include_router(admin.router,         prefix="/api/v1")

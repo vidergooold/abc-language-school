@@ -7,6 +7,7 @@ transport — no real HTTP calls are made to external servers.
 Run with:
     python -m pytest backend/tests/test_smoke.py -v
 """
+from datetime import datetime, time
 import os
 import pytest
 import pytest_asyncio
@@ -138,6 +139,64 @@ def auth_headers(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
+async def _seed_progress_group(db_engine) -> int:
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus, StudentGroup
+    from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
+    from app.models.teacher import Teacher
+
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with SessionLocal() as session:
+        course = Course(
+            name="Smoke Progress Course",
+            language="English",
+            level=CourseLevel.beginner,
+            category=CourseCategory.children,
+            price_per_month=1000,
+        )
+        teacher = Teacher(
+            full_name="Smoke Progress Teacher",
+            email="progress-teacher@smoke-tests.example.com",
+        )
+        classroom = Classroom(name="Smoke Progress Room")
+        session.add_all([course, teacher, classroom])
+        await session.flush()
+
+        group = Group(
+            name="Smoke Progress Group",
+            course_id=course.id,
+            teacher_id=teacher.id,
+            status=GroupStatus.active,
+        )
+        session.add(group)
+        await session.flush()
+
+        session.add(
+            StudentGroup(
+                group_id=group.id,
+                student_name="Smoke Progress Student",
+                student_email="progress-student@smoke-tests.example.com",
+                student_type="child",
+            )
+        )
+        session.add(
+            Lesson(
+                group_id=group.id,
+                teacher_id=teacher.id,
+                classroom_id=classroom.id,
+                day_of_week=DayOfWeek.monday,
+                time_start=time(10, 0),
+                time_end=time(11, 0),
+                status=LessonStatus.completed,
+                lesson_date=datetime(2025, 9, 1, 10, 0, 0),
+                is_recurring=False,
+            )
+        )
+        await session.commit()
+        return group.id
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Group 1 — Public endpoints (no auth required, expect 200)
 # ═══════════════════════════════════════════════════════════════════════════
@@ -259,6 +318,22 @@ async def test_no_token_homeworks_my(client: AsyncClient):
     """GET /api/v1/homeworks/my without a token returns 401."""
     response = await client.get("/api/v1/homeworks/my")
     assert response.status_code == 401
+
+
+async def test_staff_progress_endpoint_not_404(client: AsyncClient, db_engine, teacher_token):
+    """GET /api/v1/progress returns the progress payload for staff instead of 404."""
+    group_id = await _seed_progress_group(db_engine)
+
+    response = await client.get(
+        "/api/v1/progress",
+        params={"group_id": group_id, "date_from": "2025-09-01", "date_to": "2025-09-30"},
+        headers=auth_headers(teacher_token),
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["group"]["id"] == group_id
+    assert data["students"][0]["student_name"] == "Smoke Progress Student"
 
 
 async def test_no_token_messages_inbox(client: AsyncClient):
