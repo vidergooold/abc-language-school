@@ -973,8 +973,8 @@ async def get_group_grades(
     effective_from = date_from or (date.today() - timedelta(days=60))
     effective_to = date_to or date.today()
 
-    dt_from = datetime(effective_from.year, effective_from.month, effective_from.day, tzinfo=timezone.utc)
-    dt_to = datetime(effective_to.year, effective_to.month, effective_to.day, 23, 59, 59, tzinfo=timezone.utc)
+    dt_from = datetime(effective_from.year, effective_from.month, effective_from.day)
+    dt_to = datetime(effective_to.year, effective_to.month, effective_to.day, 23, 59, 59)
 
     _DOW_TO_WEEKDAY = {
         'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3,
