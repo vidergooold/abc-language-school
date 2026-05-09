@@ -83,7 +83,7 @@ TEACHERS_DATA = [
         "subject": "Китайский",
         "language_level": "C2",
         "experience_years": 15,
-        "bio": "Старший преподаватель английского языка.",
+        "bio": "Старший преподаватель китайского языка.",
         "is_active": True,
     },
     {
@@ -163,7 +163,7 @@ TEACHERS_DATA = [
         "subject": "Китайский",
         "language_level": "C2",
         "experience_years": 18,
-        "bio": "Старший преподаватель английского языка.",
+        "bio": "Старший преподаватель китайского языка.",
         "is_active": True,
     },
     {
@@ -183,7 +183,7 @@ TEACHERS_DATA = [
         "subject": "Китайский",
         "language_level": "B2",
         "experience_years": 10,
-        "bio": "Преподаватель английского языка.",
+        "bio": "Преподаватель китайского языка.",
         "is_active": True,
     },
 ]

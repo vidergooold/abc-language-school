@@ -301,7 +301,7 @@ async def seed_distribution() -> None:
                 assigned_student_ids.add(student.id)
 
             if students:
-                cycle_students = students if students else []
+                cycle_students = students
                 cycle_index = 0
                 for group, _, _, _ in created_groups:
                     while group_remaining[group.id] > 0 and cycle_students:
