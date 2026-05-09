@@ -564,3 +564,53 @@ async def test_admin_create_news_inserts_status_history(
     assert data["status_history"][0]["id"] is not None, (
         "NewsStatusHistory.id is None — the auto-increment sequence is broken."
     )
+
+
+async def test_publish_scheduled_news_inserts_status_history(
+    client: AsyncClient, admin_token: str
+):
+    """Scheduled publish must append a status-history row with non-null id."""
+    title = f"Regression scheduled publish {uuid4()}"
+    create_response = await client.post(
+        "/api/v1/admin/news",
+        headers=auth_headers(admin_token),
+        json={
+            "title": title,
+            "body": "Body text for scheduler regression test.",
+            "status": "scheduled",
+            "publish_at": datetime.utcnow().isoformat(),
+        },
+    )
+    assert create_response.status_code == 201, (
+        f"Scheduled news creation failed ({create_response.status_code}): "
+        f"{create_response.text}"
+    )
+    created_news = create_response.json()
+    news_id = created_news["id"]
+
+    publish_response = await client.post("/api/v1/admin/news/publish-scheduled")
+    assert publish_response.status_code == 200, (
+        f"Scheduled publish failed ({publish_response.status_code}): "
+        f"{publish_response.text}"
+    )
+    publish_data = publish_response.json()
+    assert title in publish_data.get("titles", []), (
+        "Expected scheduled news title in scheduler response, but it was missing."
+    )
+
+    details_response = await client.get(f"/api/v1/news/{news_id}")
+    assert details_response.status_code == 200, (
+        f"Fetching published news failed ({details_response.status_code}): "
+        f"{details_response.text}"
+    )
+    details = details_response.json()
+    auto_publish_history = [
+        row for row in details.get("status_history", [])
+        if row.get("from_status") == "scheduled" and row.get("to_status") == "published"
+    ]
+    assert auto_publish_history, (
+        "Missing scheduled -> published history row after scheduler publish."
+    )
+    assert auto_publish_history[-1].get("id") is not None, (
+        "Scheduled publish history row has null id; sequence/default is broken."
+    )

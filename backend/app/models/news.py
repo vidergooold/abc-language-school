@@ -43,7 +43,7 @@ class NewsStatusHistory(Base):
     """Журнал переходов статусов — кто, когда и из какого статуса"""
     __tablename__ = "news_status_history"
 
-    id         = Column(Integer, primary_key=True, index=True)
+    id         = Column(Integer, primary_key=True, index=True, autoincrement=True)
     news_id    = Column(Integer, ForeignKey("news.id", ondelete="CASCADE"), nullable=False)
     from_status = Column(SAEnum(NewsStatus), nullable=True)  # None при создании
     to_status  = Column(SAEnum(NewsStatus), nullable=False)
