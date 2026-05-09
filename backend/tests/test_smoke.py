@@ -163,6 +163,15 @@ async def test_public_news(client: AsyncClient):
     assert response.status_code == 200
 
 
+async def test_public_news_trailing_slash_returns_404(client: AsyncClient):
+    """GET /api/v1/news/ must not redirect with 307 when redirect_slashes is disabled."""
+    slash_response = await client.get("/api/v1/news/")
+    assert slash_response.status_code == 404
+
+    no_slash_response = await client.get("/api/v1/news")
+    assert no_slash_response.status_code == 200
+
+
 async def test_public_news_categories(client: AsyncClient):
     """GET /api/v1/news/categories/ returns category list JSON, not int parsing."""
     response = await client.get("/api/v1/news/categories/")
