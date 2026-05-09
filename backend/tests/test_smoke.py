@@ -355,3 +355,45 @@ async def test_cors_preflight_vercel_origin(client: AsyncClient):
         f"OPTIONS preflight from {vercel_origin} returned "
         f"{response.status_code}, expected 200."
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Group 7 — news_status_history insert regression
+# Regression guard for: IntegrityError null value in column "id" of relation
+# "news_status_history" violates not-null constraint
+# ═══════════════════════════════════════════════════════════════════════════
+
+async def test_admin_create_news_inserts_status_history(
+    client: AsyncClient, admin_token: str
+):
+    """POST /api/v1/admin/news must succeed and must insert a NewsStatusHistory
+    row with an auto-generated id (not NULL).
+
+    This is a regression test for the production IntegrityError:
+      "null value in column 'id' of relation 'news_status_history'
+       violates not-null constraint"
+    which occurred because the id column lacked a proper sequence default.
+    """
+    response = await client.post(
+        "/api/v1/admin/news",
+        headers=auth_headers(admin_token),
+        json={
+            "title": "Regression: status history id test",
+            "body": "Body text for regression test.",
+            "status": "draft",
+        },
+    )
+    assert response.status_code == 201, (
+        f"Admin news creation failed ({response.status_code}): {response.text}"
+    )
+    data = response.json()
+    assert data.get("id") is not None, "Created news must have a non-null id"
+    # status_history is returned in the NewsOut schema; verify at least one entry
+    assert len(data.get("status_history", [])) >= 1, (
+        "NewsStatusHistory insert failed — status_history must contain the "
+        "initial status transition record.  Check that the id sequence is "
+        "properly set up on the news_status_history table."
+    )
+    assert data["status_history"][0]["id"] is not None, (
+        "NewsStatusHistory.id is None — the auto-increment sequence is broken."
+    )
