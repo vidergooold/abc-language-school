@@ -7,7 +7,7 @@ transport — no real HTTP calls are made to external servers.
 Run with:
     python -m pytest backend/tests/test_smoke.py -v
 """
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 import os
 from uuid import uuid4
 import pytest
@@ -578,7 +578,7 @@ async def test_publish_scheduled_news_inserts_status_history(
             "title": title,
             "body": "Body text for scheduler regression test.",
             "status": "scheduled",
-            "publish_at": datetime.utcnow().isoformat(),
+            "publish_at": datetime.now(timezone.utc).isoformat(),
         },
     )
     assert create_response.status_code == 201, (
