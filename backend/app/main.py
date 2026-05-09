@@ -99,6 +99,7 @@ app = FastAPI(
     },
     lifespan=lifespan,
     default_response_class=UTF8JSONResponse,
+    redirect_slashes=False,
 )
 
 app.add_middleware(

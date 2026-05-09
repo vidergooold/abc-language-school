@@ -198,6 +198,13 @@ async def test_auth_login_valid(client: AsyncClient, student_token):
     assert data["token_type"] == "bearer"
 
 
+async def test_auth_login_trailing_slash_no_redirect(client: AsyncClient):
+    """POST /api/v1/auth/login/ must not redirect with 307."""
+    payload = {"email": "student@smoke-tests.example.com", "password": "StudentPass123"}
+    response = await client.post("/api/v1/auth/login/", json=payload)
+    assert response.status_code == 404
+
+
 async def test_auth_login_wrong_password(client: AsyncClient, student_token):
     """POST /api/v1/auth/login with a wrong password must return 401."""
     payload = {"email": "student@smoke-tests.example.com", "password": "WrongPassword!"}
