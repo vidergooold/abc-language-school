@@ -58,28 +58,28 @@ async def seed_account_data():
         program_a1, _ = await _get_or_create(
             session,
             EducationalProgram,
-            {"name": "English Start A1"},
+            {"name": "FH1, AS1"},
             {
-                "code": "ENG-A1",
+                "code": "FH1-AS1",
                 "language": "Английский",
                 "level": "A1",
                 "target_group": "школьники",
                 "duration_months": 9,
-                "description": "Базовая программа английского языка для школьников.",
+                "description": "Программа для школьников начального уровня.",
                 "is_active": True,
             },
         )
         program_a2, _ = await _get_or_create(
             session,
             EducationalProgram,
-            {"name": "English Progress A2"},
+            {"name": "Взрослые групповые"},
             {
-                "code": "ENG-A2",
+                "code": "ADULT-GROUP",
                 "language": "Английский",
-                "level": "A2",
+                "level": "B1",
                 "target_group": "взрослые",
                 "duration_months": 9,
-                "description": "Продолжающая программа английского языка.",
+                "description": "Групповая программа английского языка для взрослых.",
                 "is_active": True,
             },
         )
@@ -87,7 +87,7 @@ async def seed_account_data():
         course_school, _ = await _get_or_create(
             session,
             Course,
-            {"name": "Английский для школьников A1"},
+            {"name": "FH1, AS1"},
             {
                 "description": "Группа начального уровня для школьников.",
                 "language": "Английский",
@@ -95,7 +95,7 @@ async def seed_account_data():
                 "category": CourseCategory.school,
                 "duration_months": 9,
                 "lessons_per_week": 2,
-                "price_per_month": 5400,
+                "price_per_month": 3100,
                 "max_students": 10,
                 "is_active": True,
             },
@@ -103,15 +103,15 @@ async def seed_account_data():
         course_adult, _ = await _get_or_create(
             session,
             Course,
-            {"name": "Английский для взрослых A2"},
+            {"name": "Взрослые групповые"},
             {
                 "description": "Группа продолжающего уровня для взрослых.",
                 "language": "Английский",
-                "level": CourseLevel.elementary,
+                "level": CourseLevel.intermediate,
                 "category": CourseCategory.adults,
                 "duration_months": 9,
                 "lessons_per_week": 2,
-                "price_per_month": 6200,
+                "price_per_month": 6500,
                 "max_students": 8,
                 "is_active": True,
             },

@@ -395,11 +395,11 @@ async def _get_or_create_course(db: AsyncSession) -> Course:
     if course:
         return course
     course = Course(
-        name="Английский язык",
+        name="GWB1, GWB1+, GWB2, GWB2+, GWC1",
         language="Английский",
-        level=CourseLevel.beginner,
+        level=CourseLevel.upper_intermediate,
         category=CourseCategory.adults,
-        price_per_month=5000,
+        price_per_month=4900,
     )
     db.add(course)
     await db.flush()

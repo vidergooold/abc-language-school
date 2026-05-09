@@ -95,7 +95,7 @@ async def seed_full_demo() -> None:
         # Course price
         course_result = await session.execute(select(Course).where(Course.id == group.course_id))
         course = course_result.scalar_one_or_none()
-        price_per_month = int(course.price_per_month) if (course and course.price_per_month) else 5000
+        price_per_month = int(course.price_per_month) if (course and course.price_per_month) else 3100
 
         # Admin user (received_by)
         admin_result = await session.execute(

@@ -45,14 +45,14 @@ async def seed():
         p1 = await get_or_create(
             session,
             EducationalProgram,
-            name="Английский для школьников",
+            name="AS2, AS3, AS4",
             defaults={
-                "code": "ENG-SCHOOL",
+                "code": "AS2-AS4",
                 "language": "Английский",
                 "level": "A2",
                 "target_group": "школьники",
                 "duration_months": 9,
-                "description": "Программа для учеников 5-11 классов: грамматика, лексика, разговорная практика.",
+                "description": "Программа для школьников среднего уровня.",
                 "is_active": True,
             },
         )
@@ -60,14 +60,14 @@ async def seed():
         p2 = await get_or_create(
             session,
             EducationalProgram,
-            name="Разговорный английский для взрослых",
+            name="Взрослые групповые",
             defaults={
-                "code": "ENG-ADULT",
+                "code": "ADULT-GROUP",
                 "language": "Английский",
                 "level": "B1",
                 "target_group": "взрослые",
                 "duration_months": 6,
-                "description": "Курс для уверенного общения в поездках, работе и повседневных ситуациях.",
+                "description": "Групповая программа английского языка для взрослых.",
                 "is_active": True,
             },
         )
@@ -78,7 +78,7 @@ async def seed():
             c1 = await get_or_create(
                 session,
                 Course,
-                name="English A2.1",
+                name="AS2, AS3, AS4",
                 defaults={
                     "description": "Базовый разговорный курс",
                     "language": "Английский",
@@ -86,7 +86,7 @@ async def seed():
                     "category": CourseCategory.school,
                     "duration_months": 9,
                     "lessons_per_week": 2,
-                    "price_per_month": 5200,
+                    "price_per_month": 3500,
                     "max_students": 10,
                     "is_active": True,
                 },
