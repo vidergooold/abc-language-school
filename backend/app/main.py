@@ -1,8 +1,11 @@
+import logging
 import os
 import secrets
 import subprocess
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 
@@ -48,12 +51,26 @@ from app.api.v1 import (
 from app.api.v1 import branches, programs, students, homeworks, audit, reports, messages
 from app.core.cors import get_cors_origins
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError, OSError) as exc:
+        logger.warning(
+            "Failed to reconfigure stdout to UTF-8 (%s); continuing with system default encoding",
+            type(exc).__name__,
+            exc_info=True,
+        )
     start_scheduler()
     yield
     shutdown_scheduler()
+
+
+class UTF8JSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
 
 
 app = FastAPI(
@@ -81,6 +98,7 @@ app = FastAPI(
         "email": "info@abc-school.ru",
     },
     lifespan=lifespan,
+    default_response_class=UTF8JSONResponse,
 )
 
 app.add_middleware(
