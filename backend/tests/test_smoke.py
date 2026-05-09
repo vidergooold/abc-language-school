@@ -199,6 +199,49 @@ async def _seed_progress_group(db_engine) -> int:
         return group.id
 
 
+async def _seed_group_15_with_nullable_course_fields(db_engine) -> int:
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
+
+    def set_nullable_course_fields_to_none(course: Course) -> None:
+        course.max_students = None
+        course.duration_months = None
+        course.lessons_per_week = None
+        course.is_active = None
+
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with SessionLocal() as session:
+        group = await session.get(Group, 15)
+        if group:
+            course = await session.get(Course, group.course_id)
+            if course:
+                set_nullable_course_fields_to_none(course)
+                await session.commit()
+            return group.id
+
+        course = Course(
+            name="Smoke Nullable Course",
+            language="English",
+            level=CourseLevel.beginner,
+            category=CourseCategory.children,
+            price_per_month=1000,
+        )
+        session.add(course)
+        await session.flush()
+        set_nullable_course_fields_to_none(course)
+
+        group = Group(
+            id=15,
+            name="Smoke Group 15",
+            course_id=course.id,
+            status=GroupStatus.recruiting,
+        )
+        session.add(group)
+        await session.commit()
+        return group.id
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Group 1 — Public endpoints (no auth required, expect 200)
 # ═══════════════════════════════════════════════════════════════════════════
@@ -415,6 +458,16 @@ async def test_no_token_teachers_expects_401(client: AsyncClient):
     """GET /api/v1/teachers/ without a token returns 200 — the endpoint is public."""
     response = await client.get("/api/v1/teachers/")
     assert response.status_code == 200
+
+
+async def test_staff_get_group_15_with_nullable_course_fields(client: AsyncClient, db_engine, teacher_token):
+    """GET /api/v1/groups/15 returns 200 when related nullable course fields are NULL."""
+    group_id = await _seed_group_15_with_nullable_course_fields(db_engine)
+    assert group_id == 15
+
+    response = await client.get("/api/v1/groups/15", headers=auth_headers(teacher_token))
+    assert response.status_code == 200
+    assert response.json()["course"]["max_students"] is None
 
 
 # ═══════════════════════════════════════════════════════════════════════════
