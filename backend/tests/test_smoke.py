@@ -202,6 +202,12 @@ async def _seed_progress_group(db_engine) -> int:
 async def _seed_group_15_with_nullable_course_fields(db_engine) -> int:
     from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
 
+    def set_nullable_course_fields_to_none(course: Course) -> None:
+        course.max_students = None
+        course.duration_months = None
+        course.lessons_per_week = None
+        course.is_active = None
+
     SessionLocal = async_sessionmaker(
         bind=db_engine, class_=AsyncSession, expire_on_commit=False
     )
@@ -210,10 +216,7 @@ async def _seed_group_15_with_nullable_course_fields(db_engine) -> int:
         if group:
             course = await session.get(Course, group.course_id)
             if course:
-                course.max_students = None
-                course.duration_months = None
-                course.lessons_per_week = None
-                course.is_active = None
+                set_nullable_course_fields_to_none(course)
                 await session.commit()
             return group.id
 
@@ -226,10 +229,7 @@ async def _seed_group_15_with_nullable_course_fields(db_engine) -> int:
         )
         session.add(course)
         await session.flush()
-        course.max_students = None
-        course.duration_months = None
-        course.lessons_per_week = None
-        course.is_active = None
+        set_nullable_course_fields_to_none(course)
 
         group = Group(
             id=15,
