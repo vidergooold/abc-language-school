@@ -11,6 +11,7 @@ from app.schemas.educational_program import ProgramCreate, ProgramUpdate, Progra
 router = APIRouter(prefix="/programs", tags=["Educational Programs"])
 
 
+@router.get("", response_model=List[ProgramOut])
 @router.get("/", response_model=List[ProgramOut])
 async def get_programs(db: AsyncSession = Depends(get_db)):
     """Публичный список активных образовательных программ"""

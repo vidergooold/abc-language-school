@@ -192,6 +192,14 @@ async def test_public_jobs(client: AsyncClient):
     assert response.status_code == 200
 
 
+async def test_public_catalog_endpoints_without_trailing_slash(client: AsyncClient):
+    """List endpoints for teachers/branches/programs must work without trailing slash."""
+    for path in ("/api/v1/teachers", "/api/v1/branches", "/api/v1/programs"):
+        response = await client.get(path)
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Group 2 — Auth endpoints
 # ═══════════════════════════════════════════════════════════════════════════
