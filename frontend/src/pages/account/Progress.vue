@@ -311,10 +311,6 @@ function lessonKey(lesson: LessonSlot) {
   return `${lesson.id}:${lesson.slot_date}`
 }
 
-function lessonColumnKey(lesson: LessonSlot) {
-  return `${lesson.id}:${lesson.slot_date}`
-}
-
 function recordKey(studentId: number, lesson: LessonSlot) {
   return `${studentId}:${lesson.id}:${lesson.slot_date}`
 }
@@ -420,19 +416,29 @@ function closeNoteModal() {
 }
 
 function isColumnSaving(lesson: LessonSlot) {
-  return Boolean(columnSaving.value[lessonColumnKey(lesson)])
+  return Boolean(columnSaving.value[lessonKey(lesson)])
+}
+
+function setColumnSaving(lesson: LessonSlot, saving: boolean) {
+  const key = lessonKey(lesson)
+  const next = { ...columnSaving.value }
+  if (saving) next[key] = true
+  else delete next[key]
+  columnSaving.value = next
 }
 
 function isDateEditorOpenFor(lesson: LessonSlot) {
-  return dateEditor.open && dateEditor.mode === 'edit' && Boolean(dateEditor.lesson) && lessonKey(dateEditor.lesson as LessonSlot) === lessonKey(lesson)
+  if (!dateEditor.open || dateEditor.mode !== 'edit' || !dateEditor.lesson) return false
+  return lessonKey(dateEditor.lesson) === lessonKey(lesson)
 }
 
 function openDateEditor(mode: 'add' | 'edit', lesson: LessonSlot | null = null) {
   if (!filters.group_id) return
+  const fallbackDate = new Date().toISOString().slice(0, 10)
   dateEditor.open = true
   dateEditor.mode = mode
   dateEditor.lesson = lesson
-  dateEditor.value = mode === 'edit' && lesson ? lesson.slot_date : (filters.date_to || new Date().toISOString().slice(0, 10))
+  dateEditor.value = mode === 'edit' && lesson ? lesson.slot_date : fallbackDate
 }
 
 function closeDateEditor() {
@@ -442,11 +448,17 @@ function closeDateEditor() {
   dateEditor.value = ''
 }
 
+function isValidIsoDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T00:00:00`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+}
+
 async function submitDateEditor() {
   if (!filters.group_id) return
   const nextDate = dateEditor.value.trim()
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) {
-    window.alert('Неверный формат даты. Используйте YYYY-MM-DD')
+  if (!isValidIsoDate(nextDate)) {
+    window.alert('Некорректная дата')
     return
   }
 
@@ -462,18 +474,12 @@ async function submitDateEditor() {
         closeDateEditor()
         return
       }
-      const columnKey = lessonColumnKey(lesson)
-      columnSaving.value = { ...columnSaving.value, [columnKey]: true }
+      setColumnSaving(lesson, true)
       await http.patch(`/progress/dates/${lesson.id}`, {
         new_date: nextDate,
       })
-      const nextSaving = { ...columnSaving.value }
-      delete nextSaving[columnKey]
-      columnSaving.value = nextSaving
+      setColumnSaving(lesson, false)
     }
-
-    if (!filters.date_from || nextDate < filters.date_from) filters.date_from = nextDate
-    if (!filters.date_to || nextDate > filters.date_to) filters.date_to = nextDate
 
     closeDateEditor()
     await loadMatrix()
@@ -482,18 +488,14 @@ async function submitDateEditor() {
     window.alert(typeof detail === 'string' ? detail : 'Не удалось сохранить дату')
   } finally {
     if (dateEditor.lesson) {
-      const columnKey = lessonColumnKey(dateEditor.lesson)
-      const nextSaving = { ...columnSaving.value }
-      delete nextSaving[columnKey]
-      columnSaving.value = nextSaving
+      setColumnSaving(dateEditor.lesson, false)
     }
   }
 }
 
 async function deleteDate(lesson: LessonSlot) {
   if (!window.confirm(`Удалить дату ${lesson.slot_date}?`)) return
-  const columnKey = lessonColumnKey(lesson)
-  columnSaving.value = { ...columnSaving.value, [columnKey]: true }
+  setColumnSaving(lesson, true)
   try {
     await http.delete(`/progress/dates/${lesson.id}`)
     if (dateEditor.lesson && lessonKey(dateEditor.lesson) === lessonKey(lesson)) {
@@ -504,9 +506,7 @@ async function deleteDate(lesson: LessonSlot) {
     const detail = e?.response?.data?.detail
     window.alert(typeof detail === 'string' ? detail : 'Не удалось удалить дату')
   } finally {
-    const nextSaving = { ...columnSaving.value }
-    delete nextSaving[columnKey]
-    columnSaving.value = nextSaving
+    setColumnSaving(lesson, false)
   }
 }
 

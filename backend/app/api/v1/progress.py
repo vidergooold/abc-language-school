@@ -24,7 +24,7 @@ class ProgressDateUpdate(BaseModel):
     new_date: date
 
 
-_DOW_BY_WEEKDAY_INDEX = {
+_PYTHON_WEEKDAY_TO_DAY_OF_WEEK = {
     0: DayOfWeek.monday,
     1: DayOfWeek.tuesday,
     2: DayOfWeek.wednesday,
@@ -33,6 +33,19 @@ _DOW_BY_WEEKDAY_INDEX = {
     5: DayOfWeek.saturday,
     6: DayOfWeek.sunday,
 }
+
+_ACTIVE_LESSON_STATUSES = [
+    LessonStatus.scheduled,
+    LessonStatus.rescheduled,
+    LessonStatus.completed,
+]
+
+
+def _weekday_to_day_of_week(weekday: int) -> DayOfWeek:
+    day_of_week = _PYTHON_WEEKDAY_TO_DAY_OF_WEEK.get(weekday)
+    if day_of_week is None:
+        raise HTTPException(status_code=400, detail="Некорректная дата занятия")
+    return day_of_week
 
 
 @router.get("")
@@ -58,13 +71,12 @@ async def create_progress_date(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
-    active_statuses = [LessonStatus.scheduled, LessonStatus.rescheduled, LessonStatus.completed]
     template_result = await db.execute(
         select(Lesson)
         .where(
             and_(
                 Lesson.group_id == payload.group_id,
-                Lesson.status.in_(active_statuses),
+                Lesson.status.in_(_ACTIVE_LESSON_STATUSES),
                 Lesson.time_start.is_not(None),
                 Lesson.time_end.is_not(None),
             )
@@ -82,14 +94,14 @@ async def create_progress_date(
                 func.date(Lesson.lesson_date) == payload.lesson_date,
                 Lesson.time_start == template.time_start,
                 Lesson.time_end == template.time_end,
-                Lesson.status.in_(active_statuses),
+                Lesson.status.in_(_ACTIVE_LESSON_STATUSES),
             )
         )
     )
     if duplicate_result.scalar_one_or_none() is not None:
         raise HTTPException(status_code=400, detail="Эта дата уже добавлена")
 
-    weekday_enum = _DOW_BY_WEEKDAY_INDEX[payload.lesson_date.weekday()]
+    weekday_enum = _weekday_to_day_of_week(payload.lesson_date.weekday())
     new_lesson = Lesson(
         group_id=payload.group_id,
         teacher_id=template.teacher_id,
@@ -126,7 +138,7 @@ async def update_progress_date(
         select(Lesson).where(
             and_(
                 Lesson.id == lesson_id,
-                Lesson.is_recurring == False,
+                Lesson.is_recurring.is_(False),
                 Lesson.lesson_date.is_not(None),
             )
         )
@@ -147,11 +159,7 @@ async def update_progress_date(
                 func.date(Lesson.lesson_date) == payload.new_date,
                 Lesson.time_start == lesson.time_start,
                 Lesson.time_end == lesson.time_end,
-                Lesson.status.in_([
-                    LessonStatus.scheduled,
-                    LessonStatus.rescheduled,
-                    LessonStatus.completed,
-                ]),
+                Lesson.status.in_(_ACTIVE_LESSON_STATUSES),
             )
         )
     )
@@ -159,7 +167,7 @@ async def update_progress_date(
         raise HTTPException(status_code=400, detail="На эту дату уже есть занятие с тем же временем")
 
     lesson.lesson_date = datetime.combine(payload.new_date, datetime.min.time())
-    lesson.day_of_week = _DOW_BY_WEEKDAY_INDEX[payload.new_date.weekday()]
+    lesson.day_of_week = _weekday_to_day_of_week(payload.new_date.weekday())
 
     attendance_result = await db.execute(
         select(Attendance).where(
@@ -186,7 +194,7 @@ async def delete_progress_date(
         select(Lesson).where(
             and_(
                 Lesson.id == lesson_id,
-                Lesson.is_recurring == False,
+                Lesson.is_recurring.is_(False),
                 Lesson.lesson_date.is_not(None),
             )
         )
