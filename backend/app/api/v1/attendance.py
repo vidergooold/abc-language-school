@@ -820,6 +820,7 @@ async def get_group_materials(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
+    """Staff endpoint: get lesson materials by group via path parameter."""
     return await get_materials_by_group(
         group_id=group_id,
         date_from=date_from,
