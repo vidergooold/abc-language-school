@@ -764,13 +764,11 @@ async def get_attendance_report(
 
 
 # ─── Вкладка: Материал урока ──────────────────────────────────────────────────
-@router.get("/group/{group_id}/materials")
-async def get_group_materials(
+async def get_materials_by_group(
     group_id: int,
-    date_from: Optional[date] = Query(None),
-    date_to: Optional[date] = Query(None),
-    db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
+    db: AsyncSession,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
 ):
     """
     Список материалов (тем) уроков для группы в указанном периоде.
@@ -813,21 +811,19 @@ async def get_group_materials(
     return materials
 
 
-@router.get("/materials")
-@router.get("/materials/")
-async def get_materials_by_group(
+@router.get("/group/{group_id}/materials")
+async def get_group_materials(
     group_id: int,
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_staff),
+    _=Depends(require_staff),
 ):
-    return await get_group_materials(
+    return await get_materials_by_group(
         group_id=group_id,
         date_from=date_from,
         date_to=date_to,
         db=db,
-        _=current_user,
     )
 
 
