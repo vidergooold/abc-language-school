@@ -73,10 +73,13 @@ def upgrade() -> None:
 
     if has_lessons:
         for branch_name in _ALLOWED_BRANCHES:
-            branch_ids = bind.execute(
-                sa.text("SELECT id FROM branches WHERE name = :branch_name ORDER BY id"),
-                {"branch_name": branch_name},
-            ).scalars().all()
+            branch_ids = [
+                row[0]
+                for row in bind.execute(
+                    sa.text("SELECT id FROM branches WHERE name = :branch_name ORDER BY id"),
+                    {"branch_name": branch_name},
+                )
+            ]
             if len(branch_ids) <= 1:
                 continue
 
@@ -99,10 +102,13 @@ def upgrade() -> None:
         {"allowed_names": _ALLOWED_BRANCHES},
     )
 
-    obsolete_branch_ids = bind.execute(
-        _in_clause("SELECT id FROM branches WHERE name NOT IN :allowed_names", "allowed_names"),
-        {"allowed_names": _ALLOWED_BRANCHES},
-    ).scalars().all()
+    obsolete_branch_ids = [
+        row[0]
+        for row in bind.execute(
+            _in_clause("SELECT id FROM branches WHERE name NOT IN :allowed_names", "allowed_names"),
+            {"allowed_names": _ALLOWED_BRANCHES},
+        )
+    ]
 
     if obsolete_branch_ids and has_lessons:
         bind.execute(
