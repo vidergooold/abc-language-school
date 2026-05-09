@@ -1,5 +1,5 @@
 from typing import Optional, Union
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ChildFormCreate(BaseModel):
@@ -70,12 +70,14 @@ class PreschoolFormCreate(BaseModel):
 
 
 class TeacherFormCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     fio: str
-    birthInfo: str
-    maritalStatus: str
+    birth_info: str = Field(alias="birthInfo")
+    marital_status: str = Field(alias="maritalStatus")
     education: str
-    workExperience: str
-    languageLevel: str
+    work_experience: str = Field(alias="workExperience")
+    language_level: str = Field(alias="languageLevel")
     skills: Optional[str] = None
     qualities: Optional[str] = None
     address: str
