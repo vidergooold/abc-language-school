@@ -29,6 +29,18 @@ _CANONICAL_COURSES = (
 )
 
 _CANONICAL_PROGRAM_NAMES = tuple(name for name, *_ in _CANONICAL_COURSES)
+_PROGRAM_TARGET_GROUPS = {
+    "Дошкольники": "дошкольники",
+    "FH1, AS1": "школьники",
+    "AS2, AS3, AS4": "школьники",
+    "GWA1+, GWA2": "школьники",
+    "GWB1, GWB1+, GWB2, GWB2+, GWC1": "школьники",
+    "Взрослые групповые": "взрослые",
+    "Мини-группа (2 чел.)": "взрослые",
+    "Индивидуальные занятия": "взрослые",
+    "Китайский язык": "взрослые",
+}
+_COURSE_REFERENCE_TABLES = ("groups", "enrollments", "materials", "reviews", "waitlist")
 
 _PROGRAM_RENAME_MAP = {
     "English Start A1": "FH1, AS1",
@@ -94,7 +106,7 @@ def _cleanup_educational_programs() -> None:
                     "name": name,
                     "code": None,
                     "language": "Китайский" if name == "Китайский язык" else "Английский",
-                    "target_group": "взрослые" if "Взрослые" in name or "Индивидуальные" in name or "Китайский" in name else "школьники",
+                    "target_group": _PROGRAM_TARGET_GROUPS[name],
                 },
             )
 
@@ -226,7 +238,7 @@ def _cleanup_courses_and_prices() -> None:
             continue
         primary_id = duplicate_ids[0]
         stale_ids = duplicate_ids[1:]
-        for table_name in ("groups", "enrollments", "materials", "reviews", "waitlist"):
+        for table_name in _COURSE_REFERENCE_TABLES:
             if not _column_exists(table_name, "course_id"):
                 continue
             bind.execute(
@@ -250,7 +262,7 @@ def _cleanup_courses_and_prices() -> None:
     ]
 
     if obsolete_course_ids:
-        for table_name in ("groups", "enrollments", "materials", "reviews", "waitlist"):
+        for table_name in _COURSE_REFERENCE_TABLES:
             if not _column_exists(table_name, "course_id"):
                 continue
             bind.execute(
