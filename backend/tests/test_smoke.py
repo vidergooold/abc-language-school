@@ -629,3 +629,35 @@ async def test_publish_scheduled_news_inserts_status_history(
     assert auto_publish_history[-1].get("id") is not None, (
         "Scheduled publish history row has null id; sequence/default is broken."
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Group 8 — Teacher form snake_case field names (regression guard for 422)
+# ═══════════════════════════════════════════════════════════════════════════
+
+async def test_post_teacher_form_snake_case_fields_not_422(client: AsyncClient):
+    """POST /api/v1/forms/teacher with snake_case field names must not return 422.
+
+    The frontend sends birth_info, marital_status, work_experience and
+    language_level in snake_case.  The Pydantic schema must accept both
+    snake_case (populate_by_name=True) and camelCase (via Field alias) so
+    that the endpoint returns 200/201, not a 422 validation error.
+    """
+    payload = {
+        "fio": "Иванова Мария Петровна",
+        "birth_info": "01.01.1990, г. Москва",
+        "marital_status": "замужем",
+        "education": "Высшее",
+        "work_experience": "5 лет",
+        "language_level": "B2",
+        "skills": "Python, FastAPI",
+        "qualities": "Ответственность",
+        "address": "ул. Ленина, 1",
+        "phone": "+79001234567",
+        "email": "teacher@example.com",
+    }
+    response = await client.post("/api/v1/forms/teacher", json=payload)
+    assert response.status_code != 422, (
+        f"POST /api/v1/forms/teacher with snake_case fields returned 422. "
+        f"Response: {response.text}"
+    )
