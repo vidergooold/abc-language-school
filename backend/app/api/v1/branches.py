@@ -11,6 +11,7 @@ from app.schemas.branch import BranchCreate, BranchUpdate, BranchOut
 router = APIRouter(prefix="/branches", tags=["Branches"])
 
 
+@router.get("", response_model=List[BranchOut])
 @router.get("/", response_model=List[BranchOut])
 async def get_branches(db: AsyncSession = Depends(get_db)):
     """Публичный список активных филиалов"""

@@ -28,6 +28,7 @@ class TeacherGroupOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+@router.get("", response_model=List[TeacherOut])
 @router.get("/", response_model=List[TeacherOut])
 async def get_teachers(
     branch_id: Optional[int] = Query(None),
