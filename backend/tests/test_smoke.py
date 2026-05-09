@@ -200,9 +200,12 @@ async def test_auth_login_valid(client: AsyncClient, student_token):
 
 async def test_auth_login_trailing_slash_returns_404(client: AsyncClient):
     """POST /api/v1/auth/login/ must not redirect with 307."""
-    payload = {"email": "trailing-slash-check@example.invalid", "password": "NotUsed123!"}
-    response = await client.post("/api/v1/auth/login/", json=payload)
-    assert response.status_code == 404
+    payload = {"email": "trailing-slash-check@example.com", "password": "NotUsed123!"}
+    slash_response = await client.post("/api/v1/auth/login/", json=payload)
+    assert slash_response.status_code == 404
+
+    no_slash_response = await client.post("/api/v1/auth/login", json=payload)
+    assert no_slash_response.status_code == 401
 
 
 async def test_auth_login_wrong_password(client: AsyncClient, student_token):
