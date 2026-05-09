@@ -198,7 +198,7 @@ async def test_auth_login_valid(client: AsyncClient, student_token):
     assert data["token_type"] == "bearer"
 
 
-async def test_auth_login_trailing_slash_no_redirect(client: AsyncClient):
+async def test_auth_login_trailing_slash_returns_404(client: AsyncClient):
     """POST /api/v1/auth/login/ must not redirect with 307."""
     payload = {"email": "trailing-slash-check@example.invalid", "password": "NotUsed123!"}
     response = await client.post("/api/v1/auth/login/", json=payload)
