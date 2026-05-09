@@ -26,10 +26,11 @@ def _slugify(value: str) -> str:
 def upgrade() -> None:
     bind = op.get_bind()
     rows = bind.execute(sa.text("SELECT id, title FROM news WHERE slug IS NULL")).mappings().all()
-    for row in rows:
+    payload = [{"id": row["id"], "slug": f"{_slugify(row['title'])}-{row['id']}"} for row in rows]
+    if payload:
         bind.execute(
             sa.text("UPDATE news SET slug = :slug WHERE id = :id AND slug IS NULL"),
-            {"id": row["id"], "slug": f"{_slugify(row['title'])}-{row['id']}"},
+            payload,
         )
 
 
