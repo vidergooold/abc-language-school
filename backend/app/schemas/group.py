@@ -23,11 +23,11 @@ class CourseOut(BaseModel):
     language: str
     level: CourseLevel
     category: CourseCategory
-    duration_months: int
-    lessons_per_week: int
+    duration_months: Optional[int] = None
+    lessons_per_week: Optional[int] = None
     price_per_month: int
-    max_students: int
-    is_active: bool
+    max_students: Optional[int] = None
+    is_active: Optional[bool] = None
     created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -75,4 +75,3 @@ class StudentGroupOut(BaseModel):
     is_active: bool
 
     model_config = {"from_attributes": True}
-
