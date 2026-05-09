@@ -19,6 +19,7 @@ from app.core.database import AsyncSessionLocal, init_db
 from app.models.group import Course, CourseCategory, CourseLevel
 from app.models.news import News
 from seed_demo import seed as seed_demo
+from seed_distribution import seed_distribution
 from seed_real_schedule import seed_real_schedule
 from seed_student_groups import seed_student_groups
 
@@ -172,6 +173,7 @@ async def seed_all() -> None:
     await seed_demo()
     await seed_real_schedule()
     await seed_student_groups()
+    await seed_distribution()
 
 
 if __name__ == "__main__":
