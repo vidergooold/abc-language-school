@@ -820,7 +820,11 @@ async def get_group_materials(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
-    """Staff endpoint: get lesson materials by group via path parameter."""
+    """Return lesson materials for a group via path-based `group_id`.
+
+    Optional `date_from` and `date_to` query parameters narrow the lesson
+    period; when omitted, defaults are applied by shared query logic.
+    """
     return await get_materials_by_group(
         group_id=group_id,
         date_from=date_from,
