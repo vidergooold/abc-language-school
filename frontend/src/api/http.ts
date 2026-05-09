@@ -17,12 +17,4 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-// автоматически добавляем trailing slash, чтобы избежать 307 redirect с потерей токена
-http.interceptors.request.use((config) => {
-  if (config.url && !config.url.endsWith('/') && !config.url.includes('?')) {
-    config.url = config.url + '/'
-  }
-  return config
-})
-
 export default http
