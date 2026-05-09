@@ -137,7 +137,6 @@
                 <div class="matrix-cell header-cell student-col">Студент</div>
                 <div v-for="lesson in matrixLessons" :key="`${lesson.id}-${lesson.slot_date}`" class="matrix-cell header-cell lesson-col">
                   <div>{{ formatDateShort(lesson.slot_date) }}</div>
-                  <div class="header-time">{{ formatTimeShort(lesson.time_start) }}</div>
                   <div class="header-actions">
                     <button
                       class="header-icon-btn"
@@ -1375,12 +1374,6 @@ watch(() => [rf.date_from, rf.date_to], () => {
   font-size: 12px;
   flex-direction: column;
   line-height: 1.1;
-}
-.header-time {
-  margin-top: 4px;
-  font-size: 11px;
-  color: #555;
-  font-weight: 600;
 }
 .header-actions {
   margin-top: 4px;
