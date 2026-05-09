@@ -336,6 +336,12 @@ async def test_materials_endpoint_not_404(client: AsyncClient):
         "expected 200 or 401 (not 404)"
     )
 
+    response_with_slash = await client.get("/api/v1/materials/", params={"group_id": 1})
+    assert response_with_slash.status_code in (200, 401), (
+        f"GET /api/v1/materials/?group_id=1 returned {response_with_slash.status_code}, "
+        "expected 200 or 401 (not 404)"
+    )
+
 
 async def test_staff_progress_endpoint_not_404(client: AsyncClient, db_engine, teacher_token):
     """GET /api/v1/progress returns the progress payload for staff instead of 404."""

@@ -813,6 +813,24 @@ async def get_group_materials(
     return materials
 
 
+@router.get("/materials")
+@router.get("/materials/")
+async def get_materials_by_group(
+    group_id: int,
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    return await get_group_materials(
+        group_id=group_id,
+        date_from=date_from,
+        date_to=date_to,
+        db=db,
+        _=current_user,
+    )
+
+
 # ─── Вкладка: Домашнее задание ─────────────────────────────────────────────
 @router.get("/group/{group_id}/homeworks")
 async def get_group_homeworks(
