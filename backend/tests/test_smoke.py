@@ -359,6 +359,18 @@ async def test_staff_progress_endpoint_not_404(client: AsyncClient, db_engine, t
     assert data["students"][0]["student_name"] == "Smoke Progress Student"
 
 
+async def test_progress_dates_post_endpoint_not_404(client: AsyncClient):
+    """POST /api/v1/progress/dates returns 200 or 401 (route exists, never 404)."""
+    response = await client.post(
+        "/api/v1/progress/dates",
+        json={"group_id": 1, "lesson_date": "2025-09-01"},
+    )
+    assert response.status_code in (200, 401), (
+        f"POST /api/v1/progress/dates returned {response.status_code}, "
+        "expected 200 or 401 (not 404)"
+    )
+
+
 async def test_staff_attendance_group_grades_with_date_range(client: AsyncClient, db_engine, teacher_token):
     """GET /api/v1/attendance/group/{group_id}/grades returns 200 for staff with date filters."""
     group_id = await _seed_progress_group(db_engine)

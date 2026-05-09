@@ -60,7 +60,35 @@
             <th class="col-student">Ученики</th>
             <th class="col-extra">Дополнит.</th>
             <th v-for="lesson in lessons" :key="lessonKey(lesson)" class="col-lesson">
-              {{ formatLessonHeader(lesson) }}
+              <div class="lesson-header" @click="openDateEditor('edit', lesson)">
+                <span>{{ formatLessonHeader(lesson) }}</span>
+                <button
+                  type="button"
+                  class="delete-date-btn"
+                  title="Удалить дату"
+                  :disabled="isColumnSaving(lesson)"
+                  @click.stop="deleteDate(lesson)"
+                >×</button>
+              </div>
+              <div v-if="isDateEditorOpenFor(lesson)" class="date-editor-popover" @click.stop>
+                <input type="date" v-model="dateEditor.value" />
+                <div class="date-editor-actions">
+                  <button type="button" class="btn-secondary" @click="closeDateEditor">Отмена</button>
+                  <button type="button" class="btn-primary" @click="submitDateEditor" :disabled="isColumnSaving(lesson)">
+                    Сохранить
+                  </button>
+                </div>
+              </div>
+            </th>
+            <th class="col-add-date">
+              <button type="button" class="add-date-btn" title="Добавить дату" @click.stop="openDateEditor('add')">+</button>
+              <div v-if="dateEditor.open && dateEditor.mode === 'add'" class="date-editor-popover" @click.stop>
+                <input type="date" v-model="dateEditor.value" />
+                <div class="date-editor-actions">
+                  <button type="button" class="btn-secondary" @click="closeDateEditor">Отмена</button>
+                  <button type="button" class="btn-primary" @click="submitDateEditor">Добавить</button>
+                </div>
+              </div>
             </th>
           </tr>
         </thead>
@@ -97,6 +125,7 @@
                 </button>
               </div>
             </td>
+            <td class="add-date-cell"></td>
           </tr>
         </tbody>
       </table>
@@ -165,6 +194,7 @@ const attentionIds = ref<Set<number>>(new Set())
 const groupInfo = ref<any | null>(null)
 const loading = ref(false)
 const savingNote = ref(false)
+const columnSaving = ref<Record<string, boolean>>({})
 
 const filters = reactive({
   branch_id: null as number | null,
@@ -184,6 +214,13 @@ const noteModal = reactive({
   lessonLabel: '',
   note: '',
   items: [] as Array<{ key: string; label: string; note: string }>,
+})
+
+const dateEditor = reactive({
+  open: false,
+  mode: 'add' as 'add' | 'edit',
+  lesson: null as LessonSlot | null,
+  value: '',
 })
 
 const visibleStudents = computed(() => {
@@ -376,6 +413,101 @@ function closeNoteModal() {
   noteModal.lessonLabel = ''
   noteModal.note = ''
   noteModal.items = []
+}
+
+function isColumnSaving(lesson: LessonSlot) {
+  return Boolean(columnSaving.value[lessonKey(lesson)])
+}
+
+function setColumnSaving(lesson: LessonSlot, saving: boolean) {
+  const key = lessonKey(lesson)
+  const next = { ...columnSaving.value }
+  if (saving) next[key] = true
+  else delete next[key]
+  columnSaving.value = next
+}
+
+function isDateEditorOpenFor(lesson: LessonSlot) {
+  if (!dateEditor.open || dateEditor.mode !== 'edit' || !dateEditor.lesson) return false
+  return lessonKey(dateEditor.lesson) === lessonKey(lesson)
+}
+
+function openDateEditor(mode: 'add' | 'edit', lesson: LessonSlot | null = null) {
+  if (!filters.group_id) return
+  const fallbackDate = new Date().toISOString().slice(0, 10)
+  dateEditor.open = true
+  dateEditor.mode = mode
+  dateEditor.lesson = lesson
+  dateEditor.value = mode === 'edit' && lesson ? lesson.slot_date : fallbackDate
+}
+
+function closeDateEditor() {
+  dateEditor.open = false
+  dateEditor.mode = 'add'
+  dateEditor.lesson = null
+  dateEditor.value = ''
+}
+
+function isValidIsoDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T00:00:00`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+}
+
+async function submitDateEditor() {
+  if (!filters.group_id) return
+  const nextDate = dateEditor.value.trim()
+  if (!isValidIsoDate(nextDate)) {
+    window.alert('Некорректная дата')
+    return
+  }
+
+  try {
+    if (dateEditor.mode === 'add') {
+      await http.post('/progress/dates', {
+        group_id: filters.group_id,
+        lesson_date: nextDate,
+      })
+    } else if (dateEditor.lesson) {
+      const lesson = dateEditor.lesson
+      if (lesson.slot_date === nextDate) {
+        closeDateEditor()
+        return
+      }
+      setColumnSaving(lesson, true)
+      await http.patch(`/progress/dates/${lesson.id}`, {
+        new_date: nextDate,
+      })
+      setColumnSaving(lesson, false)
+    }
+
+    closeDateEditor()
+    await loadMatrix()
+  } catch (e: any) {
+    const detail = e?.response?.data?.detail
+    window.alert(typeof detail === 'string' ? detail : 'Не удалось сохранить дату')
+  } finally {
+    if (dateEditor.lesson) {
+      setColumnSaving(dateEditor.lesson, false)
+    }
+  }
+}
+
+async function deleteDate(lesson: LessonSlot) {
+  if (!window.confirm(`Удалить дату ${lesson.slot_date}?`)) return
+  setColumnSaving(lesson, true)
+  try {
+    await http.delete(`/progress/dates/${lesson.id}`)
+    if (dateEditor.lesson && lessonKey(dateEditor.lesson) === lessonKey(lesson)) {
+      closeDateEditor()
+    }
+    await loadMatrix()
+  } catch (e: any) {
+    const detail = e?.response?.data?.detail
+    window.alert(typeof detail === 'string' ? detail : 'Не удалось удалить дату')
+  } finally {
+    setColumnSaving(lesson, false)
+  }
 }
 
 async function saveLessonNote() {
@@ -573,6 +705,73 @@ async function saveLessonNote() {
 
 .col-lesson {
   min-width: 110px;
+  position: relative;
+}
+
+.col-add-date {
+  min-width: 56px;
+  position: relative;
+}
+
+.lesson-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.delete-date-btn {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+.col-lesson:hover .delete-date-btn {
+  opacity: 1;
+}
+
+.add-date-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.date-editor-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: 190px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.date-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.add-date-cell {
+  background: inherit;
 }
 
 .student-cell {
