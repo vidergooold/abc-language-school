@@ -17,14 +17,8 @@
         </div>
         <div class="price-card__body">
           <div class="price-card__col">
-            <div class="price-card__year">2023–2024</div>
-            <div class="price-card__amount">{{ item.price2324 }} ₽</div>
-            <div class="price-card__per">{{ item.per }}</div>
-          </div>
-          <div class="price-card__divider"></div>
-          <div class="price-card__col price-card__col--new">
             <div class="price-card__year">2024–2025</div>
-            <div class="price-card__amount">{{ item.price2425 }} ₽</div>
+            <div class="price-card__amount">{{ item.price }} ₽</div>
             <div class="price-card__per">{{ item.per }}</div>
           </div>
         </div>
@@ -75,64 +69,55 @@ const prices = [
   {
     duration: '45 мин',
     label: 'Дошкольники',
-    price2324: '2 550',
-    price2425: '2 700',
+    price: '2 700',
     per: 'в месяц',
   },
   {
     duration: '50 мин',
     label: 'FH1, AS1',
-    price2324: '2 800',
-    price2425: '3 100',
+    price: '3 100',
     per: 'в месяц',
   },
   {
     duration: '60 мин',
     label: 'AS2, AS3, AS4',
-    price2324: '3 250',
-    price2425: '3 500',
+    price: '3 500',
     per: 'в месяц',
   },
   {
     duration: '75 мин',
     label: 'GWA1+, GWA2',
-    price2324: '4 000',
-    price2425: '4 250',
+    price: '4 250',
     per: 'в месяц',
   },
   {
     duration: '90 мин',
     label: 'GWB1, GWB1+, GWB2, GWB2+, GWC1',
-    price2324: '4 650',
-    price2425: '4 900',
+    price: '4 900',
     per: 'в месяц',
   },
   {
-    duration: 'Взрослые',
-    label: 'Групповые занятия',
-    price2324: '6 200',
-    price2425: '6 500',
+    duration: '—',
+    label: 'Взрослые групповые',
+    price: '6 500',
     per: 'в месяц',
   },
   {
     duration: '45 мин',
     label: 'Мини-группа (2 чел.)',
-    price2324: '6 300',
-    price2425: '6 600',
+    price: '6 600',
     per: 'в месяц',
   },
   {
     duration: '45 мин',
     label: 'Индивидуальные занятия',
-    price2324: '1 050',
-    price2425: '1 100',
+    price: '1 100',
     per: 'за занятие',
   },
   {
     duration: '45 мин',
     label: 'Китайский язык',
-    price2324: '1 100',
-    price2425: '1 200',
+    price: '1 200',
     per: 'за занятие',
   },
 ]

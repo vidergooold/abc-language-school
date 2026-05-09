@@ -165,7 +165,7 @@ const rows = computed<MatrixRow[]>(() => {
 
 const visibleRows = ref<MatrixRow[]>([])
 
-const groupPrice = computed(() => selectedGroup.value?.course?.price_per_month ?? 3400)
+const groupPrice = computed(() => selectedGroup.value?.course?.price_per_month ?? 3100)
 
 onMounted(async () => {
   await loadBranches()
