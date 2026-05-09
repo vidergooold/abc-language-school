@@ -149,7 +149,7 @@ async def _seed_progress_group(db_engine) -> int:
         bind=db_engine, class_=AsyncSession, expire_on_commit=False
     )
     async with SessionLocal() as session:
-        unique = uuid4().hex
+        unique_suffix = uuid4().hex
         course = Course(
             name="Smoke Progress Course",
             language="English",
@@ -159,7 +159,7 @@ async def _seed_progress_group(db_engine) -> int:
         )
         teacher = Teacher(
             full_name="Smoke Progress Teacher",
-            email=f"progress-teacher-{unique}@smoke-tests.example.com",
+            email=f"progress-teacher-{unique_suffix}@smoke-tests.example.com",
         )
         classroom = Classroom(name="Smoke Progress Room")
         session.add_all([course, teacher, classroom])
