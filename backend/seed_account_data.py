@@ -155,22 +155,22 @@ async def seed_account_data():
 
         teachers_data = [
             {
-                "full_name": "Иванова Анна Сергеевна",
-                "email": "anna.ivanova@abc-school.ru",
-                "phone": "+79131234567",
-                "subject": "Английский",
-                "language_level": "C2",
-                "experience_years": 5,
-                "bio": "Опытный преподаватель английского языка.",
-            },
-            {
-                "full_name": "Петров Михаил Андреевич",
-                "email": "mikhail.petrov@abc-school.ru",
-                "phone": "+79139876543",
+                "full_name": "Белова Александра Анатольевна",
+                "email": "alexandra.belova@abc-school.ru",
+                "phone": "+79130001001",
                 "subject": "Английский",
                 "language_level": "C1",
-                "experience_years": 4,
-                "bio": "Ведёт группы школьников и взрослых.",
+                "experience_years": 12,
+                "bio": "Преподаватель английского языка.",
+            },
+            {
+                "full_name": "Григорьева Дарья Дмитриевна",
+                "email": "daria.grigorieva@abc-school.ru",
+                "phone": "+79130001002",
+                "subject": "Английский",
+                "language_level": "C1",
+                "experience_years": 8,
+                "bio": "Преподаватель английского языка и методист.",
             },
         ]
 
