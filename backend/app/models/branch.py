@@ -15,6 +15,7 @@ class Branch(Base):
     email = Column(String(255), nullable=True)
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
+    is_administrative = Column(Boolean, default=False)      # Административный (Офис) — занятий нет
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Новые поля для страницы "Структура и филиалы"

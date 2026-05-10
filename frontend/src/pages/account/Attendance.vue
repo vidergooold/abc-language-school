@@ -687,7 +687,7 @@ async function deleteMatrixDate(lesson: any) {
 }
 
 async function loadReportBranches() {
-  try { const r = await http.get('/branches/'); reportBranches.value = r.data }
+  try { const r = await http.get('/branches/', { params: { for_schedule: true } }); reportBranches.value = r.data }
   catch { reportBranches.value = [] }
 }
 

@@ -13,6 +13,7 @@ BRANCHES = [
         "manager_name": "Андрюнина Марина Викторовна",
         "manager_position": "Директор",
         "working_hours": "Пн-Пт с 9.00 до 20.00 без обеда",
+        "is_administrative": True,
     },
     {
         "name": "Филиал в МАОУ Гимназия 11 «Гармония»",
@@ -219,6 +220,7 @@ async def seed_branches_22() -> None:
                 branch.manager_position = row["manager_position"]
                 branch.working_hours = row["working_hours"]
                 branch.is_active = True
+                branch.is_administrative = row.get("is_administrative", False)
             else:
                 branch = Branch(
                     name=row["name"],
@@ -229,6 +231,7 @@ async def seed_branches_22() -> None:
                     manager_position=row["manager_position"],
                     working_hours=row["working_hours"],
                     is_active=True,
+                    is_administrative=row.get("is_administrative", False),
                 )
                 session.add(branch)
 

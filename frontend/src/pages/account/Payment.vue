@@ -173,7 +173,7 @@ onMounted(async () => {
 
 async function loadBranches() {
   try {
-    branches.value = (await http.get('/branches/')).data
+    branches.value = (await http.get('/branches/', { params: { for_schedule: true } })).data
   } catch {
     branches.value = []
   }
