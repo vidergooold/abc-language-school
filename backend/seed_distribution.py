@@ -18,6 +18,18 @@ GROUP_SIZE_REGULAR = 6
 GROUP_SIZE_MINI = 2
 GROUP_SIZE_INDIVIDUAL = 1
 
+PROGRAM_TO_GROUP_NAME = {
+    "Дошкольники": "Дошкольники",
+    "FH1, AS1": "FH1",
+    "AS2, AS3, AS4": "AS2",
+    "GWA1+, GWA2": "GWA1+",
+    "GWB1, GWB1+, GWB2, GWB2+, GWC1": "GWB1",
+    "Взрослые групповые": "Взрослые групповые",
+    "Мини-группа (2 чел.)": "Мини-группа (2 чел.)",
+    "Индивидуальные занятия": "Индивидуальные занятия",
+    CHINESE_PROGRAM_NAME: "Китайский",
+}
+
 TEACHER_SUBJECTS = {
     "Лукьянова Светлана Ярославовна": "chinese",
     "Темлякова Анна Михайловна": "chinese",
@@ -60,6 +72,10 @@ def _program_group_size(program_name: str) -> int:
     if program_name == "Индивидуальные занятия":
         return GROUP_SIZE_INDIVIDUAL
     return GROUP_SIZE_REGULAR
+
+
+def _normalize_group_name(program_name: str) -> str:
+    return PROGRAM_TO_GROUP_NAME.get(program_name, program_name)
 
 
 async def seed_distribution() -> None:
@@ -238,7 +254,7 @@ async def seed_distribution() -> None:
 
             room, day, start, end = assigned
             group = Group(
-                name=f"{branch.name} | {program.name} | гр.{teacher.id}",
+                name=_normalize_group_name(program.name),
                 course_id=course.id,
                 teacher_id=teacher.id,
                 status=GroupStatus.active,
