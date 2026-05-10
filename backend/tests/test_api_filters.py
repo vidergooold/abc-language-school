@@ -1,11 +1,11 @@
 """API-фильтры: проверка канонических списков через ASGI-клиент.
 
 Тесты проверяют, что:
-  - GET /api/v1/branches?for_schedule=true не возвращает «Офис»
-  - GET /api/v1/teachers возвращает ровно 18 записей (15 английского + 3 китайского)
+  - GET /api/v1/branches?for_schedule=true возвращает 21 учебный филиал
+  - GET /api/v1/teachers возвращает ровно 27 записей (24 английского + 3 китайского)
   - GET /api/v1/programs возвращает ровно 9 записей
   - GET /api/v1/groups — у каждой группы есть teacher_id
-  - «Офис» не встречается как branch_id ни в одном занятии групп
+  - административные филиалы не встречаются как branch_id в занятиях
 
 Запуск:
     DATABASE_URL=sqlite+aiosqlite:///:memory: SECRET_KEY=test-secret \
@@ -25,10 +25,10 @@ if str(BACKEND_DIR) not in sys.path:
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-CANONICAL_TEACHER_COUNT = 18
+CANONICAL_TEACHER_COUNT = 27
 CANONICAL_PROGRAM_COUNT = 9
-CANONICAL_BRANCH_COUNT = 21          # Офис + 20 учебных
-CANONICAL_TEACHING_BRANCH_COUNT = 20  # только учебные (без Офиса)
+CANONICAL_BRANCH_COUNT = 21
+CANONICAL_TEACHING_BRANCH_COUNT = 21
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
@@ -184,44 +184,35 @@ async def filter_client(seeded_filter_db):
 # ── Тесты ────────────────────────────────────────────────────────────────────
 
 
-async def test_branches_full_list_includes_office(filter_client: AsyncClient):
-    """GET /api/v1/branches без фильтров возвращает все 21 активных филиала, включая Офис."""
+async def test_branches_full_list_includes_only_canonical(filter_client: AsyncClient):
+    """GET /api/v1/branches без фильтров возвращает все 21 активный канонический филиал."""
     response = await filter_client.get("/api/v1/branches")
     assert response.status_code == 200
     data = response.json()
     names = [b["name"] for b in data]
-    assert "Офис" in names, "Офис должен присутствовать в полном списке филиалов"
+    assert "Офис" not in names, "Офис не должен присутствовать в каноническом списке филиалов"
     assert len(data) == CANONICAL_BRANCH_COUNT, (
         f"Ожидалось {CANONICAL_BRANCH_COUNT} филиалов, получено {len(data)}"
     )
 
 
-async def test_branches_office_is_marked_administrative(filter_client: AsyncClient):
-    """GET /api/v1/branches — у «Офиса» поле is_administrative == true."""
+async def test_branches_have_no_administrative_entries(filter_client: AsyncClient):
+    """GET /api/v1/branches — в каноническом наборе нет административных филиалов."""
     response = await filter_client.get("/api/v1/branches")
     assert response.status_code == 200
     data = response.json()
-    office = next((b for b in data if b["name"] == "Офис"), None)
-    assert office is not None, "Офис должен присутствовать в списке"
-    assert office["is_administrative"] is True, "Офис должен быть помечен как административный"
+    assert all(not branch["is_administrative"] for branch in data)
 
 
 async def test_branches_for_schedule_excludes_office(filter_client: AsyncClient):
-    """GET /api/v1/branches?for_schedule=true не возвращает «Офис».
-
-    Офис — административный филиал; в нём нет занятий, поэтому он
-    должен быть исключён из фильтров расписания и выбора места занятий.
-    """
+    """GET /api/v1/branches?for_schedule=true возвращает те же 21 учебный филиал."""
     response = await filter_client.get("/api/v1/branches", params={"for_schedule": "true"})
     assert response.status_code == 200
     data = response.json()
     names = [b["name"] for b in data]
-    assert "Офис" not in names, (
-        "Офис не должен появляться в списке мест проведения занятий"
-    )
+    assert "Офис" not in names
     assert len(data) == CANONICAL_TEACHING_BRANCH_COUNT, (
-        f"Ожидалось {CANONICAL_TEACHING_BRANCH_COUNT} учебных филиалов "
-        f"(без Офиса), получено {len(data)}"
+        f"Ожидалось {CANONICAL_TEACHING_BRANCH_COUNT} учебных филиалов, получено {len(data)}"
     )
 
 
@@ -247,13 +238,13 @@ async def test_teachers_all_have_subject(filter_client: AsyncClient):
 
 
 async def test_teachers_english_and_chinese_split(filter_client: AsyncClient):
-    """GET /api/v1/teachers — 15 преподавателей английского и 3 китайского."""
+    """GET /api/v1/teachers — 24 преподавателя английского и 3 китайского."""
     response = await filter_client.get("/api/v1/teachers")
     assert response.status_code == 200
     data = response.json()
     english = [t for t in data if t.get("subject") == "Английский"]
     chinese = [t for t in data if t.get("subject") == "Китайский"]
-    assert len(english) == 15, f"Ожидалось 15 преподавателей английского, получено {len(english)}"
+    assert len(english) == 24, f"Ожидалось 24 преподавателя английского, получено {len(english)}"
     assert len(chinese) == 3, f"Ожидалось 3 преподавателя китайского, получено {len(chinese)}"
 
 
@@ -286,11 +277,8 @@ async def test_groups_all_have_teacher_id(seeded_filter_db):
         )
 
 
-async def test_office_not_used_as_lesson_branch(seeded_filter_db):
-    """«Офис» не встречается как branch_id ни в одном занятии (lesson).
-
-    Все занятия должны быть привязаны к учебным (не административным) филиалам.
-    """
+async def test_administrative_branches_not_used_as_lesson_branch(seeded_filter_db):
+    """Административные филиалы (если есть) не должны использоваться в lessons."""
     from sqlalchemy import select
     from app.models.branch import Branch
     from app.models.schedule import Lesson
@@ -299,19 +287,15 @@ async def test_office_not_used_as_lesson_branch(seeded_filter_db):
         bind=seeded_filter_db, class_=AsyncSession, expire_on_commit=False
     )
     async with SessionLocal() as session:
-        office_result = await session.execute(
-            select(Branch).where(Branch.name == "Офис")
+        admin_result = await session.execute(
+            select(Branch.id).where(Branch.is_administrative == True)
         )
-        office = office_result.scalar_one_or_none()
-        assert office is not None, "В БД должен быть Офис"
-        assert office.is_administrative is True, "Офис должен быть помечен административным"
-
+        admin_ids = [row[0] for row in admin_result.all()]
+        if not admin_ids:
+            return
         lessons_result = await session.execute(
-            select(Lesson).where(Lesson.branch_id == office.id)
+            select(Lesson).where(Lesson.branch_id.in_(admin_ids))
         )
-        office_lessons = lessons_result.scalars().all()
+        admin_lessons = lessons_result.scalars().all()
 
-    assert len(office_lessons) == 0, (
-        f"Найдено {len(office_lessons)} занятий, привязанных к Офису. "
-        "Офис — административный филиал, занятий в нём быть не должно."
-    )
+    assert len(admin_lessons) == 0

@@ -43,14 +43,14 @@ async def seed_account_data():
         branch, _ = await _get_or_create(
             session,
             Branch,
-            {"name": "Офис"},
+            {"name": "Гимназия 11 «Гармония»"},
             {
-                "address": "г. Новосибирск, ул. Бориса Богаткова, 208/2, офис 4, 5",
+                "address": "г. Новосибирск, ул. Федосеева, д. 38",
                 "phone": "+79139121809",
                 "email": "info@abc-school.ru",
                 "manager_name": "Андрюнина Марина Викторовна",
                 "manager_position": "Директор",
-                "working_hours": "Пн-Пт с 09:00 до 20:00",
+                "working_hours": "Пн-Пт с 09:50 до 18:30",
                 "is_active": True,
             },
         )
@@ -143,13 +143,13 @@ async def seed_account_data():
         classroom_1, _ = await _get_or_create(
             session,
             Classroom,
-            {"name": "Кабинет 101"},
+            {"name": "каб. 113"},
             {"capacity": 12, "floor": 1, "has_projector": True, "has_whiteboard": True, "is_active": True},
         )
         classroom_2, _ = await _get_or_create(
             session,
             Classroom,
-            {"name": "Кабинет 202"},
+            {"name": "каб. 114"},
             {"capacity": 10, "floor": 2, "has_projector": True, "has_whiteboard": True, "is_active": True},
         )
 
@@ -164,13 +164,13 @@ async def seed_account_data():
                 "bio": "Преподаватель английского языка.",
             },
             {
-                "full_name": "Григорьева Дарья Дмитриевна",
-                "email": "daria.grigorieva@abc-school.ru",
+                "full_name": "Арнгольд Валерия Евгеньевна",
+                "email": "teacher01@abc-school.ru",
                 "phone": "+79130001002",
                 "subject": "Английский",
                 "language_level": "C1",
                 "experience_years": 8,
-                "bio": "Преподаватель английского языка и методист.",
+                "bio": "Преподаватель английского языка.",
             },
         ]
 

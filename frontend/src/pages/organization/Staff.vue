@@ -25,7 +25,7 @@
 
       <details class="teacher-item">
         <summary class="teacher-title">
-          Григорьева Дарья Дмитриевна (преподаватель)
+          Арнгольд Валерия Евгеньевна (преподаватель)
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
@@ -110,7 +110,7 @@
 
       <details class="teacher-item">
         <summary class="teacher-title">
-          Кривилева Галина Александровна (преподаватель)
+          Быковская Марина Эдуардовна (преподаватель)
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
@@ -246,7 +246,7 @@
 
       <details class="teacher-item">
         <summary class="teacher-title">
-          Стафеева Яна Викторовна (преподаватель)
+          Винокурова Елена Александровна (преподаватель)
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
