@@ -271,7 +271,7 @@ def _cleanup_teachers() -> None:
                 ),
                 {
                     "full_name": full_name,
-                    "email": f"canonical.teacher.{index:02d}@abc-school.ru",
+                    "email": f"teacher{index:02d}@abc-school.ru",
                     "phone": "+79130000000",
                     "subject": "Китайский" if full_name in _CHINESE_TEACHERS else "Английский",
                     "language_level": "C1",
@@ -475,4 +475,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # Irreversible data-normalization migration: deleted/rewired rows cannot be restored safely.
     pass

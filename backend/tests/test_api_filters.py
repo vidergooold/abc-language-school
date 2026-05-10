@@ -190,7 +190,7 @@ async def test_branches_full_list_includes_only_canonical(filter_client: AsyncCl
     assert response.status_code == 200
     data = response.json()
     names = [b["name"] for b in data]
-    assert "Офис" not in names, "Офис не должен присутствовать в каноническом списке филиалов"
+    assert "Офис" not in names, "Офис исключён, так как не входит в утверждённый список из 21 филиала"
     assert len(data) == CANONICAL_BRANCH_COUNT, (
         f"Ожидалось {CANONICAL_BRANCH_COUNT} филиалов, получено {len(data)}"
     )

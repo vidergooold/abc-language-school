@@ -115,7 +115,12 @@ async def _find_teacher_by_lastname(db: AsyncSession, lastname: str) -> Optional
 
 
 async def _find_branch_by_name(db: AsyncSession, branch_name: str) -> Optional[Branch]:
-    result = await db.execute(select(Branch).where(Branch.name == branch_name).limit(1))
+    result = await db.execute(
+        select(Branch)
+        .where(Branch.name == branch_name)
+        .where(Branch.is_active == True)
+        .limit(1)
+    )
     return result.scalar_one_or_none()
 
 
