@@ -12,7 +12,6 @@ from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
 from app.models.student import Student
 from app.models.teacher import Teacher
 
-OFFICE_BRANCH_NAME = "Офис"
 CHINESE_PROGRAM_NAME = "Китайский язык"
 MIN_TEACHERS_PER_BRANCH = 2
 GROUP_SIZE_REGULAR = 6
@@ -78,9 +77,9 @@ async def seed_distribution() -> None:
             print("⚠️ Недостаточно исходных данных для распределения")
             return
 
-        non_office_branches = [branch for branch in branches if branch.name != OFFICE_BRANCH_NAME]
+        non_office_branches = [branch for branch in branches if not getattr(branch, "is_administrative", False)]
         if not non_office_branches:
-            print("⚠️ Нет учебных филиалов (кроме Офиса)")
+            print("⚠️ Нет учебных филиалов")
             return
 
         for teacher in teachers:

@@ -112,17 +112,14 @@ def test_distribution_constraints() -> None:
     teacher_by_id = {teacher.id: teacher for teacher in teachers}
     program_by_id = {program.id: program for program in programs}
 
-    office_branch_ids = {branch.id for branch in branches if branch.name == "Офис"}
-    assert office_branch_ids
-    assert all(lesson.branch_id not in office_branch_ids for lesson in lessons)
+    admin_branch_ids = {branch.id for branch in branches if getattr(branch, "is_administrative", False)}
+    assert all(lesson.branch_id not in admin_branch_ids for lesson in lessons)
 
     teachers_by_branch = defaultdict(set)
     for lesson in lessons:
         teachers_by_branch[lesson.branch_id].add(lesson.teacher_id)
 
     for branch in branches:
-        if branch.name == "Офис":
-            continue
         assert len(teachers_by_branch[branch.id]) >= 2
 
     teachers_by_program = defaultdict(set)

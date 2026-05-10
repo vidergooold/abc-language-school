@@ -33,9 +33,9 @@ async def seed():
         branch = await get_or_create(
             session,
             Branch,
-            name="Офис",
+            name="МАОУ СОШ №216",
             defaults={
-                "address": "г. Новосибирск, ул. Бориса Богаткова, 208/2, офис 4, 5",
+                "address": "г. Новосибирск, ул. Виталия Потылицына, д. 9",
                 "phone": "+79139121809",
                 "email": "info@abc-school.ru",
                 "is_active": True,
@@ -116,9 +116,9 @@ async def seed():
             teacher = await get_or_create(
                 session,
                 Teacher,
-                email="demo.teacher@abc-school.ru",
+                email="teacher02@abc-school.ru",
                 defaults={
-                    "full_name": "Демо Преподаватель",
+                    "full_name": "Белова Александра Анатольевна",
                     "phone": "+79000000000",
                     "subject": "Английский",
                     "language_level": "C1",
@@ -131,13 +131,13 @@ async def seed():
         classroom_1 = await get_or_create(
             session,
             Classroom,
-            name="Кабинет 301",
+            name="каб. 317",
             defaults={"capacity": 12, "floor": 3, "has_projector": True, "has_whiteboard": True, "is_active": True},
         )
         classroom_2 = await get_or_create(
             session,
             Classroom,
-            name="Кабинет 204",
+            name="каб. 410",
             defaults={"capacity": 10, "floor": 2, "has_projector": True, "has_whiteboard": True, "is_active": True},
         )
 
