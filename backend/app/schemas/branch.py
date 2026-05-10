@@ -10,6 +10,7 @@ class BranchBase(BaseModel):
     email: Optional[str] = None
     description: Optional[str] = None
     is_active: bool = True
+    is_administrative: bool = False
     manager_name: Optional[str] = None
     manager_position: Optional[str] = None
     working_hours: Optional[str] = None
@@ -26,6 +27,7 @@ class BranchUpdate(BaseModel):
     email: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    is_administrative: Optional[bool] = None
     manager_name: Optional[str] = None
     manager_position: Optional[str] = None
     working_hours: Optional[str] = None

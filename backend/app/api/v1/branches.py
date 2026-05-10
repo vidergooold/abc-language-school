@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,11 +13,19 @@ router = APIRouter(prefix="/branches", tags=["Branches"])
 
 @router.get("", response_model=List[BranchOut])
 @router.get("/", response_model=List[BranchOut])
-async def get_branches(db: AsyncSession = Depends(get_db)):
-    """Публичный список активных филиалов"""
-    result = await db.execute(
-        select(Branch).where(Branch.is_active == True).order_by(Branch.name)
-    )
+async def get_branches(
+    db: AsyncSession = Depends(get_db),
+    for_schedule: bool = Query(False, description="Если true — исключить административные филиалы (Офис) из списка"),
+):
+    """Публичный список активных филиалов.
+
+    При `for_schedule=true` административные филиалы (например, «Офис»)
+    не включаются в ответ — только учебные площадки.
+    """
+    query = select(Branch).where(Branch.is_active == True)
+    if for_schedule:
+        query = query.where(Branch.is_administrative == False)
+    result = await db.execute(query.order_by(Branch.name))
     return result.scalars().all()
 
 

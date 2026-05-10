@@ -397,7 +397,7 @@ onMounted(async () => {
       http.get('/groups'),
       http.get('/teachers'),
       http.get('/classrooms'),
-      http.get('/branches'),
+      http.get('/branches', { params: { for_schedule: true } }),
       http.get('/programs'),
     ])
     schedule.value = Array.isArray(sRes.data) ? sRes.data : []
