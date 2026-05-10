@@ -240,7 +240,11 @@ async def seed_real_schedule() -> None:
                 continue
 
             classroom = await _get_or_create_classroom(db, classroom_name)
-            expected_language = TEACHER_LANGUAGE_BY_LASTNAME[lastname]
+            expected_language = TEACHER_LANGUAGE_BY_LASTNAME.get(lastname)
+            if expected_language is None:
+                print(f"⚠️  Для преподавателя '{lastname}' не найден язык обучения — строка пропущена")
+                skipped_invalid_data += 1
+                continue
             explicit_language = entry.get("language")
             if explicit_language and explicit_language != expected_language:
                 print(

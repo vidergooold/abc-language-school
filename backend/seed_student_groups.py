@@ -10,7 +10,7 @@
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,8 +23,6 @@ from app.models.student import Student, StudentType
 PRESCHOOL_AND_JUNIOR_GROUPS = {"Дошкольники", "FH1", "AS1", "AS2"}
 TEEN_GROUPS = {"AS3", "AS4", "GWA1+", "GWA2"}
 ADULT_GROUPS = {
-    "GWA1+",
-    "GWA2",
     "GWB1",
     "GWB1+",
     "GWB2",
@@ -33,6 +31,7 @@ ADULT_GROUPS = {
     "Взрослые групповые",
     "Китайский",
 }
+ENROLLMENT_DATE_CYCLE_DAYS = 45
 
 
 def _preferred_student_type(group_name: str) -> list[str]:
@@ -131,7 +130,9 @@ async def seed_student_groups() -> None:
 
             for student in selected:
                 s_type = student.student_type.value if hasattr(student.student_type, "value") else str(student.student_type)
-                enrolled_at = datetime.utcnow() - timedelta(days=14 + (student.id % 45))
+                enrolled_at = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+                    days=14 + ((student.id - 1) % ENROLLMENT_DATE_CYCLE_DAYS)
+                )
 
                 sg = StudentGroup(
                     group_id=group.id,
