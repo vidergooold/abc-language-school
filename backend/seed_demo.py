@@ -95,19 +95,19 @@ async def seed():
         g1 = await get_or_create(
             session,
             Group,
-            name="A2 Подростки Вт/Чт 17:00",
+            name="AS2",
             defaults={"course_id": c1.id, "status": GroupStatus.active},
         )
         g2 = await get_or_create(
             session,
             Group,
-            name="A2 Подростки Сб 11:00",
+            name="AS3",
             defaults={"course_id": c1.id, "status": GroupStatus.active},
         )
         g3 = await get_or_create(
             session,
             Group,
-            name="A2 Взрослые Пн/Ср 19:00",
+            name="Взрослые групповые",
             defaults={"course_id": c1.id, "status": GroupStatus.active},
         )
 

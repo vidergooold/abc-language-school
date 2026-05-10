@@ -120,7 +120,7 @@ async def seed_account_data():
         group_school, _ = await _get_or_create(
             session,
             Group,
-            {"name": "School A1 Morning"},
+            {"name": "FH1"},
             {
                 "course_id": course_school.id,
                 "status": GroupStatus.active,
@@ -131,7 +131,7 @@ async def seed_account_data():
         group_adult, _ = await _get_or_create(
             session,
             Group,
-            {"name": "Adult A2 Evening"},
+            {"name": "Взрослые групповые"},
             {
                 "course_id": course_adult.id,
                 "status": GroupStatus.active,

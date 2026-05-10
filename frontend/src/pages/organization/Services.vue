@@ -116,7 +116,7 @@ const prices = [
   },
   {
     duration: '45 мин',
-    label: 'Китайский язык',
+    label: 'Китайский',
     price: '1 200',
     per: 'за занятие',
   },
