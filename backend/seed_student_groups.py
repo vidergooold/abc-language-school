@@ -10,33 +10,53 @@
 """
 
 import asyncio
-import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal, init_db
-from app.models.group import Group, StudentGroup, CourseCategory
+from app.models.group import Group, StudentGroup
 from app.models.student import Student, StudentType
 
 
-# Сколько студентов добавлять в одну группу
-MIN_STUDENTS_PER_GROUP = 4
-MAX_STUDENTS_PER_GROUP = 8
+STUDENTS_PER_GROUP = {
+    "Дошкольники": 6,
+    "FH1": 7,
+    "AS1": 8,
+    "AS2": 8,
+    "AS3": 7,
+    "AS4": 7,
+    "GWA1+": 8,
+    "GWA2": 8,
+    "GWB1": 8,
+    "GWB1+": 7,
+    "GWB2": 7,
+    "GWB2+": 6,
+    "GWC1": 6,
+    "Взрослые групповые": 10,
+    "Мини-группа (2 чел.)": 2,
+    "Индивидуальные занятия": 1,
+    "Китайский": 8,
+}
+CHILD_5_10_GROUPS = {"Дошкольники", "FH1"}
+SCHOOL_11_16_GROUPS = {"AS1", "AS2", "AS3", "AS4"}
+ADULT_18_45_GROUPS = set(STUDENTS_PER_GROUP) - CHILD_5_10_GROUPS - SCHOOL_11_16_GROUPS
+ENROLLMENT_DATE_CYCLE_DAYS = 45
 
 
-def _preferred_student_type(category: str) -> list[str]:
-    """Возвращает предпочтительные типы студентов для категории курса."""
-    if category in (CourseCategory.children.value, CourseCategory.school.value,
-                    "children", "school"):
-        return [StudentType.child.value, StudentType.preschool.value, StudentType.adult.value]
-    elif category in (CourseCategory.corporate.value, CourseCategory.adults.value,
-                      CourseCategory.exam_prep.value,
-                      "corporate", "adults", "exam_prep"):
-        return [StudentType.adult.value, StudentType.child.value, StudentType.preschool.value]
-    # fallback — любой порядок
+def _preferred_student_type(group_name: str) -> list[str]:
+    if group_name in CHILD_5_10_GROUPS:
+        return [StudentType.preschool.value, StudentType.child.value]
+    if group_name in SCHOOL_11_16_GROUPS:
+        return [StudentType.child.value]
+    if group_name in ADULT_18_45_GROUPS:
+        return [StudentType.adult.value]
     return [StudentType.adult.value, StudentType.child.value, StudentType.preschool.value]
+
+
+def _target_students_per_group(group_name: str) -> int:
+    return STUDENTS_PER_GROUP.get(group_name, 8)
 
 
 async def seed_student_groups() -> None:
@@ -55,7 +75,7 @@ async def seed_student_groups() -> None:
 
         # Загружаем всех активных студентов
         students_result = await session.execute(
-            select(Student).where(Student.is_active == True)
+            select(Student).where(Student.is_active == True).order_by(Student.id)
         )
         all_students = students_result.scalars().all()
 
@@ -74,16 +94,8 @@ async def seed_student_groups() -> None:
         groups_processed = 0
 
         for group in groups:
-            # Получаем курс группы для определения категории
-            from app.models.group import Course
-            course_result = await session.execute(
-                select(Course).where(Course.id == group.course_id)
-            )
-            course = course_result.scalar_one_or_none()
-            category = course.category.value if course and course.category else "adults"
-
-            # Определяем порядок предпочтения типов студентов
-            type_order = _preferred_student_type(category)
+            type_order = _preferred_student_type(group.name)
+            target_count = _target_students_per_group(group.name)
 
             # Собираем пул студентов по приоритету
             student_pool: list[Student] = []
@@ -109,22 +121,21 @@ async def seed_student_groups() -> None:
             # Фильтруем — только те, кого ещё нет в группе
             candidates = [s for s in unique_pool if s.full_name not in existing_names]
 
-            # Сколько нужно добавить
             already_count = len(existing_names)
-            need = max(0, MIN_STUDENTS_PER_GROUP - already_count)
-            want = random.randint(MIN_STUDENTS_PER_GROUP, MAX_STUDENTS_PER_GROUP)
-            to_add_count = max(need, min(want - already_count, len(candidates)))
+            to_add_count = max(0, min(target_count - already_count, len(candidates)))
 
             if to_add_count <= 0:
                 total_skipped += len(candidates) + already_count - to_add_count
                 groups_processed += 1
                 continue
 
-            selected = random.sample(candidates, min(to_add_count, len(candidates)))
+            selected = candidates[:to_add_count]
 
             for student in selected:
                 s_type = student.student_type.value if hasattr(student.student_type, "value") else str(student.student_type)
-                enrolled_at = datetime.utcnow() - timedelta(days=random.randint(14, 60))
+                enrolled_at = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+                    days=14 + ((student.id - 1) % ENROLLMENT_DATE_CYCLE_DAYS)
+                )
 
                 sg = StudentGroup(
                     group_id=group.id,

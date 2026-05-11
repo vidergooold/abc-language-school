@@ -40,66 +40,72 @@ BRANCH_CLASSROOMS = {
     "МБОУ СОШ №56": ("каб. 3", "каб. 10"),
 }
 
-ALLOWED_TEACHER_LASTNAMES = {
-    "Арнгольд",
-    "Белова",
-    "Быковская",
-    "Винокурова",
-    "Воронцова",
-    "Данилова",
-    "Евдокимова",
-    "Зудяева",
-    "Иванова",
-    "Караваева",
-    "Козлова",
-    "Колесник",
-    "Куцых",
-    "Лукьянова",
-    "Митина",
-    "Осинина",
-    "Пасикан",
-    "Переведенцева",
-    "Позднякова",
-    "Походная",
-    "Родина",
-    "Рубе",
-    "Темлякова",
-    "Тихвинская",
-    "Турабова",
-    "Федорова",
-    "Фомина",
+TEACHER_LANGUAGE_BY_LASTNAME = {
+    "Арнгольд": "Английский",
+    "Белова": "Английский",
+    "Быковская": "Английский",
+    "Винокурова": "Китайский",
+    "Воронцова": "Китайский",
+    "Данилова": "Английский",
+    "Евдокимова": "Английский",
+    "Зудяева": "Английский",
+    "Иванова": "Английский",
+    "Караваева": "Английский",
+    "Козлова": "Английский",
+    "Колесник": "Английский",
+    "Куцых": "Английский",
+    "Лукьянова": "Английский",
+    "Митина": "Английский",
+    "Осинина": "Английский",
+    "Пасикан": "Английский",
+    "Переведенцева": "Английский",
+    "Позднякова": "Английский",
+    "Походная": "Английский",
+    "Родина": "Английский",
+    "Рубе": "Английский",
+    "Темлякова": "Английский",
+    "Тихвинская": "Английский",
+    "Турабова": "Английский",
+    "Федорова": "Английский",
+    "Фомина": "Английский",
 }
+ALLOWED_TEACHER_LASTNAMES = set(TEACHER_LANGUAGE_BY_LASTNAME.keys())
 
 GROUPS_SCHEDULE = [
-    {"group_name": "FH1", "teacher_lastname": "Арнгольд", "branch_name": "Гимназия 11 «Гармония»", "day_of_week": DayOfWeek.monday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 113"},
-    {"group_name": "AS1", "teacher_lastname": "Белова", "branch_name": "Гимназия 11 «Гармония»", "day_of_week": DayOfWeek.wednesday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 114"},
-    {"group_name": "AS2", "teacher_lastname": "Быковская", "branch_name": "Гимназия №7 «Сибирская»", "day_of_week": DayOfWeek.tuesday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 119"},
-    {"group_name": "AS3", "teacher_lastname": "Винокурова", "branch_name": "МАОУ ЛИТ", "day_of_week": DayOfWeek.monday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. библиотека"},
-    {"group_name": "AS4", "teacher_lastname": "Воронцова", "branch_name": "МАОУ ЛИТ", "day_of_week": DayOfWeek.thursday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 116"},
-    {"group_name": "GWA1+", "teacher_lastname": "Данилова", "branch_name": "МАОУ НГПЛ", "day_of_week": DayOfWeek.tuesday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 115"},
-    {"group_name": "GWA2", "teacher_lastname": "Евдокимова", "branch_name": "МАОУ НЭЛ", "day_of_week": DayOfWeek.wednesday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. 205"},
-    {"group_name": "GWB1", "teacher_lastname": "Зудяева", "branch_name": "МАОУ СОШ №216", "day_of_week": DayOfWeek.monday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 317"},
-    {"group_name": "GWB1+", "teacher_lastname": "Иванова", "branch_name": "МАОУ СОШ №216", "day_of_week": DayOfWeek.thursday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 410"},
-    {"group_name": "GWB2", "teacher_lastname": "Караваева", "branch_name": "МАОУ СОШ №217", "day_of_week": DayOfWeek.friday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 314А"},
-    {"group_name": "GWB2+", "teacher_lastname": "Козлова", "branch_name": "МАОУ СОШ №218", "day_of_week": DayOfWeek.tuesday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. АВС"},
-    {"group_name": "GWC1", "teacher_lastname": "Колесник", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.monday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 128"},
-    {"group_name": "Дошкольники", "teacher_lastname": "Куцых", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.wednesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 311"},
-    {"group_name": "Взрослые групповые", "teacher_lastname": "Лукьянова", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.tuesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 128"},
-    {"group_name": "Китайский", "language": "Китайский", "teacher_lastname": "Митина", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.friday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 311"},
-    {"group_name": "Мини-группа (2 чел.)", "teacher_lastname": "Осинина", "branch_name": "МБОУ Гимназия №5", "day_of_week": DayOfWeek.wednesday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 191"},
-    {"group_name": "FH1", "teacher_lastname": "Пасикан", "branch_name": "МБОУ Гимназия №9", "day_of_week": DayOfWeek.thursday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 37"},
-    {"group_name": "AS1", "teacher_lastname": "Переведенцева", "branch_name": "МБОУ Гимназия №9", "day_of_week": DayOfWeek.thursday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 41"},
-    {"group_name": "AS2", "teacher_lastname": "Позднякова", "branch_name": "МБОУ СОШ №11", "day_of_week": DayOfWeek.monday, "time_start": time(19, 0), "time_end": time(20, 30), "classroom": "каб. 203"},
+    {"group_name": "Дошкольники", "teacher_lastname": "Данилова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.monday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 311"},
+    {"group_name": "Дошкольники", "teacher_lastname": "Зудяева", "branch_name": "МБОУ Гимназия №9", "day_of_week": DayOfWeek.thursday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 37"},
+    {"group_name": "FH1", "teacher_lastname": "Данилова", "branch_name": "Гимназия 11 «Гармония»", "day_of_week": DayOfWeek.tuesday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 113"},
+    {"group_name": "FH1", "teacher_lastname": "Зудяева", "branch_name": "МБОУ СОШ №56", "day_of_week": DayOfWeek.friday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 3"},
+    {"group_name": "AS1", "teacher_lastname": "Федорова", "branch_name": "Гимназия 11 «Гармония»", "day_of_week": DayOfWeek.wednesday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 114"},
+    {"group_name": "AS1", "teacher_lastname": "Темлякова", "branch_name": "МБОУ СОШ №167", "day_of_week": DayOfWeek.saturday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 211"},
+    {"group_name": "AS2", "teacher_lastname": "Федорова", "branch_name": "Гимназия №7 «Сибирская»", "day_of_week": DayOfWeek.tuesday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 119"},
+    {"group_name": "AS2", "teacher_lastname": "Темлякова", "branch_name": "МАОУ ЛИТ", "day_of_week": DayOfWeek.thursday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 116"},
+    {"group_name": "AS3", "teacher_lastname": "Евдокимова", "branch_name": "МАОУ ЛИТ", "day_of_week": DayOfWeek.monday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. библиотека"},
     {"group_name": "AS3", "teacher_lastname": "Походная", "branch_name": "МБОУ СОШ №121 «Академическая»", "day_of_week": DayOfWeek.tuesday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 214"},
-    {"group_name": "AS4", "teacher_lastname": "Родина", "branch_name": "МБОУ СОШ №13", "day_of_week": DayOfWeek.wednesday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 18"},
-    {"group_name": "GWA1+", "teacher_lastname": "Рубе", "branch_name": "МБОУ СОШ №155", "day_of_week": DayOfWeek.friday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. 426"},
-    {"group_name": "Китайский", "language": "Китайский", "teacher_lastname": "Темлякова", "branch_name": "МБОУ СОШ №167", "day_of_week": DayOfWeek.saturday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 211"},
-    {"group_name": "GWA2", "teacher_lastname": "Тихвинская", "branch_name": "МБОУ СОШ №186", "day_of_week": DayOfWeek.saturday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 211"},
-    {"group_name": "GWB1", "teacher_lastname": "Турабова", "branch_name": "МБОУ СОШ №188", "day_of_week": DayOfWeek.monday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 409"},
-    {"group_name": "GWB1+", "teacher_lastname": "Федорова", "branch_name": "МБОУ СОШ №188", "day_of_week": DayOfWeek.wednesday, "time_start": time(19, 0), "time_end": time(20, 30), "classroom": "каб. АВС"},
-    {"group_name": "Китайский", "language": "Китайский", "teacher_lastname": "Фомина", "branch_name": "МБОУ СОШ №195", "day_of_week": DayOfWeek.thursday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. 229"},
-    {"group_name": "Индивидуальные занятия", "teacher_lastname": "Арнгольд", "branch_name": "МБОУ СОШ №56", "day_of_week": DayOfWeek.tuesday, "time_start": time(19, 0), "time_end": time(20, 30), "classroom": "каб. 3"},
-    {"group_name": "GWB2", "teacher_lastname": "Белова", "branch_name": "МБОУ СОШ №56", "day_of_week": DayOfWeek.friday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 10"},
+    {"group_name": "AS4", "teacher_lastname": "Евдокимова", "branch_name": "МБОУ СОШ №11", "day_of_week": DayOfWeek.monday, "time_start": time(19, 0), "time_end": time(20, 30), "classroom": "каб. 203"},
+    {"group_name": "AS4", "teacher_lastname": "Походная", "branch_name": "МБОУ СОШ №13", "day_of_week": DayOfWeek.wednesday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 18"},
+    {"group_name": "GWA1+", "teacher_lastname": "Зудяева", "branch_name": "МАОУ НГПЛ", "day_of_week": DayOfWeek.tuesday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 115"},
+    {"group_name": "GWA1+", "teacher_lastname": "Куцых", "branch_name": "МБОУ СОШ №155", "day_of_week": DayOfWeek.friday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. 426"},
+    {"group_name": "GWA2", "teacher_lastname": "Зудяева", "branch_name": "МАОУ НЭЛ", "day_of_week": DayOfWeek.wednesday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. 205"},
+    {"group_name": "GWA2", "teacher_lastname": "Куцых", "branch_name": "МБОУ СОШ №186", "day_of_week": DayOfWeek.saturday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 211"},
+    {"group_name": "GWB1", "teacher_lastname": "Позднякова", "branch_name": "МАОУ СОШ №216", "day_of_week": DayOfWeek.monday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 317"},
+    {"group_name": "GWB1", "teacher_lastname": "Фомина", "branch_name": "МБОУ СОШ №188", "day_of_week": DayOfWeek.wednesday, "time_start": time(19, 0), "time_end": time(20, 30), "classroom": "каб. АВС"},
+    {"group_name": "GWB1+", "teacher_lastname": "Позднякова", "branch_name": "МАОУ СОШ №216", "day_of_week": DayOfWeek.thursday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 410"},
+    {"group_name": "GWB1+", "teacher_lastname": "Фомина", "branch_name": "МБОУ СОШ №195", "day_of_week": DayOfWeek.thursday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. 229"},
+    {"group_name": "GWB2", "teacher_lastname": "Колесник", "branch_name": "МАОУ СОШ №217", "day_of_week": DayOfWeek.friday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 314А"},
+    {"group_name": "GWB2", "teacher_lastname": "Митина", "branch_name": "МБОУ СОШ №56", "day_of_week": DayOfWeek.friday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 10"},
+    {"group_name": "GWB2+", "teacher_lastname": "Колесник", "branch_name": "МАОУ СОШ №218", "day_of_week": DayOfWeek.tuesday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. АВС"},
+    {"group_name": "GWB2+", "teacher_lastname": "Митина", "branch_name": "МБОУ СОШ №188", "day_of_week": DayOfWeek.monday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 409"},
+    {"group_name": "GWC1", "teacher_lastname": "Козлова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.monday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 128"},
+    {"group_name": "GWC1", "teacher_lastname": "Арнгольд", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.tuesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 128"},
+    {"group_name": "Взрослые групповые", "teacher_lastname": "Родина", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.friday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 311"},
+    {"group_name": "Взрослые групповые", "teacher_lastname": "Лукьянова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.wednesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 311"},
+    {"group_name": "Мини-группа (2 чел.)", "teacher_lastname": "Осинина", "branch_name": "МБОУ Гимназия №5", "day_of_week": DayOfWeek.wednesday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 191"},
+    {"group_name": "Мини-группа (2 чел.)", "teacher_lastname": "Караваева", "branch_name": "МБОУ Гимназия №9", "day_of_week": DayOfWeek.thursday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 41"},
+    {"group_name": "Индивидуальные занятия", "teacher_lastname": "Иванова", "branch_name": "МБОУ СОШ №56", "day_of_week": DayOfWeek.tuesday, "time_start": time(19, 0), "time_end": time(20, 30), "classroom": "каб. 3"},
+    {"group_name": "Индивидуальные занятия", "teacher_lastname": "Рубе", "branch_name": "МБОУ СОШ №167", "day_of_week": DayOfWeek.saturday, "time_start": time(9, 0), "time_end": time(10, 30), "classroom": "каб. 211"},
+    {"group_name": "Китайский", "language": "Китайский", "teacher_lastname": "Винокурова", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.thursday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 311"},
+    {"group_name": "Китайский", "language": "Китайский", "teacher_lastname": "Воронцова", "branch_name": "МБОУ СОШ №186", "day_of_week": DayOfWeek.saturday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 211"},
 ]
 
 
@@ -234,7 +240,21 @@ async def seed_real_schedule() -> None:
                 continue
 
             classroom = await _get_or_create_classroom(db, classroom_name)
-            course_language = entry.get("language", "Английский")
+            expected_language = TEACHER_LANGUAGE_BY_LASTNAME.get(lastname)
+            if expected_language is None:
+                print(f"⚠️  Для преподавателя '{lastname}' не найден язык обучения — строка пропущена")
+                skipped_invalid_data += 1
+                continue
+            explicit_language = entry.get("language")
+            if explicit_language and explicit_language != expected_language:
+                print(
+                    f"⚠️  Для преподавателя '{lastname}' указан язык '{explicit_language}', "
+                    f"ожидался '{expected_language}' — строка пропущена"
+                )
+                skipped_invalid_data += 1
+                continue
+
+            course_language = expected_language
             group = await _get_or_create_group(db, entry["group_name"], courses[course_language].id, teacher.id)
 
             existing = await db.execute(
