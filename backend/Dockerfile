@@ -9,6 +9,7 @@ COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini .
 COPY entrypoint.sh .
+COPY seed_branches_22.py .
 RUN chmod +x entrypoint.sh
 
 CMD ["./entrypoint.sh"]
