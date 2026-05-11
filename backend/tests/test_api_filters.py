@@ -152,6 +152,64 @@ async def seeded_filter_db(filter_db_engine):
             is_recurring=True,
         )
         session.add(lesson)
+
+        # ── Завершённая группа — не должна попадать в /groups по умолчанию ──
+        finished_group = Group(
+            name="Тест-группа OLD-2024",
+            course_id=last_course.id,
+            teacher_id=teacher_objs[0].id,
+            status=GroupStatus.finished,
+        )
+        session.add(finished_group)
+        await session.flush()
+
+        finished_lesson = Lesson(
+            group_id=finished_group.id,
+            teacher_id=teacher_objs[0].id,
+            classroom_id=classroom.id,
+            branch_id=teaching_branches[0].id,
+            program_id=program_objs[0].id,
+            day_of_week=DayOfWeek.tuesday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.scheduled,
+            is_recurring=False,
+        )
+        session.add(finished_lesson)
+
+        # ── Приостановленная группа — тоже не должна попадать по умолчанию ──
+        suspended_group = Group(
+            name="Тест-группа SUSPENDED",
+            course_id=last_course.id,
+            teacher_id=teacher_objs[1].id,
+            status=GroupStatus.suspended,
+        )
+        session.add(suspended_group)
+        await session.flush()
+
+        suspended_lesson = Lesson(
+            group_id=suspended_group.id,
+            teacher_id=teacher_objs[1].id,
+            classroom_id=classroom.id,
+            branch_id=teaching_branches[1].id,
+            program_id=program_objs[0].id,
+            day_of_week=DayOfWeek.wednesday,
+            time_start=time(12, 0),
+            time_end=time(13, 0),
+            status=LessonStatus.scheduled,
+            is_recurring=False,
+        )
+        session.add(suspended_lesson)
+
+        # ── Группа без занятий — не должна попадать в /groups по умолчанию ─
+        orphan_group = Group(
+            name="Тест-группа БЕЗ-УРОКОВ",
+            course_id=last_course.id,
+            teacher_id=teacher_objs[0].id,
+            status=GroupStatus.recruiting,
+        )
+        session.add(orphan_group)
+
         await session.commit()
 
     return filter_db_engine
@@ -159,13 +217,31 @@ async def seeded_filter_db(filter_db_engine):
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def filter_client(seeded_filter_db):
-    """AsyncClient с ASGI-транспортом и переопределённой зависимостью get_db."""
+    """AsyncClient с ASGI-транспортом, переопределённой get_db и JWT-токеном admin."""
     from app.core.database import get_db
+    from app.core.security import hash_password, create_access_token
     from app.main import app
+    from app.models.user import User, UserRole
 
     SessionLocal = async_sessionmaker(
         bind=seeded_filter_db, class_=AsyncSession, expire_on_commit=False
     )
+
+    # Создаём тестового admin-пользователя в тестовой БД
+    async with SessionLocal() as session:
+        admin = User(
+            email="filter-test-admin@test.local",
+            hashed_password=hash_password("TestPass123"),
+            full_name="Тест Фильтр Админ",
+            role=UserRole.admin,
+            is_active=True,
+        )
+        session.add(admin)
+        await session.commit()
+        await session.refresh(admin)
+        token = create_access_token(
+            {"sub": str(admin.id), "email": admin.email, "role": admin.role.value}
+        )
 
     async def override_get_db():
         async with SessionLocal() as session:
@@ -174,7 +250,9 @@ async def filter_client(seeded_filter_db):
     app.dependency_overrides[get_db] = override_get_db
 
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {token}"},
     ) as ac:
         yield ac
 
@@ -299,3 +377,63 @@ async def test_administrative_branches_not_used_as_lesson_branch(seeded_filter_d
         admin_lessons = lessons_result.scalars().all()
 
     assert len(admin_lessons) == 0
+
+
+async def test_groups_api_default_returns_only_active_and_recruiting(filter_client: AsyncClient):
+    """GET /api/v1/groups по умолчанию возвращает только активные/набирающиеся группы."""
+    response = await filter_client.get("/api/v1/groups")
+    assert response.status_code == 200
+    data = response.json()
+    names = [g["name"] for g in data]
+    assert "Тест-группа OLD-2024" not in names, (
+        "Завершённая группа не должна попадать в /groups по умолчанию"
+    )
+    assert "Тест-группа SUSPENDED" not in names, (
+        "Приостановленная группа не должна попадать в /groups по умолчанию"
+    )
+    assert "Тест-группа БЕЗ-УРОКОВ" not in names, (
+        "Группа без занятий не должна попадать в /groups по умолчанию"
+    )
+
+
+async def test_groups_api_default_includes_active_group(filter_client: AsyncClient):
+    """GET /api/v1/groups возвращает активную группу с учебным расписанием."""
+    response = await filter_client.get("/api/v1/groups")
+    assert response.status_code == 200
+    data = response.json()
+    names = [g["name"] for g in data]
+    assert "Тест-группа A1" in names, (
+        "Активная группа с учебным расписанием должна возвращаться в /groups"
+    )
+    for g in data:
+        assert g["status"] in ("active", "recruiting"), (
+            f"Группа '{g['name']}' имеет статус '{g['status']}', ожидалось active или recruiting"
+        )
+
+
+async def test_groups_api_active_only_false_includes_all_statuses(filter_client: AsyncClient):
+    """GET /api/v1/groups?active_only=false возвращает все группы, включая завершённые."""
+    response = await filter_client.get("/api/v1/groups", params={"active_only": "false"})
+    assert response.status_code == 200
+    data = response.json()
+    names = [g["name"] for g in data]
+    assert "Тест-группа OLD-2024" in names, (
+        "При active_only=false завершённая группа должна присутствовать"
+    )
+    assert "Тест-группа SUSPENDED" in names, (
+        "При active_only=false приостановленная группа должна присутствовать"
+    )
+    assert "Тест-группа A1" in names, (
+        "При active_only=false активная группа тоже должна присутствовать"
+    )
+
+
+async def test_groups_api_active_only_false_includes_orphan(filter_client: AsyncClient):
+    """GET /api/v1/groups?active_only=false возвращает группы без занятий (статус recruiting)."""
+    response = await filter_client.get("/api/v1/groups", params={"active_only": "false"})
+    assert response.status_code == 200
+    data = response.json()
+    names = [g["name"] for g in data]
+    assert "Тест-группа БЕЗ-УРОКОВ" in names, (
+        "При active_only=false группа без занятий (recruiting) должна присутствовать"
+    )

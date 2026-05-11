@@ -1,10 +1,11 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
+from sqlalchemy import select, func, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import require_admin, require_staff
+from app.models.branch import Branch
 from app.models.group import Course, Group, StudentGroup, GroupStatus
 from app.models.schedule import Lesson
 from app.models.teacher import Teacher
@@ -71,12 +72,28 @@ async def update_course(
 async def get_groups(
     branch_id: Optional[int] = Query(None),
     teacher_id: Optional[int] = Query(None),
+    active_only: bool = Query(True, description="Возвращать только активные/набирающиеся группы в учебных филиалах"),
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
     query = select(Group)
     if teacher_id is not None:
         query = query.where(Group.teacher_id == teacher_id)
+    if active_only:
+        # Только активные или набирающиеся группы
+        query = query.where(Group.status.in_([GroupStatus.active, GroupStatus.recruiting]))
+        # Только группы, у которых есть хотя бы одно занятие в учебном (не административном) филиале
+        teaching_lesson_exists = (
+            select(Lesson.id)
+            .join(Branch, Branch.id == Lesson.branch_id)
+            .where(
+                Lesson.group_id == Group.id,
+                Branch.is_administrative.is_(False),
+            )
+            .correlate(Group)
+            .exists()
+        )
+        query = query.where(teaching_lesson_exists)
     if branch_id is not None:
         query = query.join(Lesson, Lesson.group_id == Group.id)
         query = query.where(Lesson.branch_id == branch_id)

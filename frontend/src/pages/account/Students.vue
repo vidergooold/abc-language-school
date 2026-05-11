@@ -276,7 +276,10 @@ async function load() {
       http.get('/groups'),
     ])
     students.value = studentsRes.data
-    groups.value = Array.isArray(groupsRes.data) ? groupsRes.data : []
+    // Отображаем только группы с корректными id и названием (бэкенд уже фильтрует по active_only)
+    groups.value = Array.isArray(groupsRes.data)
+      ? groupsRes.data.filter((g: any) => g.id && g.name)
+      : []
 
     const nameMap: Record<string, number> = {}
     await Promise.all(
