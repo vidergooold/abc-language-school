@@ -1,8 +1,8 @@
-"""add is_administrative to branches
+"""ensure is_administrative column exists on branches
 
-Revision ID: d1f2a3b4c5e6
-Revises: c7d8e9f0a1b2, b9c8d7e6f5a4
-Create Date: 2026-05-10
+Revision ID: f2a3b4c5d6e7
+Revises: e1f2a3b4c5d6
+Create Date: 2026-05-11
 """
 from typing import Sequence, Union
 
@@ -10,8 +10,8 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "d1f2a3b4c5e6"
-down_revision: Union[str, Sequence[str], None] = ("c7d8e9f0a1b2", "b9c8d7e6f5a4")
+revision: str = "f2a3b4c5d6e7"
+down_revision: Union[str, Sequence[str], None] = "e1f2a3b4c5d6"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -46,12 +46,6 @@ def upgrade() -> None:
             sa.Column("is_administrative", sa.Boolean(), nullable=False, server_default=sa.text("false")),
         )
 
-    # Пометить Офис как административный — занятий там не проводится
-    bind.execute(
-        sa.text("UPDATE branches SET is_administrative = true WHERE name = 'Офис'")
-    )
-
 
 def downgrade() -> None:
-    if _table_exists("branches") and _column_exists("branches", "is_administrative"):
-        op.drop_column("branches", "is_administrative")
+    pass
