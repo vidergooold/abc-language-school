@@ -20,40 +20,43 @@ from app.models.group import Group, StudentGroup
 from app.models.student import Student, StudentType
 
 
-PRESCHOOL_AND_JUNIOR_GROUPS = {"Дошкольники", "FH1", "AS1", "AS2"}
-TEEN_GROUPS = {"AS3", "AS4", "GWA1+", "GWA2"}
-ADULT_GROUPS = {
-    "GWB1",
-    "GWB1+",
-    "GWB2",
-    "GWB2+",
-    "GWC1",
-    "Взрослые групповые",
-    "Китайский",
+STUDENTS_PER_GROUP = {
+    "Дошкольники": 6,
+    "FH1": 7,
+    "AS1": 8,
+    "AS2": 8,
+    "AS3": 7,
+    "AS4": 7,
+    "GWA1+": 8,
+    "GWA2": 8,
+    "GWB1": 8,
+    "GWB1+": 7,
+    "GWB2": 7,
+    "GWB2+": 6,
+    "GWC1": 6,
+    "Взрослые групповые": 10,
+    "Мини-группа (2 чел.)": 2,
+    "Индивидуальные занятия": 1,
+    "Китайский": 8,
 }
+CHILD_5_10_GROUPS = {"Дошкольники", "FH1"}
+SCHOOL_11_16_GROUPS = {"AS1", "AS2", "AS3", "AS4"}
+ADULT_18_45_GROUPS = set(STUDENTS_PER_GROUP) - CHILD_5_10_GROUPS - SCHOOL_11_16_GROUPS
 ENROLLMENT_DATE_CYCLE_DAYS = 45
 
 
 def _preferred_student_type(group_name: str) -> list[str]:
-    if group_name in PRESCHOOL_AND_JUNIOR_GROUPS:
-        return [StudentType.preschool.value, StudentType.child.value, StudentType.adult.value]
-    if group_name in TEEN_GROUPS:
-        return [StudentType.child.value, StudentType.adult.value, StudentType.preschool.value]
-    if group_name in ADULT_GROUPS or group_name in {"Мини-группа (2 чел.)", "Индивидуальные занятия"}:
-        return [StudentType.adult.value, StudentType.child.value, StudentType.preschool.value]
+    if group_name in CHILD_5_10_GROUPS:
+        return [StudentType.preschool.value, StudentType.child.value]
+    if group_name in SCHOOL_11_16_GROUPS:
+        return [StudentType.child.value]
+    if group_name in ADULT_18_45_GROUPS:
+        return [StudentType.adult.value]
     return [StudentType.adult.value, StudentType.child.value, StudentType.preschool.value]
 
 
 def _target_students_per_group(group_name: str) -> int:
-    if group_name == "Мини-группа (2 чел.)":
-        return 2
-    if group_name == "Индивидуальные занятия":
-        return 1
-    if group_name in PRESCHOOL_AND_JUNIOR_GROUPS:
-        return 6
-    if group_name in TEEN_GROUPS:
-        return 7
-    return 8
+    return STUDENTS_PER_GROUP.get(group_name, 8)
 
 
 async def seed_student_groups() -> None:
@@ -72,7 +75,7 @@ async def seed_student_groups() -> None:
 
         # Загружаем всех активных студентов
         students_result = await session.execute(
-            select(Student).where(Student.is_active == True)
+            select(Student).where(Student.is_active == True).order_by(Student.id)
         )
         all_students = students_result.scalars().all()
 

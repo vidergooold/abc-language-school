@@ -17,6 +17,28 @@ MIN_TEACHERS_PER_BRANCH = 2
 GROUP_SIZE_REGULAR = 6
 GROUP_SIZE_MINI = 2
 GROUP_SIZE_INDIVIDUAL = 1
+STUDENTS_PER_GROUP = {
+    "Дошкольники": 6,
+    "FH1": 7,
+    "AS1": 8,
+    "AS2": 8,
+    "AS3": 7,
+    "AS4": 7,
+    "GWA1+": 8,
+    "GWA2": 8,
+    "GWB1": 8,
+    "GWB1+": 7,
+    "GWB2": 7,
+    "GWB2+": 6,
+    "GWC1": 6,
+    "Взрослые групповые": 10,
+    "Мини-группа (2 чел.)": 2,
+    "Индивидуальные занятия": 1,
+    "Китайский": 8,
+}
+CHILD_5_10_GROUPS = {"Дошкольники", "FH1"}
+SCHOOL_11_16_GROUPS = {"AS1", "AS2", "AS3", "AS4"}
+ADULT_18_45_GROUPS = set(STUDENTS_PER_GROUP) - CHILD_5_10_GROUPS - SCHOOL_11_16_GROUPS
 
 PROGRAM_TO_GROUP_NAME = {
     "Дошкольники": "Дошкольники",
@@ -75,6 +97,20 @@ def _program_group_size(program_name: str) -> int:
 
 def _normalize_group_name(program_name: str) -> str:
     return PROGRAM_TO_GROUP_NAME.get(program_name, program_name)
+
+
+def _preferred_student_types_for_group(group_name: str) -> list[str]:
+    if group_name in CHILD_5_10_GROUPS:
+        return ["preschool", "child"]
+    if group_name in SCHOOL_11_16_GROUPS:
+        return ["child"]
+    if group_name in ADULT_18_45_GROUPS:
+        return ["adult"]
+    return ["adult", "child", "preschool"]
+
+
+def _target_students_for_group(group_name: str) -> int:
+    return STUDENTS_PER_GROUP.get(group_name, GROUP_SIZE_REGULAR)
 
 
 async def seed_distribution() -> None:
@@ -282,57 +318,41 @@ async def seed_distribution() -> None:
             groups_created_by_branch[branch.name] += 1
 
         if students and created_groups:
-            groups_by_branch: dict[int, list[tuple[Group, Branch, EducationalProgram, int]]] = defaultdict(list)
-            for payload in created_groups:
-                groups_by_branch[payload[1].id].append(payload)
+            students_by_type: dict[str, list[Student]] = defaultdict(list)
+            for student in students:
+                student_type = str(student.student_type.value) if hasattr(student.student_type, "value") else str(student.student_type)
+                students_by_type[student_type].append(student)
 
-            branch_ids = [branch.id for branch in non_office_branches]
-            assigned_student_ids = set()
-            group_remaining: dict[int, int] = {group.id: size for group, _, _, size in created_groups}
+            for group, _, _, _ in created_groups:
+                type_order = _preferred_student_types_for_group(group.name)
+                target_count = _target_students_for_group(group.name)
 
-            for index, student in enumerate(students):
-                branch_id = branch_ids[index % len(branch_ids)]
-                branch_groups = groups_by_branch.get(branch_id, [])
-                target_group = next((g for g in branch_groups if group_remaining[g[0].id] > 0), None)
-                if target_group is None:
-                    target_group = next((g for g in created_groups if group_remaining[g[0].id] > 0), None)
-                if target_group is None:
-                    break
+                student_pool: list[Student] = []
+                for student_type in type_order:
+                    student_pool.extend(students_by_type.get(student_type, []))
+                if len(student_pool) < target_count:
+                    student_pool.extend(students)
 
-                group = target_group[0]
-                session.add(
-                    StudentGroup(
-                        group_id=group.id,
-                        student_name=student.full_name,
-                        student_phone=student.phone,
-                        student_email=student.email,
-                        student_type=str(student.student_type.value) if hasattr(student.student_type, "value") else str(student.student_type),
-                        form_id=student.source_form_id,
-                        is_active=True,
-                    )
-                )
-                group_remaining[group.id] -= 1
-                assigned_student_ids.add(student.id)
+                seen_ids = set()
+                unique_pool: list[Student] = []
+                for student in student_pool:
+                    if student.id in seen_ids:
+                        continue
+                    seen_ids.add(student.id)
+                    unique_pool.append(student)
 
-            if students:
-                cycle_students = students
-                cycle_index = 0
-                for group, _, _, _ in created_groups:
-                    while group_remaining[group.id] > 0 and cycle_students:
-                        student = cycle_students[cycle_index % len(cycle_students)]
-                        cycle_index += 1
-                        session.add(
-                            StudentGroup(
-                                group_id=group.id,
-                                student_name=student.full_name,
-                                student_phone=student.phone,
-                                student_email=student.email,
-                                student_type=str(student.student_type.value) if hasattr(student.student_type, "value") else str(student.student_type),
-                                form_id=student.source_form_id,
-                                is_active=True,
-                            )
+                for student in unique_pool[:target_count]:
+                    session.add(
+                        StudentGroup(
+                            group_id=group.id,
+                            student_name=student.full_name,
+                            student_phone=student.phone,
+                            student_email=student.email,
+                            student_type=str(student.student_type.value) if hasattr(student.student_type, "value") else str(student.student_type),
+                            form_id=student.source_form_id,
+                            is_active=True,
                         )
-                        group_remaining[group.id] -= 1
+                    )
 
         await session.commit()
 
