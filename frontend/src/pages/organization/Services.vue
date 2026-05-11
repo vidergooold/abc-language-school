@@ -97,7 +97,7 @@ const prices = [
     per: 'в месяц',
   },
   {
-    duration: '—',
+    duration: '90 мин',
     label: 'Взрослые групповые',
     price: '6 500',
     per: 'в месяц',
