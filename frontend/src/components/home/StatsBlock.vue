@@ -1,7 +1,7 @@
 <template>
   <section class="stats">
     <div class="stats__item">
-      <strong class="stats__number">10+</strong>
+      <strong class="stats__number">20+</strong>
       <span class="stats__label">лет опыта</span>
     </div>
 
