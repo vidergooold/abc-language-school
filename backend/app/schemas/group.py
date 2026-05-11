@@ -25,7 +25,7 @@ class CourseOut(BaseModel):
     category: CourseCategory
     duration_months: Optional[int] = None
     lessons_per_week: Optional[int] = None
-    price_per_month: int
+    price_per_month: Optional[int] = None
     max_students: Optional[int] = None
     is_active: Optional[bool] = None
     created_at: Optional[datetime] = None
