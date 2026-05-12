@@ -404,8 +404,15 @@ async def get_classrooms(
     return [
         ClassroomOut.model_validate(
             {
-                **ClassroomOut.model_validate(classroom, from_attributes=True).model_dump(),
+                "id": classroom.id,
+                "name": classroom.name,
+                "capacity": classroom.capacity,
+                "branch_id": classroom.branch_id,
                 "branch_name": branch_name,
+                "floor": classroom.floor,
+                "has_projector": classroom.has_projector,
+                "has_whiteboard": classroom.has_whiteboard,
+                "is_active": classroom.is_active,
             }
         )
         for classroom, branch_name in result.all()
