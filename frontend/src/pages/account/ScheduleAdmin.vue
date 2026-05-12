@@ -386,8 +386,24 @@ async function saveLesson() {
   conflicts.value = []
   try {
     if (editingId.value) {
-      const payload = { ...form, day_of_week: form.day_of_week[0] }
-      await http.put(`/schedule/${editingId.value}`, payload)
+      const editingItem = groupedSchedule.value.find(i => i.id === editingId.value)
+      const ids: number[] = editingItem?.lesson_ids || [editingId.value]
+      const selectedDays: string[] = form.day_of_week
+
+      const toDelete = ids.slice(selectedDays.length)
+      for (const id of toDelete) {
+        await http.delete(`/schedule/${id}`)
+      }
+
+      for (let i = 0; i < Math.min(ids.length, selectedDays.length); i++) {
+        const payload = { ...form, day_of_week: selectedDays[i] }
+        await http.put(`/schedule/${ids[i]}`, payload)
+      }
+
+      for (let i = ids.length; i < selectedDays.length; i++) {
+        const payload = { ...form, day_of_week: selectedDays[i] }
+        await http.post('/schedule', payload)
+      }
     } else {
       for (const day of form.day_of_week) {
         const payload = { ...form, day_of_week: day }
