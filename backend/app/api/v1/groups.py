@@ -75,7 +75,6 @@ async def get_groups(
     teacher_id: Optional[int] = Query(None),
     active_only: bool = Query(True, description="Возвращать только активные/набирающиеся группы в учебных филиалах"),
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff),
 ):
     query = select(Group)
     if teacher_id is not None:

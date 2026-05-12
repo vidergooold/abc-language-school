@@ -460,6 +460,20 @@ async def test_no_token_teachers_expects_401(client: AsyncClient):
     assert response.status_code == 200
 
 
+async def test_no_token_groups_is_public(client: AsyncClient):
+    """GET /api/v1/groups without a token returns 200 — the endpoint is public."""
+    response = await client.get("/api/v1/groups")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+async def test_no_token_classrooms_is_public(client: AsyncClient):
+    """GET /api/v1/classrooms without a token returns 200 — the endpoint is public."""
+    response = await client.get("/api/v1/classrooms")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
 async def test_staff_get_group_15_with_nullable_course_fields(client: AsyncClient, db_engine, teacher_token):
     """GET /api/v1/groups/15 returns 200 when related nullable course fields are NULL."""
     group_id = await _seed_group_15_with_nullable_course_fields(db_engine)
