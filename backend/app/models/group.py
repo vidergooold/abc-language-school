@@ -70,6 +70,14 @@ class Group(Base):
     invoices = relationship("Invoice", back_populates="group", lazy="select")
     student_groups = relationship("StudentGroup", back_populates="group", lazy="select")
 
+    @property
+    def language(self):
+        return self.course.language if self.course else None
+
+    @property
+    def program_name(self):
+        return self.course.name if self.course else None
+
 
 class StudentGroup(Base):
     """Привязка студента (из анкет) к группе"""
