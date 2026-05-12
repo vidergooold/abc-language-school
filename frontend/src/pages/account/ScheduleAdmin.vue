@@ -223,7 +223,7 @@ const form = reactive(emptyForm())
 const groupedSchedule = computed(() => {
   const grouped = new Map<string, any>()
   for (const item of schedule.value) {
-    const key = [item.group_id, item.teacher_id, fmt(item.time_start), fmt(item.time_end)].join('|')
+    const key = [item.group_id, item.teacher_id, item.time_start, item.time_end].join('|')
     const existing = grouped.get(key)
     if (!existing) {
       grouped.set(key, {
@@ -242,7 +242,6 @@ const groupedSchedule = computed(() => {
     const sortedDays = [...item.days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
     return {
       ...item,
-      id: item.id || item.lesson_ids[0],
       day_of_week: sortedDays[0] || item.day_of_week,
       days: sortedDays,
     }
@@ -368,8 +367,7 @@ function onGroupSelect() {
   }
 }
 function onBranchSelect() {
-  if (!form.classroom_id) return
-  if (!availableClassrooms.value.some((classroom: any) => classroom.id === form.classroom_id)) {
+  if (form.classroom_id && !availableClassrooms.value.some((classroom: any) => classroom.id === form.classroom_id)) {
     form.classroom_id = ''
   }
 }
@@ -415,12 +413,7 @@ async function doCancel() {
   if (!cancelTarget.value) return
   saving.value = true
   try {
-    const lessonIds = cancelTarget.value.lesson_ids?.length
-      ? cancelTarget.value.lesson_ids
-      : [cancelTarget.value.id]
-    for (const lessonId of lessonIds) {
-      await http.delete(`/schedule/${lessonId}`)
-    }
+    await http.delete(`/schedule/${cancelTarget.value.id}`)
     cancelTarget.value = null
     await loadSchedule()
   } catch {
