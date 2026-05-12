@@ -66,7 +66,7 @@ def _ensure_enum_values() -> None:
     if bind.dialect.name != "postgresql":
         return
     existing = {
-        row
+        row[0]
         for row in bind.execute(
             sa.text(
                 "SELECT enumlabel FROM pg_enum e "
