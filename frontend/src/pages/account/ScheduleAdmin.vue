@@ -27,6 +27,7 @@
               <th>Преподаватель</th>
               <th>День</th>
               <th>Время</th>
+              <th>Длительность</th>
               <th>Кабинет</th>
               <th>Филиал</th>
               <th>Действия</th>
@@ -34,10 +35,11 @@
           </thead>
           <tbody>
             <tr v-for="item in filtered" :key="item.id">
-              <td class="col-group">{{ shortGroupName(groupName(item.group_id)) }}</td>
+              <td class="col-group">{{ groupDisplayName(item.group_id) }}</td>
               <td>{{ teacherName(item.teacher_id) }}</td>
-              <td class="col-days">{{ groupDaysLabel(item.group_id) }}</td>
+              <td class="col-days">{{ DAY_LABELS[item.day_of_week] || item.day_of_week }}</td>
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
+              <td class="col-duration">{{ lessonDuration(item.time_start, item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
               <td>{{ branchName(item.branch_id) }}</td>
               <td class="col-actions">
@@ -179,6 +181,16 @@ const cancelTarget = ref<any>(null)
 const conflicts = ref<any[]>([])
 const formError = ref('')
 
+const DAY_LABELS: Record<string, string> = {
+  monday:    'Понедельник',
+  tuesday:   'Вторник',
+  wednesday: 'Среда',
+  thursday:  'Четверг',
+  friday:    'Пятница',
+  saturday:  'Суббота',
+  sunday:    'Воскресенье',
+}
+
 const days = [
   { key: 'monday',    label: 'Понедельник' },
   { key: 'tuesday',   label: 'Вторник' },
@@ -234,7 +246,25 @@ function shortGroupName(name: string) {
   return s.trim()
 }
 function groupName(id: number) {
-  return groups.value.find(g => g.id === id)?.name || `Группа #${id}`
+  return groups.value.find((g: any) => g.id === id)?.name || `Группа #${id}`
+}
+function groupDisplayName(id: number) {
+  const g = groups.value.find((g: any) => g.id === id)
+  if (!g) return `Группа #${id}`
+  if (g.language && (g.program_name || g.name)) {
+    return `${g.language} ${g.program_name || g.name}`
+  }
+  return g.name || `Группа #${id}`
+}
+function lessonDuration(timeStart: string, timeEnd: string): string {
+  if (!timeStart || !timeEnd) return '—'
+  const startParts = timeStart.split(':')
+  const endParts = timeEnd.split(':')
+  if (startParts.length < 2 || endParts.length < 2) return '—'
+  const startMin = Number(startParts[0]) * 60 + Number(startParts[1])
+  const endMin = Number(endParts[0]) * 60 + Number(endParts[1])
+  const minutes = endMin - startMin
+  return minutes > 0 ? `${minutes} мин` : '—'
 }
 function teacherName(id: number) {
   const t = teachers.value.find(t => t.id === id)
@@ -250,19 +280,6 @@ function branchName(id: number) {
 function programName(id: number) {
   return programs.value.find(p => p.id === id)?.name || '—'
 }
-function groupDaysLabel(groupId: number): string {
-  const order = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
-  const short: Record<string, string> = {
-    monday: 'пн', tuesday: 'вт', wednesday: 'ср',
-    thursday: 'чт', friday: 'пт', saturday: 'сб', sunday: 'вс'
-  }
-  const days = [...new Set(
-    schedule.value
-      .filter((l: any) => l.group_id === groupId)
-      .map((l: any) => l.day_of_week as string)
-  )].sort((a, b) => order.indexOf(a) - order.indexOf(b))
-  return days.map(d => short[d] || d).join('/')
-}
 
 function dayLabel(key: string) {
   return days.find(d => d.key === key)?.label || key
@@ -270,7 +287,6 @@ function dayLabel(key: string) {
 function fmt(t: string) {
   return t ? t.slice(0, 5) : ''
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 function openCreate() {
   Object.assign(form, emptyForm())
@@ -389,7 +405,7 @@ async function load() {
       http.get('/groups').catch(() => ({ data: [] })),
       http.get('/teachers').catch(() => ({ data: [] })),
       http.get('/classrooms').catch(() => ({ data: [] })),
-      http.get('/branches', { params: { for_schedule: true } }).catch(() => ({ data: [] })),
+      http.get('/branches').catch(() => ({ data: [] })),
       http.get('/programs').catch(() => ({ data: [] })),
     ])
     schedule.value = Array.isArray(sRes.data) ? sRes.data : []
@@ -432,6 +448,7 @@ onMounted(load)
 .col-group { font-weight: 600; color: #333; }
 .col-days { color: var(--brand-orange); font-weight: 600; white-space: nowrap; }
 .col-time { white-space: nowrap; }
+.col-duration { color: #888; white-space: nowrap; }
 .col-topic { color: #888; font-style: italic; }
 .col-actions { display: flex; gap: 6px; }
 
