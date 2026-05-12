@@ -223,7 +223,7 @@ const form = reactive(emptyForm())
 const groupedSchedule = computed(() => {
   const grouped = new Map<string, any>()
   for (const item of schedule.value) {
-    const key = [item.group_id, item.teacher_id, item.time_start, item.time_end].join('|')
+    const key = [item.group_id, item.teacher_id, item.classroom_id, item.branch_id, item.time_start, item.time_end].join('|')
     const existing = grouped.get(key)
     if (!existing) {
       grouped.set(key, {
