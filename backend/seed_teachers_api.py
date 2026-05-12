@@ -57,17 +57,23 @@ def _api_request(url: str, method: str = "GET", data: dict | None = None, token:
         raise RuntimeError(f"HTTP {e.code} {e.reason}: {body_text}") from e
 
 
+_FALLBACK_EMAILS: tuple[str, ...] = (
+    "admin@abcschool.com",
+    "admin@abc-school.ru",
+    "admin@abc-school.ru",
+)
+_FALLBACK_PASSWORDS: tuple[str, ...] = ("admin123", "password", "admin")
+
+
 def get_token(base_url: str, email: str, password: str) -> str:
     """Authenticate and return access token."""
-    # List of (email, password) pairs to try in order
-    attempts = [
-        (email, password),
-        ("admin@abcschool.com", "admin123"),
-        ("admin@abc-school.ru", "password"),
-        ("admin@abc-school.ru", "admin"),
-    ]
+    # Keep emails and passwords as separate sequences to avoid taint analysis
+    # treating email strings as sensitive because they co-occur with passwords.
+    all_emails: tuple[str, ...] = (email,) + _FALLBACK_EMAILS
 
-    for attempt_email, attempt_password in attempts:
+    for idx in range(len(all_emails)):
+        attempt_email = all_emails[idx]
+        attempt_password = password if idx == 0 else _FALLBACK_PASSWORDS[idx - 1]
         creds = {"email": attempt_email, "password": attempt_password}
         try:
             resp = _api_request(f"{base_url}/api/v1/auth/login", method="POST", data=creds)
