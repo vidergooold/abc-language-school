@@ -59,23 +59,24 @@ def _api_request(url: str, method: str = "GET", data: dict | None = None, token:
 
 def get_token(base_url: str, email: str, password: str) -> str:
     """Authenticate and return access token."""
-    credentials_list = [
-        {"email": email, "password": password},
-        {"email": "admin@abcschool.com", "password": "admin123"},
-        {"email": "admin@abc-school.ru", "password": "password"},
-        {"email": "admin@abc-school.ru", "password": "admin"},
+    # List of (email, password) pairs to try in order
+    attempts = [
+        (email, password),
+        ("admin@abcschool.com", "admin123"),
+        ("admin@abc-school.ru", "password"),
+        ("admin@abc-school.ru", "admin"),
     ]
 
-    for creds in credentials_list:
-        email = creds["email"]
+    for attempt_email, attempt_password in attempts:
+        creds = {"email": attempt_email, "password": attempt_password}
         try:
             resp = _api_request(f"{base_url}/api/v1/auth/login", method="POST", data=creds)
             token = resp.get("access_token")
             if token:
-                print(f"✅ Authenticated as {email}")
+                print(f"✅ Authenticated as {attempt_email}")
                 return token
         except RuntimeError as exc:
-            print(f"⚠️  Auth failed for {email}: {exc}")
+            print(f"⚠️  Auth failed for {attempt_email}: {exc}")
 
     raise SystemExit("❌ Could not authenticate with any known credentials.")
 
