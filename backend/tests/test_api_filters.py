@@ -134,6 +134,8 @@ async def seeded_filter_db(filter_db_engine):
             course_id=last_course.id,
             teacher_id=teacher_objs[0].id,
             status=GroupStatus.active,
+            language="Китайский",
+            program_name="Китайский язык",
         )
         session.add(group)
         await session.flush()
@@ -412,21 +414,21 @@ async def test_groups_api_default_includes_active_group(filter_client: AsyncClie
 
 
 async def test_groups_api_includes_course_language_and_program_name(filter_client: AsyncClient):
-    """GET /api/v1/groups возвращает language и program_name из связанного курса."""
+    """GET /api/v1/groups возвращает language и program_name прямо из таблицы groups."""
     groups_response = await filter_client.get("/api/v1/groups")
     assert groups_response.status_code == 200
     groups = groups_response.json()
     assert groups
 
-    courses_response = await filter_client.get("/api/v1/courses")
-    assert courses_response.status_code == 200
-    courses = {course["id"]: course for course in courses_response.json()}
-
     for group in groups:
-        assert group["course_id"] in courses
-        course = courses[group["course_id"]]
-        assert group["language"] == course["language"]
-        assert group["program_name"] == course["name"]
+        assert "language" in group
+        assert "program_name" in group
+
+    # Проверяем что "Тест-группа A1" имеет правильные прямые значения
+    a1 = next((g for g in groups if g["name"] == "Тест-группа A1"), None)
+    assert a1 is not None
+    assert a1["language"] == "Китайский"
+    assert a1["program_name"] == "Китайский язык"
 
 
 async def test_groups_api_active_only_false_includes_all_statuses(filter_client: AsyncClient):
