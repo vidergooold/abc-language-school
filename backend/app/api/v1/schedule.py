@@ -402,10 +402,12 @@ async def get_classrooms(
         .order_by(Classroom.name)
     )
     return [
-        {
-            **ClassroomOut.model_validate(classroom, from_attributes=True).model_dump(),
-            "branch_name": branch_name,
-        }
+        ClassroomOut.model_validate(
+            {
+                **ClassroomOut.model_validate(classroom, from_attributes=True).model_dump(),
+                "branch_name": branch_name,
+            }
+        )
         for classroom, branch_name in result.all()
     ]
 

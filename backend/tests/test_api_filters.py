@@ -318,24 +318,34 @@ async def test_branches_for_schedule_excludes_office(filter_client: AsyncClient)
 
 async def test_classrooms_api_includes_branch_name(filter_client: AsyncClient):
     """GET /api/v1/classrooms возвращает branch_id и branch_name для аудитории."""
-    response = await filter_client.get("/api/v1/classrooms")
-    assert response.status_code == 200
-    data = response.json()
-    classroom = next((item for item in data if item["name"] == "Кабинет 1"), None)
+    classrooms_response = await filter_client.get("/api/v1/classrooms")
+    assert classrooms_response.status_code == 200
+    classrooms = classrooms_response.json()
+    classroom = next((item for item in classrooms if item["name"] == "Кабинет 1"), None)
     assert classroom is not None
     assert classroom["branch_id"] is not None
-    assert classroom["branch_name"]
+    branches_response = await filter_client.get("/api/v1/branches")
+    assert branches_response.status_code == 200
+    branch_map = {branch["id"]: branch["name"] for branch in branches_response.json()}
+    assert classroom["branch_name"] == branch_map[classroom["branch_id"]]
 
 
 async def test_schedule_uses_classroom_branch_when_lesson_branch_is_null(filter_client: AsyncClient):
     """GET /api/v1/schedule должен получать филиал из classrooms.branch_id."""
-    response = await filter_client.get("/api/v1/schedule")
-    assert response.status_code == 200
-    data = response.json()
-    lesson = next((item for item in data if item.get("topic") == "NULL_BRANCH"), None)
+    schedule_response = await filter_client.get("/api/v1/schedule")
+    assert schedule_response.status_code == 200
+    schedule_data = schedule_response.json()
+    lesson = next((item for item in schedule_data if item.get("topic") == "NULL_BRANCH"), None)
     assert lesson is not None
     assert lesson["branch_id"] is not None
-    assert lesson["branch_name"]
+    classrooms_response = await filter_client.get("/api/v1/classrooms")
+    assert classrooms_response.status_code == 200
+    classroom = next(
+        (item for item in classrooms_response.json() if item["id"] == lesson["classroom_id"]),
+        None,
+    )
+    assert classroom is not None
+    assert lesson["branch_name"] == classroom["branch_name"]
 
 
 async def test_teachers_returns_canonical_count(filter_client: AsyncClient):
