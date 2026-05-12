@@ -3,8 +3,8 @@
 Задача 1 — Обновить email преподавателей.
 
 Для каждого преподавателя, у которого email отсутствует или не содержит
-транслитерацию фамилии, выполняет PATCH /api/v1/teachers/{id} с телом
-{ "email": "<транслит_фамилии>@abc-school.ru" }.
+транслитерацию фамилии, выполняет PUT /api/v1/teachers/{id} с полным
+объектом преподавателя, в котором обновлено поле email.
 
 Usage:
     python update_teacher_emails_api.py [--base-url URL] [--email EMAIL] [--password PASSWORD]
@@ -128,12 +128,22 @@ def get_teachers(base_url: str, token: str) -> List[dict]:
     return result if isinstance(result, list) else []
 
 
+def get_teacher(base_url: str, token: str, teacher_id: int) -> dict:
+    """Return a single teacher's data by ID."""
+    result = _api_request(f"{base_url}/api/v1/teachers/{teacher_id}", token=token)
+    return result if isinstance(result, dict) else {}
+
+
 def patch_teacher_email(base_url: str, token: str, teacher_id: int, email: str) -> None:
-    """PATCH the teacher's email field."""
+    """PUT the teacher's full object with updated email field."""
+    teacher_data = get_teacher(base_url, token, teacher_id)
+    if not teacher_data:
+        raise RuntimeError(f"Teacher id={teacher_id} not found or returned empty data")
+    teacher_data["email"] = email
     _api_request(
         f"{base_url}/api/v1/teachers/{teacher_id}",
-        method="PATCH",
-        data={"email": email},
+        method="PUT",
+        data=teacher_data,
         token=token,
     )
 
