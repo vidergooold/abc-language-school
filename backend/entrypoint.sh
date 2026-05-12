@@ -24,4 +24,6 @@ asyncio.run(check())
 fi
 echo "Seeding branches..."
 python seed_branches_22.py
+echo "Seeding account data..."
+python seed_account_data.py
 exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
