@@ -77,7 +77,7 @@ async def get_groups(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
-    query = select(Group).options(selectinload(Group.course))
+    query = select(Group)
     if teacher_id is not None:
         query = query.where(Group.teacher_id == teacher_id)
     if active_only:
