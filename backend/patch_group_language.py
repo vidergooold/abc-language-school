@@ -25,7 +25,8 @@ async def run_async(database_url: str) -> None:
         import asyncpg
     except ImportError:
         print("asyncpg not installed, falling back to psycopg2")
-        return run_sync(database_url)
+        run_sync(database_url)
+        return
 
     # Strip +asyncpg or +psycopg2 scheme suffix for asyncpg
     url = database_url
