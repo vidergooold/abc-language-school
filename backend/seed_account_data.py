@@ -58,9 +58,9 @@ async def seed_account_data():
         program_a1, _ = await _get_or_create(
             session,
             EducationalProgram,
-            {"name": "FH1, AS1"},
+            {"name": "FH1"},
             {
-                "code": "FH1-AS1",
+                "code": "FH1",
                 "language": "Английский",
                 "level": "A1",
                 "target_group": "школьники",
@@ -72,14 +72,42 @@ async def seed_account_data():
         program_a2, _ = await _get_or_create(
             session,
             EducationalProgram,
-            {"name": "Взрослые групповые"},
+            {"name": "AS2"},
             {
-                "code": "ADULT-GROUP",
+                "code": "AS2",
                 "language": "Английский",
-                "level": "B1",
+                "level": "A2",
                 "target_group": "взрослые",
                 "duration_months": 9,
                 "description": "Групповая программа английского языка для взрослых.",
+                "is_active": True,
+            },
+        )
+        program_as1, _ = await _get_or_create(
+            session,
+            EducationalProgram,
+            {"name": "AS1"},
+            {
+                "code": "AS1",
+                "language": "Английский",
+                "level": "A1",
+                "target_group": "школьники",
+                "duration_months": 9,
+                "description": "Программа английского языка уровня A1.",
+                "is_active": True,
+            },
+        )
+        program_hsk1, _ = await _get_or_create(
+            session,
+            EducationalProgram,
+            {"name": "HSK1"},
+            {
+                "code": "HSK1",
+                "language": "Китайский",
+                "level": "A1",
+                "target_group": "школьники",
+                "duration_months": 9,
+                "description": "Программа китайского языка уровня HSK1.",
                 "is_active": True,
             },
         )
@@ -87,7 +115,7 @@ async def seed_account_data():
         course_school, _ = await _get_or_create(
             session,
             Course,
-            {"name": "FH1, AS1"},
+            {"name": "Английский FH1"},
             {
                 "description": "Группа начального уровня для школьников.",
                 "language": "Английский",
@@ -103,7 +131,7 @@ async def seed_account_data():
         course_adult, _ = await _get_or_create(
             session,
             Course,
-            {"name": "Взрослые групповые"},
+            {"name": "Английский AS2"},
             {
                 "description": "Группа продолжающего уровня для взрослых.",
                 "language": "Английский",
@@ -116,11 +144,43 @@ async def seed_account_data():
                 "is_active": True,
             },
         )
+        course_as1, _ = await _get_or_create(
+            session,
+            Course,
+            {"name": "Английский AS1"},
+            {
+                "description": "Группа начального уровня английского языка.",
+                "language": "Английский",
+                "level": CourseLevel.beginner,
+                "category": CourseCategory.school,
+                "duration_months": 9,
+                "lessons_per_week": 2,
+                "price_per_month": 3100,
+                "max_students": 10,
+                "is_active": True,
+            },
+        )
+        course_hsk1, _ = await _get_or_create(
+            session,
+            Course,
+            {"name": "Китайский HSK1"},
+            {
+                "description": "Группа начального уровня китайского языка.",
+                "language": "Китайский",
+                "level": CourseLevel.beginner,
+                "category": CourseCategory.school,
+                "duration_months": 9,
+                "lessons_per_week": 2,
+                "price_per_month": 3500,
+                "max_students": 10,
+                "is_active": True,
+            },
+        )
 
         group_school, _ = await _get_or_create(
             session,
             Group,
-            {"name": "FH1"},
+            {"name": "Английский FH1"},
             {
                 "course_id": course_school.id,
                 "status": GroupStatus.active,
@@ -131,9 +191,31 @@ async def seed_account_data():
         group_adult, _ = await _get_or_create(
             session,
             Group,
-            {"name": "Взрослые групповые"},
+            {"name": "Английский AS2"},
             {
                 "course_id": course_adult.id,
+                "status": GroupStatus.active,
+                "start_date": datetime.utcnow(),
+                "end_date": datetime.utcnow() + timedelta(days=180),
+            },
+        )
+        group_as1, _ = await _get_or_create(
+            session,
+            Group,
+            {"name": "Английский AS1"},
+            {
+                "course_id": course_as1.id,
+                "status": GroupStatus.active,
+                "start_date": datetime.utcnow(),
+                "end_date": datetime.utcnow() + timedelta(days=180),
+            },
+        )
+        group_hsk1, _ = await _get_or_create(
+            session,
+            Group,
+            {"name": "Китайский HSK1"},
+            {
+                "course_id": course_hsk1.id,
                 "status": GroupStatus.active,
                 "start_date": datetime.utcnow(),
                 "end_date": datetime.utcnow() + timedelta(days=180),
@@ -171,6 +253,15 @@ async def seed_account_data():
                 "language_level": "C1",
                 "experience_years": 8,
                 "bio": "Преподаватель английского языка.",
+            },
+            {
+                "full_name": "Иванова Светлана Петровна",
+                "email": "svetlana.ivanova@abc-school.ru",
+                "phone": "+79130001003",
+                "subject": "Китайский",
+                "language_level": "C1",
+                "experience_years": 9,
+                "bio": "Преподаватель китайского языка.",
             },
         ]
 
@@ -315,6 +406,58 @@ async def seed_account_data():
                 "status": LessonStatus.scheduled,
                 "is_recurring": True,
             },
+            {
+                "group_id": group_hsk1.id,
+                "teacher_id": teacher_records[2].id,
+                "classroom_id": classroom_1.id,
+                "branch_id": branch.id,
+                "program_id": program_hsk1.id,
+                "day_of_week": DayOfWeek.tuesday,
+                "time_start": time(15, 0),
+                "time_end": time(16, 0),
+                "topic": "HSK1 Basics",
+                "status": LessonStatus.scheduled,
+                "is_recurring": True,
+            },
+            {
+                "group_id": group_hsk1.id,
+                "teacher_id": teacher_records[2].id,
+                "classroom_id": classroom_1.id,
+                "branch_id": branch.id,
+                "program_id": program_hsk1.id,
+                "day_of_week": DayOfWeek.thursday,
+                "time_start": time(15, 0),
+                "time_end": time(16, 0),
+                "topic": "HSK1 Practice",
+                "status": LessonStatus.scheduled,
+                "is_recurring": True,
+            },
+            {
+                "group_id": group_as1.id,
+                "teacher_id": teacher_records[0].id,
+                "classroom_id": classroom_2.id,
+                "branch_id": branch.id,
+                "program_id": program_as1.id,
+                "day_of_week": DayOfWeek.wednesday,
+                "time_start": time(16, 0),
+                "time_end": time(17, 0),
+                "topic": "AS1 Grammar",
+                "status": LessonStatus.scheduled,
+                "is_recurring": True,
+            },
+            {
+                "group_id": group_as1.id,
+                "teacher_id": teacher_records[0].id,
+                "classroom_id": classroom_2.id,
+                "branch_id": branch.id,
+                "program_id": program_as1.id,
+                "day_of_week": DayOfWeek.friday,
+                "time_start": time(16, 0),
+                "time_end": time(17, 0),
+                "topic": "AS1 Speaking",
+                "status": LessonStatus.scheduled,
+                "is_recurring": True,
+            },
         ]
 
         for lesson_data in lessons_data:
@@ -332,10 +475,10 @@ async def seed_account_data():
 
         await session.commit()
         print("✅ Данные для личного кабинета загружены в БД")
-        print("   Преподаватели: 2")
+        print("   Преподаватели: 3")
         print("   Студенты: 3")
-        print("   Группы: 2")
-        print("   Занятия: 4")
+        print("   Группы: 4")
+        print("   Занятия: 8")
         print("   Тестовые логины: teacher123 / student123")
 
 
