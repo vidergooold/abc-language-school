@@ -50,6 +50,30 @@ _PROGRAM_RENAME_MAP = {
 }
 
 
+_COURSELEVEL_ENUM_VALUES = (
+    "beginner",
+    "elementary",
+    "pre_intermediate",
+    "intermediate",
+    "upper_intermediate",
+    "advanced",
+    "proficiency",
+)
+
+
+def _ensure_enum_values() -> None:
+    bind = op.get_bind()
+    # ALTER TYPE … ADD VALUE IF NOT EXISTS is only supported in PostgreSQL
+    if bind.dialect.name != "postgresql":
+        return
+    # Values come from the hard-coded constant above; DDL does not support
+    # bind parameters for enum value names, so string formatting is safe here.
+    for value in _COURSELEVEL_ENUM_VALUES:
+        bind.execute(
+            sa.text(f"ALTER TYPE courselevel ADD VALUE IF NOT EXISTS '{value}'")
+        )
+
+
 def _table_exists(table_name: str) -> bool:
     bind = op.get_bind()
     inspector = sa.inspect(bind)
@@ -279,6 +303,7 @@ def _cleanup_courses_and_prices() -> None:
 
 
 def upgrade() -> None:
+    _ensure_enum_values()
     _cleanup_educational_programs()
     _cleanup_courses_and_prices()
 
