@@ -124,7 +124,12 @@ async def seeded_filter_db(filter_db_engine):
         await session.flush()
 
         # ── Кабинет ─────────────────────────────────────────────────────────
-        classroom = Classroom(name="Кабинет 1", capacity=12, is_active=True)
+        classroom = Classroom(
+            name="Кабинет 1",
+            capacity=12,
+            branch_id=teaching_branches[0].id,
+            is_active=True,
+        )
         session.add(classroom)
         await session.flush()
 
@@ -154,6 +159,21 @@ async def seeded_filter_db(filter_db_engine):
             is_recurring=True,
         )
         session.add(lesson)
+
+        lesson_with_null_branch = Lesson(
+            group_id=group.id,
+            teacher_id=teacher_objs[0].id,
+            classroom_id=classroom.id,
+            branch_id=None,
+            program_id=program_objs[0].id,
+            day_of_week=DayOfWeek.thursday,
+            time_start=time(11, 0),
+            time_end=time(12, 0),
+            topic="NULL_BRANCH",
+            status=LessonStatus.scheduled,
+            is_recurring=True,
+        )
+        session.add(lesson_with_null_branch)
 
         # ── Завершённая группа — не должна попадать в /groups по умолчанию ──
         finished_group = Group(
@@ -294,6 +314,38 @@ async def test_branches_for_schedule_excludes_office(filter_client: AsyncClient)
     assert len(data) == CANONICAL_TEACHING_BRANCH_COUNT, (
         f"Ожидалось {CANONICAL_TEACHING_BRANCH_COUNT} учебных филиалов, получено {len(data)}"
     )
+
+
+async def test_classrooms_api_includes_branch_name(filter_client: AsyncClient):
+    """GET /api/v1/classrooms возвращает branch_id и branch_name для аудитории."""
+    classrooms_response = await filter_client.get("/api/v1/classrooms")
+    assert classrooms_response.status_code == 200
+    classrooms = classrooms_response.json()
+    classroom = next((item for item in classrooms if item["name"] == "Кабинет 1"), None)
+    assert classroom is not None
+    assert classroom["branch_id"] is not None
+    branches_response = await filter_client.get("/api/v1/branches")
+    assert branches_response.status_code == 200
+    branch_map = {branch["id"]: branch["name"] for branch in branches_response.json()}
+    assert classroom["branch_name"] == branch_map[classroom["branch_id"]]
+
+
+async def test_schedule_uses_classroom_branch_when_lesson_branch_is_null(filter_client: AsyncClient):
+    """GET /api/v1/schedule должен получать филиал из classrooms.branch_id."""
+    schedule_response = await filter_client.get("/api/v1/schedule")
+    assert schedule_response.status_code == 200
+    schedule_data = schedule_response.json()
+    lesson = next((item for item in schedule_data if item.get("topic") == "NULL_BRANCH"), None)
+    assert lesson is not None
+    assert lesson["branch_id"] is not None
+    classrooms_response = await filter_client.get("/api/v1/classrooms")
+    assert classrooms_response.status_code == 200
+    classroom = next(
+        (item for item in classrooms_response.json() if item["id"] == lesson["classroom_id"]),
+        None,
+    )
+    assert classroom is not None
+    assert lesson["branch_name"] == classroom["branch_name"]
 
 
 async def test_teachers_returns_canonical_count(filter_client: AsyncClient):
