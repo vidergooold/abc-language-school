@@ -23,8 +23,8 @@
           <input v-model="newTeacher.full_name" required />
         </div>
         <div class="form-row">
-          <label>Email *</label>
-          <input v-model="newTeacher.email" type="email" required />
+          <label>Email</label>
+          <input v-model="newTeacher.email" type="email" />
         </div>
         <div class="form-row">
           <label>Телефон</label>
@@ -64,8 +64,8 @@
           <input v-model="editTeacher.full_name" required />
         </div>
         <div class="form-row">
-          <label>Email *</label>
-          <input v-model="editTeacher.email" type="email" required />
+          <label>Email</label>
+          <input v-model="editTeacher.email" type="email" />
         </div>
         <div class="form-row">
           <label>Телефон</label>
@@ -261,7 +261,8 @@ async function loadAllGroups() {
 async function addTeacher() {
   saving.value = true
   try {
-    const res = await http.post('/teachers', newTeacher.value)
+    const payload = { ...newTeacher.value, role: 'teacher' }
+    const res = await http.post('/teachers', payload)
     teachers.value.push(res.data)
     newTeacher.value = {
       full_name: '',

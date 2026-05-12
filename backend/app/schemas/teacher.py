@@ -5,7 +5,8 @@ from pydantic import BaseModel, EmailStr
 
 class TeacherCreate(BaseModel):
     full_name: str
-    email: str
+    role: Optional[str] = "teacher"
+    email: Optional[str] = None
     phone: Optional[str] = None
     subject: Optional[str] = None
     language_level: Optional[str] = None
@@ -15,6 +16,7 @@ class TeacherCreate(BaseModel):
 
 class TeacherUpdate(BaseModel):
     full_name: Optional[str] = None
+    role: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     subject: Optional[str] = None
@@ -27,7 +29,8 @@ class TeacherUpdate(BaseModel):
 class TeacherOut(BaseModel):
     id: int
     full_name: str
-    email: str
+    role: Optional[str] = None
+    email: Optional[str] = None
     phone: Optional[str] = None
     subject: Optional[str] = None
     language_level: Optional[str] = None
