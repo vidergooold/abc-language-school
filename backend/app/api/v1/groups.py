@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func, exists
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.core.security import require_admin, require_staff
@@ -76,7 +77,7 @@ async def get_groups(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
-    query = select(Group)
+    query = select(Group).options(selectinload(Group.course))
     if teacher_id is not None:
         query = query.where(Group.teacher_id == teacher_id)
     if active_only:
@@ -99,7 +100,16 @@ async def get_groups(
         query = query.where(Lesson.branch_id == branch_id)
         query = query.distinct()
     result = await db.execute(query.order_by(Group.created_at.desc()))
-    return result.scalars().all()
+    groups = result.scalars().all()
+    return [
+        GroupOut.model_validate(group).model_copy(
+            update={
+                "language": group.course.language if group.course else None,
+                "program_name": group.course.name if group.course else None,
+            }
+        )
+        for group in groups
+    ]
 
 
 @router.get("/groups/{group_id}", response_model=GroupWithCourseOut)
@@ -108,7 +118,6 @@ async def get_group(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_staff),
 ):
-    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Group).options(selectinload(Group.course)).where(Group.id == group_id)
     )

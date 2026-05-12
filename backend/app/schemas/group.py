@@ -46,6 +46,8 @@ class GroupOut(BaseModel):
     name: str
     course_id: int
     teacher_id: Optional[int] = None
+    language: Optional[str] = None
+    program_name: Optional[str] = None
     status: GroupStatus
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
