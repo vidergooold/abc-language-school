@@ -17,6 +17,7 @@ class ClassroomOut(BaseModel):
     name: str
     capacity: int
     branch_id: Optional[int] = None
+    branch_name: Optional[str] = None
     program_id: Optional[int] = None
     floor: Optional[int] = None
     has_projector: Optional[bool] = False

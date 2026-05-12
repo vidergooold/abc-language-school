@@ -33,11 +33,13 @@ class Classroom(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     capacity = Column(Integer, default=10)
+    branch_id = Column(Integer, ForeignKey("branches.id"), nullable=True)
     floor = Column(Integer, nullable=True)
     has_projector = Column(Boolean, default=False)
     has_whiteboard = Column(Boolean, default=True)
     is_active = Column(Boolean, default=True)
 
+    branch = relationship("Branch", lazy="select")
     lessons = relationship("Lesson", back_populates="classroom", lazy="select")
 
 

@@ -175,7 +175,7 @@ def _build_schedule_query():
             Lesson.group_id,
             Lesson.teacher_id,
             Lesson.classroom_id,
-            Lesson.branch_id,
+            Classroom.branch_id.label("branch_id"),
             Lesson.program_id,
             Lesson.day_of_week,
             Lesson.time_start,
@@ -198,7 +198,7 @@ def _build_schedule_query():
         .join(Course, Group.course_id == Course.id)
         .join(Teacher, Lesson.teacher_id == Teacher.id)
         .join(Classroom, Lesson.classroom_id == Classroom.id)
-        .outerjoin(Branch, Lesson.branch_id == Branch.id)
+        .outerjoin(Branch, Classroom.branch_id == Branch.id)
         .outerjoin(EducationalProgram, Lesson.program_id == EducationalProgram.id)
     )
 
@@ -396,9 +396,18 @@ async def get_classrooms(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Classroom).where(Classroom.is_active == True).order_by(Classroom.name)
+        select(Classroom, Branch.name.label("branch_name"))
+        .outerjoin(Branch, Classroom.branch_id == Branch.id)
+        .where(Classroom.is_active == True)
+        .order_by(Classroom.name)
     )
-    return result.scalars().all()
+    return [
+        {
+            **ClassroomOut.model_validate(classroom, from_attributes=True).model_dump(),
+            "branch_name": branch_name,
+        }
+        for classroom, branch_name in result.all()
+    ]
 
 
 @router.post("/classrooms", response_model=ClassroomOut)
