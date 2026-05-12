@@ -29,7 +29,6 @@
               <th>Время</th>
               <th>Кабинет</th>
               <th>Филиал</th>
-              <th>Программа</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -41,7 +40,6 @@
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
               <td>{{ branchName(item.branch_id) }}</td>
-              <td>{{ programName(item.program_id) }}</td>
               <td class="col-actions">
                 <button class="btn-icon edit" @click="openEdit(item)" title="Редактировать">✏️</button>
                 <button
@@ -94,13 +92,6 @@
             <select v-model.number="form.branch_id">
               <option value="">— выберите —</option>
               <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
-            </select>
-          </label>
-
-          <label>Программа
-            <select v-model.number="form.program_id">
-              <option value="">— выберите —</option>
-              <option v-for="p in programs" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
           </label>
 
@@ -258,6 +249,7 @@ function branchName(id: number) {
 function programName(id: number) {
   return programs.value.find(p => p.id === id)?.name || '—'
 }
+void programName
 function groupDaysLabel(groupId: number): string {
   const order = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
   const short: Record<string, string> = {
