@@ -22,6 +22,7 @@ import sys
 import urllib.request
 import urllib.error
 import json
+from typing import Dict, List, Optional, Union
 
 BASE_URL = "https://abc-language-school-production.up.railway.app"
 
@@ -29,9 +30,9 @@ BASE_URL = "https://abc-language-school-production.up.railway.app"
 def _api_request(
     url: str,
     method: str = "GET",
-    data: dict | None = None,
-    token: str | None = None,
-) -> dict | list:
+    data: Optional[dict] = None,
+    token: Optional[str] = None,
+) -> Union[dict, list]:
     """Simple HTTP request helper using stdlib only."""
     body = json.dumps(data).encode() if data is not None else None
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -62,7 +63,7 @@ def get_token(base_url: str, email: str, password: str) -> str:
     raise SystemExit("❌ Could not authenticate.")
 
 
-def get_groups(base_url: str, token: str) -> list[dict]:
+def get_groups(base_url: str, token: str) -> List[dict]:
     """Return list of all groups."""
     result = _api_request(f"{base_url}/api/v1/groups", token=token)
     return result if isinstance(result, list) else []
