@@ -33,7 +33,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filtered" :key="item.id" :data-program="programName(item.program_id)">
+            <tr v-for="item in filtered" :key="item.id">
               <td class="col-group">{{ shortGroupName(groupName(item.group_id)) }}</td>
               <td>{{ teacherName(item.teacher_id) }}</td>
               <td class="col-days">{{ groupDaysLabel(item.group_id) }}</td>
@@ -246,6 +246,7 @@ function classroomName(id: number) {
 function branchName(id: number) {
   return branches.value.find(b => b.id === id)?.name || '—'
 }
+// @ts-ignore TS6133: kept intentionally for potential future payload/UI usage
 function programName(id: number) {
   return programs.value.find(p => p.id === id)?.name || '—'
 }
