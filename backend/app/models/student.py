@@ -44,6 +44,7 @@ class Student(Base):
 
     # Уровень и примечания
     language_level = Column(String(50), nullable=True)  # A1, A2, B1 ...
+    age = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
 
     # Источник (из какой анкеты создан)

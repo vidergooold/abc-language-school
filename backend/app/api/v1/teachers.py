@@ -84,9 +84,15 @@ async def create_teacher(
     _=Depends(require_admin),
 ):
     """Создать преподавателя — только администратор"""
-    existing = await db.execute(select(Teacher).where(Teacher.email == data.email))
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Преподаватель с таким email уже существует")
+    # Check duplicate by email (if provided) or by full_name
+    if data.email:
+        existing = await db.execute(select(Teacher).where(Teacher.email == data.email))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Преподаватель с таким email уже существует")
+    else:
+        existing = await db.execute(select(Teacher).where(Teacher.full_name == data.full_name))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Преподаватель с таким именем уже существует")
     teacher = Teacher(**data.model_dump())
     db.add(teacher)
     await db.commit()

@@ -116,6 +116,10 @@
           <input v-model="editStudent.birthdate" type="date" />
         </div>
         <div class="form-row">
+          <label>Возраст (лет)</label>
+          <input v-model.number="editStudent.age" type="number" min="1" max="120" placeholder="Введите возраст" />
+        </div>
+        <div class="form-row">
           <label>Тип ученика *</label>
           <select v-model="editStudent.student_type" required>
             <option value="child">Школьник</option>
@@ -172,7 +176,7 @@
             <td class="col-name">{{ s.full_name || '—' }}</td>
             <td>{{ studentNameToGroupId[s.full_name] ? groupName(studentNameToGroupId[s.full_name]!) : '—' }}</td>
             <td><span class="type-badge" :class="'type-' + s.student_type">{{ typeLabel(s.student_type) }}</span></td>
-            <td>{{ s.birthdate ? getAge(s.birthdate) + ' л.' : '—' }}</td>
+            <td>{{ s.birthdate ? getAge(s.birthdate) + ' л.' : (s.age ? s.age + ' л.' : '—') }}</td>
             <td>{{ s.phone || '—' }}</td>
             <td>{{ s.email || '—' }}</td>
             <td><span class="status-badge" :class="'status-' + (s.status || 'active')">{{ statusLabel(s.status) }}</span></td>
@@ -225,6 +229,7 @@ const editStudent = ref({
   email: '',
   phone: '',
   birthdate: '',
+  age: null as number | null,
   student_type: 'adult',
   status: 'active',
 })
@@ -384,6 +389,7 @@ function startEdit(student: any) {
     email: student.email || '',
     phone: student.phone || '',
     birthdate: student.birthdate ? String(student.birthdate).slice(0, 10) : '',
+    age: student.age ?? null,
     student_type: student.student_type || 'adult',
     status: student.status || 'active',
   }
@@ -402,6 +408,7 @@ async function updateStudent() {
       email: editStudent.value.email || null,
       phone: editStudent.value.phone || null,
       birthdate: editStudent.value.birthdate || null,
+      age: editStudent.value.age ?? null,
       student_type: editStudent.value.student_type,
       status: editStudent.value.status,
     }
@@ -466,6 +473,7 @@ function cancelEdit() {
     email: '',
     phone: '',
     birthdate: '',
+    age: null,
     student_type: 'adult',
     status: 'active',
   }

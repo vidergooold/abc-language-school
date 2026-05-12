@@ -84,6 +84,25 @@ async def update_student(
     return student
 
 
+@router.patch("/{student_id}", response_model=StudentOut)
+async def patch_student(
+    student_id: int,
+    data: StudentUpdate,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_admin),
+):
+    """Частичное обновление студента — только администратор"""
+    result = await db.execute(select(Student).where(Student.id == student_id))
+    student = result.scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Студент не найден")
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(student, field, value)
+    await db.commit()
+    await db.refresh(student)
+    return student
+
+
 @router.delete("/{student_id}")
 async def deactivate_student(
     student_id: int,

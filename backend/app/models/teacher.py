@@ -10,7 +10,8 @@ class Teacher(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, nullable=False)
+    email = Column(String(255), unique=True, nullable=True)
+    role = Column(String(50), nullable=True, default="teacher")
     phone = Column(String(50), nullable=True)
     subject = Column(String(100), nullable=True)  # английский, немецкий и т.д.
     language_level = Column(String(50), nullable=True)  # C1, C2 и т.д.

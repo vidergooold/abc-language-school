@@ -40,9 +40,16 @@ async def seed_teachers():
     await init_db()
     async with AsyncSessionLocal() as db:
         for teacher_data in TEACHERS_DATA:
-            existing = await db.execute(
-                Teacher.__table__.select().where(Teacher.email == teacher_data["email"])
-            )
+            # Check by email if provided, otherwise by full_name
+            email = teacher_data.get("email")
+            if email:
+                existing = await db.execute(
+                    Teacher.__table__.select().where(Teacher.email == email)
+                )
+            else:
+                existing = await db.execute(
+                    Teacher.__table__.select().where(Teacher.full_name == teacher_data["full_name"])
+                )
             if existing.scalar_one_or_none():
                 print(f"Преподаватель {teacher_data['full_name']} уже существует")
                 continue

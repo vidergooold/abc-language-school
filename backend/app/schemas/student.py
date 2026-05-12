@@ -18,6 +18,7 @@ class StudentBase(BaseModel):
     grade: Optional[str] = None
     workplace: Optional[str] = None
     language_level: Optional[str] = None
+    age: Optional[int] = None
     notes: Optional[str] = None
     source_form_type: Optional[str] = None
     source_form_id: Optional[int] = None
@@ -41,6 +42,7 @@ class StudentUpdate(BaseModel):
     grade: Optional[str] = None
     workplace: Optional[str] = None
     language_level: Optional[str] = None
+    age: Optional[int] = None
     notes: Optional[str] = None
     is_active: Optional[bool] = None
 
