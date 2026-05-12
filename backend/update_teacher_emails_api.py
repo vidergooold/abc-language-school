@@ -21,11 +21,12 @@ import sys
 import urllib.request
 import urllib.error
 import json
+from typing import Dict, List, Optional, Union
 
 BASE_URL = "https://abc-language-school-production.up.railway.app"
 
 # Canonical transliteration map for known surnames (lowercase)
-KNOWN_SURNAMES: dict[str, str] = {
+KNOWN_SURNAMES: Dict[str, str] = {
     "Белова": "belova",
     "Арнгольд": "arngold",
     "Данилова": "danilova",
@@ -47,7 +48,7 @@ KNOWN_SURNAMES: dict[str, str] = {
 }
 
 # Standard Russian → Latin transliteration table
-_TRANSLIT_TABLE: dict[str, str] = {
+_TRANSLIT_TABLE: Dict[str, str] = {
     "а": "a", "б": "b", "в": "v", "г": "g", "д": "d",
     "е": "e", "ё": "yo", "ж": "zh", "з": "z", "и": "i",
     "й": "y", "к": "k", "л": "l", "м": "m", "н": "n",
@@ -76,7 +77,7 @@ def get_email_for_teacher(full_name: str) -> str:
     return f"{translit}@abc-school.ru"
 
 
-def email_needs_update(current_email: str | None, expected_email: str) -> bool:
+def email_needs_update(current_email: Optional[str], expected_email: str) -> bool:
     """Return True when the current email should be replaced by expected_email."""
     if not current_email:
         return True
@@ -88,9 +89,9 @@ def email_needs_update(current_email: str | None, expected_email: str) -> bool:
 def _api_request(
     url: str,
     method: str = "GET",
-    data: dict | None = None,
-    token: str | None = None,
-) -> dict | list:
+    data: Optional[dict] = None,
+    token: Optional[str] = None,
+) -> Union[dict, list]:
     """Simple HTTP request helper using stdlib only."""
     body = json.dumps(data).encode() if data is not None else None
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -121,7 +122,7 @@ def get_token(base_url: str, email: str, password: str) -> str:
     raise SystemExit("❌ Could not authenticate.")
 
 
-def get_teachers(base_url: str, token: str) -> list[dict]:
+def get_teachers(base_url: str, token: str) -> List[dict]:
     """Return list of all teachers."""
     result = _api_request(f"{base_url}/api/v1/teachers", token=token)
     return result if isinstance(result, list) else []
