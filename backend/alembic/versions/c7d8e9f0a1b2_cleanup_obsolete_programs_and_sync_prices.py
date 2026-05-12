@@ -63,15 +63,30 @@ _COURSELEVEL_ENUM_VALUES = (
 
 def _ensure_enum_values() -> None:
     bind = op.get_bind()
-    # ALTER TYPE … ADD VALUE IF NOT EXISTS is only supported in PostgreSQL
     if bind.dialect.name != "postgresql":
         return
-    # Values come from the hard-coded constant above; DDL does not support
-    # bind parameters for enum value names, so string formatting is safe here.
-    for value in _COURSELEVEL_ENUM_VALUES:
-        bind.execute(
-            sa.text(f"ALTER TYPE courselevel ADD VALUE IF NOT EXISTS '{value}'")
+    existing = {
+        row
+        for row in bind.execute(
+            sa.text(
+                "SELECT enumlabel FROM pg_enum e "
+                "JOIN pg_type t ON e.enumtypid = t.oid "
+                "WHERE t.typname = 'courselevel'"
+            )
         )
+    }
+    missing = [v for v in _COURSELEVEL_ENUM_VALUES if v not in existing]
+    if not missing:
+        return
+    raw_conn = bind.engine.raw_connection()
+    try:
+        raw_conn.set_isolation_level(0)  # AUTOCOMMIT
+        with raw_conn.cursor() as cur:
+            for value in missing:
+                cur.execute(f"ALTER TYPE courselevel ADD VALUE IF NOT EXISTS '{value}'")
+    finally:
+        raw_conn.set_isolation_level(1)
+        raw_conn.close()
 
 
 def _table_exists(table_name: str) -> bool:
