@@ -7,7 +7,7 @@
     PUT  /schedule/{id}        — require_staff  (учитель только для своих занятий)
     DELETE /schedule/{id}      — require_admin
   POST /schedule/check       — require_staff
-  GET  /classrooms           — require_staff
+  GET  /classrooms           — public
   POST /classrooms           — require_admin
 """
 from typing import List, Optional
@@ -394,7 +394,6 @@ async def get_my_schedule(
 @router.get("/classrooms", response_model=List[ClassroomOut])
 async def get_classrooms(
     db: AsyncSession = Depends(get_db),
-    _: None = Depends(require_staff),
 ):
     result = await db.execute(
         select(Classroom).where(Classroom.is_active == True).order_by(Classroom.name)

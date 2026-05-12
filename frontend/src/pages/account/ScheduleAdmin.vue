@@ -17,8 +17,8 @@
       <div class="skeleton-row" v-for="n in 8" :key="n"></div>
     </div>
 
-    <template v-else-if="filtered.length">
-      <div class="count-label">Показано: {{ filtered.length }} из {{ schedule.length }}</div>
+    <template v-else-if="filteredSchedule.length">
+      <div class="count-label">Показано: {{ filteredSchedule.length }} из {{ groupedSchedule.length }}</div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -34,10 +34,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filtered" :key="item.id">
+            <tr v-for="item in filteredSchedule" :key="item.id">
               <td class="col-group">{{ groupDisplayName(item.group_id) }}</td>
               <td>{{ teacherName(item.teacher_id) }}</td>
-              <td class="col-days">{{ DAY_LABELS[item.day_of_week] || item.day_of_week }}</td>
+              <td class="col-days">{{ combinedDaysLabel(item.days || [item.day_of_week]) }}</td>
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
               <td class="col-duration">{{ lessonDuration(item.time_start, item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
@@ -59,7 +59,7 @@
 
     <div v-else-if="!loading" class="empty-state">
       <div class="empty-icon">🗓</div>
-      <p>{{ schedule.length ? 'Ничего не найдено по фильтру.' : 'Занятия пока не добавлены.' }}</p>
+      <p>{{ groupedSchedule.length ? 'Ничего не найдено по фильтру.' : 'Занятия пока не добавлены.' }}</p>
       <button class="btn-add" @click="openCreate">+ Добавить первое занятие</button>
     </div>
 
@@ -86,12 +86,12 @@
           <label>Аудитория
             <select v-model.number="form.classroom_id" required>
               <option value="">— выберите —</option>
-              <option v-for="c in classrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
+              <option v-for="c in availableClassrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </label>
 
           <label>Филиал
-            <select v-model.number="form.branch_id">
+            <select v-model.number="form.branch_id" @change="onBranchSelect">
               <option value="">— выберите —</option>
               <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
             </select>
@@ -148,7 +148,7 @@
       <div class="modal modal--sm">
         <h2>Отменить занятие?</h2>
         <p>Группа: <strong>{{ groupName(cancelTarget.group_id) }}</strong><br/>
-           {{ dayLabel(cancelTarget.day_of_week) }}, {{ fmt(cancelTarget.time_start) }}–{{ fmt(cancelTarget.time_end) }}</p>
+           {{ combinedDaysLabel(cancelTarget.days || [cancelTarget.day_of_week]) }}, {{ fmt(cancelTarget.time_start) }}–{{ fmt(cancelTarget.time_end) }}</p>
         <div class="modal-actions">
           <button class="btn-cancel" @click="cancelTarget = null">Назад</button>
           <button class="btn-danger" @click="doCancel" :disabled="saving">
@@ -181,16 +181,6 @@ const cancelTarget = ref<any>(null)
 const conflicts = ref<any[]>([])
 const formError = ref('')
 
-const DAY_LABELS: Record<string, string> = {
-  monday:    'Понедельник',
-  tuesday:   'Вторник',
-  wednesday: 'Среда',
-  thursday:  'Четверг',
-  friday:    'Пятница',
-  saturday:  'Суббота',
-  sunday:    'Воскресенье',
-}
-
 const days = [
   { key: 'monday',    label: 'Понедельник' },
   { key: 'tuesday',   label: 'Вторник' },
@@ -209,6 +199,11 @@ const dayOptions = [
   { value: 'saturday',  label: 'Сб' },
   { value: 'sunday',    label: 'Вс' },
 ]
+const DAY_ORDER = dayOptions.map((d) => d.value)
+const DAY_SHORT_LABELS = dayOptions.reduce((acc, day) => {
+  acc[day.value] = day.label
+  return acc
+}, {} as Record<string, string>)
 
 const emptyForm = () => ({
   group_id: '' as number | '',
@@ -225,19 +220,53 @@ const emptyForm = () => ({
 
 const form = reactive(emptyForm())
 
-const filtered = computed(() =>
-  schedule.value
+const groupedSchedule = computed(() => {
+  const grouped = new Map<string, any>()
+  for (const item of schedule.value) {
+    const key = [item.group_id, item.teacher_id, item.time_start, item.time_end].join('|')
+    const existing = grouped.get(key)
+    if (!existing) {
+      grouped.set(key, {
+        ...item,
+        lesson_ids: [item.id],
+        days: [item.day_of_week],
+      })
+      continue
+    }
+    existing.lesson_ids.push(item.id)
+    if (!existing.days.includes(item.day_of_week)) {
+      existing.days.push(item.day_of_week)
+    }
+  }
+  return Array.from(grouped.values()).map((item) => {
+    const sortedDays = [...item.days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+    return {
+      ...item,
+      day_of_week: sortedDays[0] || item.day_of_week,
+      days: sortedDays,
+    }
+  })
+})
+
+const filteredSchedule = computed(() =>
+  groupedSchedule.value
     .filter(i => !search.value ||
       (i.topic || '').toLowerCase().includes(search.value.toLowerCase()) ||
       classroomName(i.classroom_id).toLowerCase().includes(search.value.toLowerCase()) ||
-      groupName(i.group_id).toLowerCase().includes(search.value.toLowerCase())
+      groupDisplayName(i.group_id).toLowerCase().includes(search.value.toLowerCase())
     )
-    .filter(i => !filterDay.value || i.day_of_week === filterDay.value)
+    .filter(i => !filterDay.value || (i.days || [i.day_of_week]).includes(filterDay.value))
 )
 
 const availableGroups = computed(() => {
   if (!form.teacher_id) return groups.value
   return groups.value.filter((group: any) => !group.teacher_id || group.teacher_id === form.teacher_id)
+})
+const availableClassrooms = computed(() => {
+  if (!form.branch_id) return classrooms.value
+  const hasBranchBinding = classrooms.value.some((classroom: any) => classroom.branch_id != null)
+  if (!hasBranchBinding) return classrooms.value
+  return classrooms.value.filter((classroom: any) => classroom.branch_id === form.branch_id)
 })
 
 function shortGroupName(name: string) {
@@ -281,8 +310,8 @@ function programName(id: number) {
   return programs.value.find(p => p.id === id)?.name || '—'
 }
 
-function dayLabel(key: string) {
-  return days.find(d => d.key === key)?.label || key
+function combinedDaysLabel(dayKeys: string[]) {
+  return dayKeys.map((key) => DAY_SHORT_LABELS[key] || key).join('/')
 }
 function fmt(t: string) {
   return t ? t.slice(0, 5) : ''
@@ -335,6 +364,11 @@ function onGroupSelect() {
   const selectedGroup = groups.value.find((group: any) => group.id === form.group_id)
   if (selectedGroup?.teacher_id) {
     form.teacher_id = selectedGroup.teacher_id
+  }
+}
+function onBranchSelect() {
+  if (form.classroom_id && !availableClassrooms.value.some((classroom: any) => classroom.id === form.classroom_id)) {
+    form.classroom_id = ''
   }
 }
 
