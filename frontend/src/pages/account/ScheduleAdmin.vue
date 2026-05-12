@@ -382,15 +382,15 @@ async function loadSchedule() {
   }
 }
 
-onMounted(async () => {
+async function load() {
   try {
     const [sRes, gRes, tRes, cRes, bRes, pRes] = await Promise.all([
-      http.get('/schedule'),
-      http.get('/groups'),
-      http.get('/teachers'),
-      http.get('/classrooms'),
-      http.get('/branches', { params: { for_schedule: true } }),
-      http.get('/programs'),
+      http.get('/schedule').catch(() => ({ data: [] })),
+      http.get('/groups').catch(() => ({ data: [] })),
+      http.get('/teachers').catch(() => ({ data: [] })),
+      http.get('/classrooms').catch(() => ({ data: [] })),
+      http.get('/branches', { params: { for_schedule: true } }).catch(() => ({ data: [] })),
+      http.get('/programs').catch(() => ({ data: [] })),
     ])
     schedule.value = Array.isArray(sRes.data) ? sRes.data : []
     groups.value = Array.isArray(gRes.data) ? gRes.data : []
@@ -398,12 +398,12 @@ onMounted(async () => {
     classrooms.value = Array.isArray(cRes.data) ? cRes.data : []
     branches.value = Array.isArray(bRes.data) ? bRes.data : []
     programs.value = Array.isArray(pRes.data) ? pRes.data : []
-  } catch {
-    schedule.value = []
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(load)
 </script>
 
 <style scoped>

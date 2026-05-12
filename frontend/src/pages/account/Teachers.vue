@@ -102,7 +102,7 @@
       </form>
 
       <!-- Секция управления группами преподавателя -->
-      <div v-if="editTeacherId" class="groups-section">
+      <div v-if="editTeacherId !== null" class="groups-section">
         <h4>📚 Группы преподавателя</h4>
         <div v-if="teacherGroupsLoading" class="groups-loading">Загрузка групп...</div>
         <div v-else>
