@@ -30,6 +30,10 @@ CANONICAL_GROUP_NAMES = {
     "Мини-группа (2 чел.)",
     "Индивидуальные занятия",
     "Китайский",
+    "Английский FH1",
+    "Английский AS2",
+    "Английский AS1",
+    "Китайский HSK1",
 }
 
 SEED_FILES = [
@@ -90,3 +94,15 @@ def test_no_german_or_french_in_seed_sources():
         content = path.read_text(encoding="utf-8")
         for token in forbidden_tokens:
             assert token not in content
+
+
+def test_seed_account_groups_use_language_program_format():
+    names = _collect_group_names_from_get_or_create_calls(ROOT / "backend/seed_account_data.py")
+    assert {
+        "Английский FH1",
+        "Английский AS2",
+        "Английский AS1",
+        "Китайский HSK1",
+    } <= names
+    assert "FH1" not in names
+    assert "Взрослые групповые" not in names
