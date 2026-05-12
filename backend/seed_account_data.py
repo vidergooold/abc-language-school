@@ -4,7 +4,7 @@ from typing import Optional
 import asyncio
 from datetime import datetime, timedelta, time
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.core.database import AsyncSessionLocal, init_db
 from app.core.security import hash_password
@@ -40,6 +40,25 @@ async def seed_account_data():
     await init_db()
 
     async with AsyncSessionLocal() as session:
+        await session.execute(delete(Lesson))
+        await session.flush()
+        await session.execute(delete(StudentGroup))
+        await session.flush()
+        await session.execute(delete(Group))
+        await session.flush()
+        await session.execute(delete(Course))
+        await session.flush()
+        await session.execute(delete(EducationalProgram))
+        await session.flush()
+        await session.execute(delete(Classroom))
+        await session.flush()
+        await session.execute(delete(Teacher))
+        await session.flush()
+        await session.execute(delete(Student))
+        await session.flush()
+        await session.execute(delete(User).where(User.role != UserRole.admin))
+        await session.flush()
+
         branch, _ = await _get_or_create(
             session,
             Branch,
