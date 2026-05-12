@@ -60,9 +60,8 @@ def _api_request(url: str, method: str = "GET", data: dict | None = None, token:
 _FALLBACK_EMAILS: tuple[str, ...] = (
     "admin@abcschool.com",
     "admin@abc-school.ru",
-    "admin@abc-school.ru",
 )
-_FALLBACK_PASSWORDS: tuple[str, ...] = ("admin123", "password", "admin")
+_FALLBACK_PASSWORDS: tuple[str, ...] = ("admin123", "password")
 
 
 def get_token(base_url: str, email: str, password: str) -> str:
@@ -123,8 +122,6 @@ def main() -> None:
     added = 0
     skipped = 0
     for full_name in REQUIRED_TEACHERS:
-        # Re-fetch to stay current (as specified in the task)
-        existing = get_existing_teachers(base_url, token)
         if full_name in existing:
             print(f"⏭️  Skipping (already exists): {full_name}")
             skipped += 1
@@ -133,6 +130,7 @@ def main() -> None:
                 result = add_teacher(base_url, token, full_name)
                 print(f"✅ Added teacher: {full_name} (id={result.get('id')})")
                 added += 1
+                existing.add(full_name)
             except RuntimeError as exc:
                 print(f"❌ Failed to add {full_name}: {exc}", file=sys.stderr)
 
