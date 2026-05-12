@@ -413,15 +413,20 @@ async def test_groups_api_default_includes_active_group(filter_client: AsyncClie
 
 async def test_groups_api_includes_course_language_and_program_name(filter_client: AsyncClient):
     """GET /api/v1/groups возвращает language и program_name из связанного курса."""
-    response = await filter_client.get("/api/v1/groups")
-    assert response.status_code == 200
-    data = response.json()
-    group = next((g for g in data if g["name"] == "Тест-группа A1"), None)
-    assert group is not None
-    assert "language" in group
-    assert "program_name" in group
-    assert isinstance(group["language"], str)
-    assert isinstance(group["program_name"], str)
+    groups_response = await filter_client.get("/api/v1/groups")
+    assert groups_response.status_code == 200
+    groups = groups_response.json()
+    assert groups
+
+    courses_response = await filter_client.get("/api/v1/courses")
+    assert courses_response.status_code == 200
+    courses = {course["id"]: course for course in courses_response.json()}
+
+    for group in groups:
+        assert group["course_id"] in courses
+        course = courses[group["course_id"]]
+        assert group["language"] == course["language"]
+        assert group["program_name"] == course["name"]
 
 
 async def test_groups_api_active_only_false_includes_all_statuses(filter_client: AsyncClient):

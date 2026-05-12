@@ -100,16 +100,7 @@ async def get_groups(
         query = query.where(Lesson.branch_id == branch_id)
         query = query.distinct()
     result = await db.execute(query.order_by(Group.created_at.desc()))
-    groups = result.scalars().all()
-    return [
-        GroupOut.model_validate(group).model_copy(
-            update={
-                "language": group.course.language if group.course else None,
-                "program_name": group.course.name if group.course else None,
-            }
-        )
-        for group in groups
-    ]
+    return result.scalars().all()
 
 
 @router.get("/groups/{group_id}", response_model=GroupWithCourseOut)
