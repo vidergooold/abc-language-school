@@ -37,7 +37,7 @@
             <tr v-for="item in filtered" :key="item.id">
               <td class="col-group">{{ groupDisplayName(item.group_id) }}</td>
               <td>{{ teacherName(item.teacher_id) }}</td>
-              <td class="col-days">{{ DAY_LABELS[item.day_of_week] || item.day_of_week }}</td>
+              <td class="col-days">{{ daysDisplay(item) }}</td>
               <td class="col-time">{{ fmt(item.time_start) }}–{{ fmt(item.time_end) }}</td>
               <td class="col-duration">{{ lessonDuration(item.time_start, item.time_end) }}</td>
               <td>{{ classroomName(item.classroom_id) }}</td>
@@ -181,15 +181,17 @@ const cancelTarget = ref<any>(null)
 const conflicts = ref<any[]>([])
 const formError = ref('')
 
-const DAY_LABELS: Record<string, string> = {
-  monday:    'Понедельник',
-  tuesday:   'Вторник',
-  wednesday: 'Среда',
-  thursday:  'Четверг',
-  friday:    'Пятница',
-  saturday:  'Суббота',
-  sunday:    'Воскресенье',
+const DAY_SHORT_LABELS: Record<string, string> = {
+  monday:    'Пн',
+  tuesday:   'Вт',
+  wednesday: 'Ср',
+  thursday:  'Чт',
+  friday:    'Пт',
+  saturday:  'Сб',
+  sunday:    'Вс',
 }
+
+const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 const days = [
   { key: 'monday',    label: 'Понедельник' },
@@ -225,20 +227,53 @@ const emptyForm = () => ({
 
 const form = reactive(emptyForm())
 
-const filtered = computed(() =>
-  schedule.value
+const filtered = computed(() => {
+  const seen = new Set<string>()
+  return schedule.value
+    .filter(i => {
+      const key = `${i.group_id}|${i.time_start}|${i.time_end}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
     .filter(i => !search.value ||
       (i.topic || '').toLowerCase().includes(search.value.toLowerCase()) ||
       classroomName(i.classroom_id).toLowerCase().includes(search.value.toLowerCase()) ||
       groupName(i.group_id).toLowerCase().includes(search.value.toLowerCase())
     )
-    .filter(i => !filterDay.value || i.day_of_week === filterDay.value)
-)
+    .filter(i => {
+      if (!filterDay.value) return true
+      const key = `${i.group_id}|${i.time_start}|${i.time_end}`
+      const days = groupedDaysMap.value[key] || [i.day_of_week]
+      return days.includes(filterDay.value)
+    })
+})
 
 const availableGroups = computed(() => {
   if (!form.teacher_id) return groups.value
   return groups.value.filter((group: any) => !group.teacher_id || group.teacher_id === form.teacher_id)
 })
+
+const groupedDaysMap = computed(() => {
+  const map: Record<string, string[]> = {}
+  for (const item of schedule.value) {
+    const key = `${item.group_id}|${item.time_start}|${item.time_end}`
+    if (!map[key]) map[key] = []
+    if (!map[key].includes(item.day_of_week)) {
+      map[key].push(item.day_of_week)
+    }
+  }
+  for (const key of Object.keys(map)) {
+    map[key]!.sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+  }
+  return map
+})
+
+function daysDisplay(item: any): string {
+  const key = `${item.group_id}|${item.time_start}|${item.time_end}`
+  const dayList = groupedDaysMap.value[key] || [item.day_of_week]
+  return dayList.map((d: string) => DAY_SHORT_LABELS[d] || d).join('/')
+}
 
 function shortGroupName(name: string) {
   // Убираем " — Пн/Ср 09:00" и " Сб 09:00" и подобные суффиксы
