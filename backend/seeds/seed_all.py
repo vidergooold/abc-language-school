@@ -22,6 +22,7 @@ from seed_demo import seed as seed_demo
 from seed_distribution import seed_distribution
 from seed_real_schedule import seed_real_schedule
 from seed_student_groups import seed_student_groups
+from seed_requirements import seed_requirements
 
 COURSES_DATA = [
     {
@@ -174,6 +175,8 @@ async def seed_all() -> None:
     await seed_real_schedule()
     await seed_student_groups()
     await seed_distribution()
+    # Финальный шаг: обеспечивает выполнение всех требований валидации
+    await seed_requirements()
 
 
 if __name__ == "__main__":

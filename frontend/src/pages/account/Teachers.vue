@@ -251,7 +251,11 @@ async function loadTeacherGroups(teacherId: number) {
 
 async function loadAllGroups() {
   try {
-    const res = await http.get('/groups')
+    const params: Record<string, string> = {}
+    if (editTeacher.value.subject) {
+      params.language = editTeacher.value.subject
+    }
+    const res = await http.get('/groups', { params })
     allGroups.value = Array.isArray(res.data) ? res.data : []
   } catch {
     allGroups.value = []

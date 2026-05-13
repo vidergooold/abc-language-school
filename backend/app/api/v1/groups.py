@@ -73,12 +73,17 @@ async def update_course(
 async def get_groups(
     branch_id: Optional[int] = Query(None),
     teacher_id: Optional[int] = Query(None),
+    language: Optional[str] = Query(None, description="Фильтр по языку группы (Английский / Китайский)"),
     active_only: bool = Query(True, description="Возвращать только активные/набирающиеся группы в учебных филиалах"),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Group)
     if teacher_id is not None:
         query = query.where(Group.teacher_id == teacher_id)
+    if language is not None:
+        # Filter by course language using a subquery to avoid duplicate rows from joins
+        course_ids_subq = select(Course.id).where(Course.language == language).scalar_subquery()
+        query = query.where(Group.course_id.in_(course_ids_subq))
     if active_only:
         # Только активные или набирающиеся группы
         query = query.where(Group.status.in_([GroupStatus.active, GroupStatus.recruiting]))
