@@ -19,6 +19,7 @@ from app.core.database import AsyncSessionLocal, init_db
 from app.models.group import Course, CourseCategory, CourseLevel
 from app.models.news import News
 from seed_demo import seed as seed_demo
+from seed_branches_22 import seed_branches_22
 from seed_distribution import seed_distribution
 from seed_real_schedule import seed_real_schedule
 from seed_student_groups import seed_student_groups
@@ -170,6 +171,8 @@ async def seed_all() -> None:
     async with AsyncSessionLocal() as db:
         await seed_courses(db)
         await seed_news(db)
+    # Seed all real branches with classrooms first
+    await seed_branches_22()
     # Канонический поток демо-данных для матрицы посещаемости.
     await seed_demo()
     await seed_real_schedule()
