@@ -2,7 +2,7 @@
 
 Тесты проверяют, что:
   - GET /api/v1/branches?for_schedule=true возвращает 21 учебный филиал
-  - GET /api/v1/teachers возвращает ровно 27 записей (25 английского + 2 китайского)
+  - GET /api/v1/teachers возвращает ровно 27 записей (20 английского + 7 китайского)
   - GET /api/v1/programs возвращает ровно 9 записей
   - GET /api/v1/groups — у каждой группы есть teacher_id
   - административные филиалы не встречаются как branch_id в занятиях
@@ -370,14 +370,14 @@ async def test_teachers_all_have_subject(filter_client: AsyncClient):
 
 
 async def test_teachers_english_and_chinese_split(filter_client: AsyncClient):
-    """GET /api/v1/teachers — 25 преподавателей английского и 2 китайского."""
+    """GET /api/v1/teachers — 20 преподавателей английского и 7 китайского."""
     response = await filter_client.get("/api/v1/teachers")
     assert response.status_code == 200
     data = response.json()
     english = [t for t in data if t.get("subject") == "Английский"]
     chinese = [t for t in data if t.get("subject") == "Китайский"]
-    assert len(english) == 25, f"Ожидалось 25 преподавателей английского, получено {len(english)}"
-    assert len(chinese) == 2, f"Ожидалось 2 преподавателя китайского, получено {len(chinese)}"
+    assert len(english) == 20, f"Ожидалось 20 преподавателей английского, получено {len(english)}"
+    assert len(chinese) == 7, f"Ожидалось 7 преподавателей китайского, получено {len(chinese)}"
 
 
 async def test_programs_returns_canonical_count(filter_client: AsyncClient):
