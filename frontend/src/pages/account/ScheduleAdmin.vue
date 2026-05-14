@@ -83,17 +83,17 @@
             </select>
           </label>
 
-          <label>Аудитория
-            <select v-model.number="form.classroom_id" required>
-              <option value="">— выберите —</option>
-              <option v-for="c in availableClassrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
-          </label>
-
           <label>Филиал
             <select v-model.number="form.branch_id" @change="onBranchSelect">
               <option value="">— выберите —</option>
               <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+            </select>
+          </label>
+
+          <label>Аудитория
+            <select v-model.number="form.classroom_id" :disabled="!form.branch_id" required>
+              <option value="">{{ form.branch_id ? '— выберите —' : 'Сначала выберите филиал' }}</option>
+              <option v-for="c in availableClassrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </label>
 
@@ -263,9 +263,7 @@ const availableGroups = computed(() => {
   return groups.value.filter((group: any) => !group.teacher_id || group.teacher_id === form.teacher_id)
 })
 const availableClassrooms = computed(() => {
-  if (!form.branch_id) return classrooms.value
-  const hasBranchBinding = classrooms.value.some((classroom: any) => classroom.branch_id != null)
-  if (!hasBranchBinding) return classrooms.value
+  if (!form.branch_id) return []
   return classrooms.value.filter((classroom: any) => classroom.branch_id === form.branch_id)
 })
 
