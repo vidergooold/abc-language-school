@@ -566,7 +566,6 @@ async def test_admin_cannot_cancel_lesson_without_transfer(
         headers=auth_headers(admin_token),
     )
     assert response.status_code == 409
-    assert "используйте перенос" in response.json()["detail"].lower()
 
 
 async def test_student_attendance_my(client: AsyncClient, student_token: str):

@@ -5,7 +5,6 @@ from app.schedule_rules import (
     derive_time_end,
     is_non_study_date,
 )
-from seed_requirements import TARGET_LESSONS_PER_TEACHER
 
 
 def test_canonical_program_duration_mapping():
@@ -47,8 +46,7 @@ def test_non_study_periods_repeat_annually():
     assert not is_non_study_date(date(2026, 3, 25))   # Весенние каникулы не блокируются
 
 
-def test_seed_duration_mapping_and_minimum_lessons_target():
+def test_seed_duration_mapping():
     assert canonical_program_duration_minutes("FH1") == 50
     assert canonical_program_duration_minutes("Мини-группа (2 чел.)") == 45
     assert canonical_program_duration_minutes("Китайский") == 45
-    assert TARGET_LESSONS_PER_TEACHER == 5

@@ -45,6 +45,8 @@ def canonical_program_duration_minutes(program_name: Optional[str]) -> Optional[
         return CANONICAL_PROGRAM_DURATION_MINUTES[key]
     if key.startswith("мини-группа"):
         return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
+    # Composite labels (e.g. "FH1, AS1") are split by comma.
+    # If all recognized parts map to the same duration, that duration is safe to use.
     if "," in key:
         matched = {
             CANONICAL_PROGRAM_DURATION_MINUTES[part]
@@ -63,6 +65,13 @@ def derive_time_end(time_start: time, duration_minutes: int) -> time:
 
 
 def is_non_study_date(lesson_date: date) -> bool:
+    """Recurring annual non-study dates.
+
+    Rules:
+    - Summer break: 01.06-31.08
+    - Winter break: 30.12-07.01
+    - Fixed holidays: 23.02, 08.03, 01.05, 09.05, 04.11
+    """
     month_day = (lesson_date.month, lesson_date.day)
     if month_day in FIXED_NON_STUDY_DATES:
         return True

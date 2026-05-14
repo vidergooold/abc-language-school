@@ -160,7 +160,7 @@ def _lesson_duration_minutes(group_name: str) -> Optional[int]:
 
 
 async def _get_or_create_classroom(db: AsyncSession, name: str, branch_id: int) -> Classroom:
-    if not branch_id:
+    if branch_id is None:
         raise ValueError("branch_id is required for classroom binding")
     result = await db.execute(
         select(Classroom).where(
