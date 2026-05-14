@@ -42,7 +42,7 @@ BRANCH_CLASSROOMS = {
 }
 
 TEACHER_LANGUAGE_BY_LASTNAME = {
-    "Арнгольд": "Английский",
+    "Арнольд": "Английский",
     "Белова": "Английский",
     "Быковская": "Английский",
     "Винокурова": "Китайский",
@@ -98,7 +98,7 @@ GROUPS_SCHEDULE = [
     {"group_name": "GWB2+", "teacher_lastname": "Колесник", "branch_name": "МАОУ СОШ №218", "day_of_week": DayOfWeek.tuesday, "time_start": time(13, 0), "time_end": time(14, 30), "classroom": "каб. АВС"},
     {"group_name": "GWB2+", "teacher_lastname": "Митина", "branch_name": "МБОУ СОШ №188", "day_of_week": DayOfWeek.monday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 409"},
     {"group_name": "GWC1", "teacher_lastname": "Козлова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.monday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 128"},
-    {"group_name": "GWC1", "teacher_lastname": "Арнгольд", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.tuesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 128"},
+    {"group_name": "GWC1", "teacher_lastname": "Арнольд", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.tuesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 128"},
     {"group_name": "Взрослые групповые", "teacher_lastname": "Родина", "branch_name": "МАОУ СОШ №222", "day_of_week": DayOfWeek.friday, "time_start": time(11, 0), "time_end": time(12, 30), "classroom": "каб. 311"},
     {"group_name": "Взрослые групповые", "teacher_lastname": "Лукьянова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.wednesday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 311"},
     {"group_name": "Мини-группа (2 чел.)", "teacher_lastname": "Осинина", "branch_name": "МБОУ Гимназия №5", "day_of_week": DayOfWeek.wednesday, "time_start": time(17, 0), "time_end": time(18, 30), "classroom": "каб. 191"},

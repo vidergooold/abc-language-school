@@ -265,7 +265,7 @@ async def seed_account_data():
                 "bio": "Преподаватель английского языка.",
             },
             {
-                "full_name": "Арнгольд Валерия Евгеньевна",
+                "full_name": "Арнольд Валерия Евгеньевна",
                 "email": "teacher01@abc-school.ru",
                 "phone": "+79130001002",
                 "subject": "Английский",

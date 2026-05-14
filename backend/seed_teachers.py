@@ -6,7 +6,7 @@ from app.core.database import AsyncSessionLocal, init_db
 from app.models.teacher import Teacher
 
 TEACHERS_DATA = [
-    {"full_name": "Арнгольд Валерия Евгеньевна", "email": "teacher01@abc-school.ru", "phone": "+79130001001", "subject": "Английский", "language_level": "C1", "experience_years": 10, "bio": "Преподаватель английского языка.", "is_active": True},
+    {"full_name": "Арнольд Валерия Евгеньевна", "email": "teacher01@abc-school.ru", "phone": "+79130001001", "subject": "Английский", "language_level": "C1", "experience_years": 10, "bio": "Преподаватель английского языка.", "is_active": True},
     {"full_name": "Белова Александра Анатольевна", "email": "teacher02@abc-school.ru", "phone": "+79130001002", "subject": "Английский", "language_level": "C1", "experience_years": 12, "bio": "Преподаватель английского языка.", "is_active": True},
     {"full_name": "Быковская Марина Эдуардовна", "email": "teacher03@abc-school.ru", "phone": "+79130001003", "subject": "Английский", "language_level": "C1", "experience_years": 9, "bio": "Преподаватель английского языка.", "is_active": True},
     {"full_name": "Винокурова Елена Александровна", "email": "teacher04@abc-school.ru", "phone": "+79130001004", "subject": "Китайский", "language_level": "B2", "experience_years": 8, "bio": "Преподаватель китайского языка.", "is_active": True},
