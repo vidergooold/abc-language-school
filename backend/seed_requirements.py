@@ -34,6 +34,7 @@ from app.models.group import Course, Group, GroupStatus, StudentGroup
 from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
 from app.models.student import Student
 from app.models.teacher import Teacher, TeacherGroup
+from app.schedule_rules import canonical_program_duration_minutes, derive_time_end
 
 # ─── Константы ───────────────────────────────────────────────────────────────
 
@@ -266,6 +267,10 @@ def _teacher_language(teacher: Teacher) -> str:
     return "Английский"
 
 
+def _program_duration_minutes(program_name: str) -> int:
+    return canonical_program_duration_minutes(program_name) or 90
+
+
 # ─── Шаги seed ───────────────────────────────────────────────────────────────
 
 
@@ -490,12 +495,12 @@ async def _extend_teacher_schedules(
 
         added = 0
         slot_iter = (
-            (day, t_start, t_end)
+            (day, t_start)
             for day in DAYS_ORDER
-            for t_start, t_end in DAILY_SLOTS
+            for t_start, _ in DAILY_SLOTS
         )
 
-        for day, t_start, t_end in slot_iter:
+        for day, t_start in slot_iter:
             if added >= needed:
                 break
 
@@ -529,6 +534,8 @@ async def _extend_teacher_schedules(
                     break
             if program is None:
                 program = t_programs[added % len(t_programs)]
+            duration_minutes = _program_duration_minutes(program.name)
+            t_end = derive_time_end(t_start, duration_minutes)
 
             # Выбираем филиал (round-robin по счётчику добавленных уроков)
             branch = branches[added % len(branches)]

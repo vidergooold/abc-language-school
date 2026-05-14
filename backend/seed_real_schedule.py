@@ -15,6 +15,7 @@ from app.models.branch import Branch
 from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
 from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
 from app.models.teacher import Teacher
+from app.schedule_rules import canonical_program_duration_minutes, derive_time_end
 
 BRANCH_CLASSROOMS = {
     "МАОУ Гимназия №11 «Гармония»": ("каб. 113", "каб. 114"),
@@ -149,12 +150,23 @@ async def _get_or_create_group(
     return group
 
 
-async def _get_or_create_classroom(db: AsyncSession, name: str) -> Classroom:
-    result = await db.execute(select(Classroom).where(Classroom.name == name))
+def _lesson_duration_minutes(group_name: str) -> Optional[int]:
+    return canonical_program_duration_minutes(group_name)
+
+
+async def _get_or_create_classroom(db: AsyncSession, name: str, branch_id: int) -> Classroom:
+    if branch_id is None:
+        raise ValueError("branch_id is required for classroom binding")
+    result = await db.execute(
+        select(Classroom).where(
+            Classroom.name == name,
+            Classroom.branch_id == branch_id,
+        )
+    )
     classroom = result.scalar_one_or_none()
     if classroom:
         return classroom
-    classroom = Classroom(name=name, capacity=12, is_active=True)
+    classroom = Classroom(name=name, capacity=12, branch_id=branch_id, is_active=True)
     db.add(classroom)
     await db.flush()
     return classroom
@@ -234,7 +246,7 @@ async def seed_real_schedule() -> None:
                 skipped_invalid_data += 1
                 continue
 
-            classroom = await _get_or_create_classroom(db, classroom_name)
+            classroom = await _get_or_create_classroom(db, classroom_name, branch.id)
             expected_language = TEACHER_LANGUAGE_BY_LASTNAME.get(lastname)
             if expected_language is None:
                 print(f"⚠️  Для преподавателя '{lastname}' не найден язык обучения — строка пропущена")
@@ -264,6 +276,14 @@ async def seed_real_schedule() -> None:
                 skipped_exists += 1
                 continue
 
+            duration_minutes = _lesson_duration_minutes(entry["group_name"])
+            if duration_minutes is None:
+                print(
+                    f"⚠️  Не удалось определить длительность программы для группы '{entry['group_name']}' — строка пропущена"
+                )
+                skipped_invalid_data += 1
+                continue
+
             lesson = Lesson(
                 group_id=group.id,
                 teacher_id=teacher.id,
@@ -271,7 +291,7 @@ async def seed_real_schedule() -> None:
                 branch_id=branch.id,
                 day_of_week=entry["day_of_week"],
                 time_start=entry["time_start"],
-                time_end=entry["time_end"],
+                time_end=derive_time_end(entry["time_start"], duration_minutes),
                 status=LessonStatus.scheduled,
                 is_recurring=True,
             )

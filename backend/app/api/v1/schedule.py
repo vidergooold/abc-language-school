@@ -33,6 +33,11 @@ from app.schemas.schedule import (
     ClassroomOut,
 )
 from app.models.user import User, UserRole
+from app.schedule_rules import (
+    canonical_program_duration_minutes,
+    derive_time_end,
+    is_non_study_date,
+)
 
 router = APIRouter(tags=["Schedule"])
 
@@ -47,9 +52,38 @@ DAY_OF_WEEK_BY_INDEX = {
     6: "sunday",
 }
 
-
 def _enum_value(value):
     return value.value if hasattr(value, "value") else value
+
+
+async def _normalize_lesson_payload(db: AsyncSession, data: LessonCreate) -> LessonCreate:
+    group = await db.scalar(select(Group).where(Group.id == data.group_id))
+    if group is None:
+        return data
+
+    candidates: list[Optional[str]] = []
+    if data.program_id is not None:
+        explicit_program = await db.scalar(
+            select(EducationalProgram.name).where(EducationalProgram.id == data.program_id)
+        )
+        candidates.append(explicit_program)
+    candidates.extend([group.program_name, group.name])
+    course_name = await db.scalar(select(Course.name).where(Course.id == group.course_id))
+    candidates.append(course_name)
+
+    duration_minutes: Optional[int] = None
+    for program_name in candidates:
+        duration = canonical_program_duration_minutes(program_name)
+        if duration is not None:
+            duration_minutes = duration
+            break
+    if duration_minutes is None:
+        return data
+
+    derived_end = derive_time_end(data.time_start, duration_minutes)
+    if derived_end == data.time_end:
+        return data
+    return data.model_copy(update={"time_end": derived_end})
 
 
 async def _resolve_teacher_id_for_user(db: AsyncSession, current_user: User) -> Optional[int]:
@@ -121,6 +155,8 @@ async def _validate_schedule_payload(db: AsyncSession, data: LessonCreate) -> No
         raise HTTPException(status_code=400, detail="Время окончания должно быть позже времени начала")
 
     if data.lesson_date is not None:
+        if is_non_study_date(data.lesson_date.date()):
+            raise HTTPException(status_code=400, detail="Дата занятия попадает в неучебный период")
         expected_day = DAY_OF_WEEK_BY_INDEX[data.lesson_date.weekday()]
         if _enum_value(data.day_of_week) != expected_day:
             raise HTTPException(
@@ -460,6 +496,7 @@ async def create_lesson(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_staff),
 ):
+    data = await _normalize_lesson_payload(db, data)
     if current_user.role == UserRole.teacher:
         teacher_id = await _resolve_teacher_id_for_user(db, current_user)
         if teacher_id is None:
@@ -504,6 +541,7 @@ async def update_lesson(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_staff),
 ):
+    data = await _normalize_lesson_payload(db, data)
     result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
@@ -553,13 +591,14 @@ async def cancel_lesson(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_admin),
 ):
-    result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
-    lesson = result.scalar_one_or_none()
-    if not lesson:
+    # Сохраняем 404 для диагностики неверного id, затем запрещаем отмену бизнес-правилом.
+    lesson = await db.scalar(select(Lesson.id).where(Lesson.id == lesson_id))
+    if lesson is None:
         raise HTTPException(status_code=404, detail="Занятие не найдено")
-    lesson.status = LessonStatus.cancelled
-    await db.commit()
-    return {"ok": True}
+    raise HTTPException(
+        status_code=409,
+        detail="Занятие нельзя отменить: используйте перенос на другую дату/время/аудиторию",
+    )
 
 
 @router.post("/schedule/check-conflicts")
@@ -568,6 +607,7 @@ async def check_conflicts_only(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_staff),
 ):
+    data = await _normalize_lesson_payload(db, data)
     await _validate_schedule_payload(db, data)
     conflicts = await check_schedule_conflicts(
         db=db,
