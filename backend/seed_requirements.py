@@ -17,7 +17,7 @@
 import asyncio
 import sys
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import time
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -34,6 +34,7 @@ from app.models.group import Course, Group, GroupStatus, StudentGroup
 from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
 from app.models.student import Student
 from app.models.teacher import Teacher, TeacherGroup
+from app.schedule_rules import canonical_program_duration_minutes, derive_time_end
 
 # ─── Константы ───────────────────────────────────────────────────────────────
 
@@ -124,28 +125,6 @@ PROGRAMS_DATA = [
     },
 ]
 
-CANONICAL_PROGRAM_DURATION_MINUTES = {
-    "дошкольники": 45,
-    "fh1": 50,
-    "as1": 50,
-    "as2": 60,
-    "as3": 60,
-    "as4": 60,
-    "gwa1+": 75,
-    "gwa2": 75,
-    "gwb1": 90,
-    "gwb1+": 90,
-    "gwb2": 90,
-    "gwb2+": 90,
-    "gwc1": 90,
-    "взрослые групповые": 90,
-    "мини-группа": 45,
-    "мини-группа (2 чел.)": 45,
-    "индивидуальные занятия": 45,
-    "китайский": 45,
-    "китайский язык": 45,
-}
-
 # Слоты времени для расширения расписания
 DAILY_SLOTS: list[tuple[time, time]] = [
     (time(9, 0), time(10, 30)),
@@ -198,16 +177,11 @@ def _teacher_language(teacher: Teacher) -> str:
 
 
 def _program_duration_minutes(program_name: str) -> int:
-    key = (program_name or "").strip().lower().replace("ё", "е")
-    if key in CANONICAL_PROGRAM_DURATION_MINUTES:
-        return CANONICAL_PROGRAM_DURATION_MINUTES[key]
-    if key.startswith("мини-группа"):
-        return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
-    return 90
+    return canonical_program_duration_minutes(program_name) or 90
 
 
 def _derive_time_end(time_start: time, duration_minutes: int) -> time:
-    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time().replace(second=0, microsecond=0)
+    return derive_time_end(time_start, duration_minutes)
 
 
 # ─── Шаги seed ───────────────────────────────────────────────────────────────

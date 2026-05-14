@@ -11,7 +11,7 @@
   POST /classrooms           — require_admin
 """
 from typing import List, Optional
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,6 +33,11 @@ from app.schemas.schedule import (
     ClassroomOut,
 )
 from app.models.user import User, UserRole
+from app.schedule_rules import (
+    canonical_program_duration_minutes,
+    derive_time_end,
+    is_non_study_date,
+)
 
 router = APIRouter(tags=["Schedule"])
 
@@ -47,73 +52,20 @@ DAY_OF_WEEK_BY_INDEX = {
     6: "sunday",
 }
 
-CANONICAL_PROGRAM_DURATION_MINUTES = {
-    "дошкольники": 45,
-    "fh1": 50,
-    "as1": 50,
-    "as2": 60,
-    "as3": 60,
-    "as4": 60,
-    "gwa1+": 75,
-    "gwa2": 75,
-    "gwb1": 90,
-    "gwb1+": 90,
-    "gwb2": 90,
-    "gwb2+": 90,
-    "gwc1": 90,
-    "взрослые групповые": 90,
-    "мини-группа": 45,
-    "мини-группа (2 чел.)": 45,
-    "индивидуальные занятия": 45,
-    "китайский язык": 45,
-    "китайский": 45,
-    "fh1, as1": 50,
-    "as2, as3, as4": 60,
-    "gwa1+, gwa2": 75,
-    "gwb1, gwb1+, gwb2, gwb2+, gwc1": 90,
-}
-
-FIXED_NON_STUDY_DATES = {
-    (2, 23),
-    (3, 8),
-    (5, 1),
-    (5, 9),
-    (11, 4),
-}
-
-
 def _enum_value(value):
     return value.value if hasattr(value, "value") else value
 
 
-def _normalize_program_key(name: Optional[str]) -> str:
-    return (name or "").strip().lower().replace("ё", "е")
-
-
 def _canonical_program_duration_minutes(program_name: Optional[str]) -> Optional[int]:
-    key = _normalize_program_key(program_name)
-    if not key:
-        return None
-    if key in CANONICAL_PROGRAM_DURATION_MINUTES:
-        return CANONICAL_PROGRAM_DURATION_MINUTES[key]
-    if key.startswith("мини-группа"):
-        return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
-    return None
+    return canonical_program_duration_minutes(program_name)
 
 
 def _derive_time_end(time_start: time, duration_minutes: int) -> time:
-    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time().replace(second=0, microsecond=0)
+    return derive_time_end(time_start, duration_minutes)
 
 
 def _is_non_study_date(lesson_date: date) -> bool:
-    month_day = (lesson_date.month, lesson_date.day)
-    if month_day in FIXED_NON_STUDY_DATES:
-        return True
-    if (lesson_date.month, lesson_date.day) >= (6, 1) and (lesson_date.month, lesson_date.day) < (9, 1):
-        return True
-    if (lesson_date.month, lesson_date.day) >= (12, 30) or (lesson_date.month, lesson_date.day) <= (1, 7):
-        return True
-    return False
+    return is_non_study_date(lesson_date)
 
 
 async def _normalize_lesson_payload(db: AsyncSession, data: LessonCreate) -> LessonCreate:

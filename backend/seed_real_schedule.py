@@ -5,7 +5,7 @@ Seed реального расписания ABC Language School.
 """
 from typing import Optional
 import asyncio
-from datetime import date, datetime, time, timedelta
+from datetime import time
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +15,7 @@ from app.models.branch import Branch
 from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
 from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
 from app.models.teacher import Teacher
+from app.schedule_rules import canonical_program_duration_minutes, derive_time_end
 
 BRANCH_CLASSROOMS = {
     "Гимназия 11 «Гармония»": ("каб. 113", "каб. 114"),
@@ -70,28 +71,6 @@ TEACHER_LANGUAGE_BY_LASTNAME = {
     "Фомина": "Английский",
 }
 ALLOWED_TEACHER_LASTNAMES = set(TEACHER_LANGUAGE_BY_LASTNAME.keys())
-
-CANONICAL_PROGRAM_DURATION_MINUTES = {
-    "дошкольники": 45,
-    "fh1": 50,
-    "as1": 50,
-    "as2": 60,
-    "as3": 60,
-    "as4": 60,
-    "gwa1+": 75,
-    "gwa2": 75,
-    "gwb1": 90,
-    "gwb1+": 90,
-    "gwb2": 90,
-    "gwb2+": 90,
-    "gwc1": 90,
-    "взрослые групповые": 90,
-    "мини-группа": 45,
-    "мини-группа (2 чел.)": 45,
-    "индивидуальные занятия": 45,
-    "китайский": 45,
-    "китайский язык": 45,
-}
 
 GROUPS_SCHEDULE = [
     {"group_name": "Дошкольники", "teacher_lastname": "Данилова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.monday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 311"},
@@ -177,16 +156,11 @@ async def _get_or_create_group(
 
 
 def _lesson_duration_minutes(group_name: str) -> Optional[int]:
-    key = (group_name or "").strip().lower().replace("ё", "е")
-    if key in CANONICAL_PROGRAM_DURATION_MINUTES:
-        return CANONICAL_PROGRAM_DURATION_MINUTES[key]
-    if key.startswith("мини-группа"):
-        return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
-    return None
+    return canonical_program_duration_minutes(group_name)
 
 
 def _derive_time_end(time_start: time, duration_minutes: int) -> time:
-    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time().replace(second=0, microsecond=0)
+    return derive_time_end(time_start, duration_minutes)
 
 
 async def _get_or_create_classroom(db: AsyncSession, name: str, branch_id: int) -> Classroom:
