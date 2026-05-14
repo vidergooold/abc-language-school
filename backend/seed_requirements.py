@@ -2,7 +2,7 @@
 
 Финальный seed-скрипт, обеспечивающий выполнение всех требований валидации:
 
-1. Все 9 видов образовательных программ существуют и используются в расписании.
+1. Все канонические виды образовательных программ существуют и используются в расписании.
 2. Каждый преподаватель имеет ≥ 5 занятий в расписании (is_recurring=True).
 3. Каждый преподаватель привязан к группам по языку через TeacherGroup.
 4. Каждый активный студент привязан хотя бы к одной группе через StudentGroup.
@@ -52,8 +52,8 @@ PROGRAMS_DATA = [
         "description": "Программа раннего развития на английском языке для дошкольников.",
     },
     {
-        "name": "FH1, AS1",
-        "code": "FH1-AS1",
+        "name": "FH1",
+        "code": "FH1",
         "language": "Английский",
         "level": "A1",
         "target_group": "школьники",
@@ -61,8 +61,17 @@ PROGRAMS_DATA = [
         "description": "Базовый курс английского языка для младших школьников.",
     },
     {
-        "name": "AS2, AS3, AS4",
-        "code": "AS2-AS4",
+        "name": "AS1",
+        "code": "AS1",
+        "language": "Английский",
+        "level": "A1",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Базовый курс английского языка для школьников.",
+    },
+    {
+        "name": "AS2",
+        "code": "AS2",
         "language": "Английский",
         "level": "A2",
         "target_group": "школьники",
@@ -70,8 +79,26 @@ PROGRAMS_DATA = [
         "description": "Программа для школьников среднего уровня.",
     },
     {
-        "name": "GWA1+, GWA2",
-        "code": "GWA1-GWA2",
+        "name": "AS3",
+        "code": "AS3",
+        "language": "Английский",
+        "level": "A2",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Продолжающая программа для школьников.",
+    },
+    {
+        "name": "AS4",
+        "code": "AS4",
+        "language": "Английский",
+        "level": "B1",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Продвинутый курс английского языка для школьников.",
+    },
+    {
+        "name": "GWA1+",
+        "code": "GWA1PLUS",
         "language": "Английский",
         "level": "B1",
         "target_group": "школьники",
@@ -79,13 +106,58 @@ PROGRAMS_DATA = [
         "description": "Программа для школьников уровня pre-intermediate.",
     },
     {
-        "name": "GWB1, GWB1+, GWB2, GWB2+, GWC1",
-        "code": "GWB-GWC",
+        "name": "GWA2",
+        "code": "GWA2",
+        "language": "Английский",
+        "level": "B1",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Программа для школьников уровня pre-intermediate.",
+    },
+    {
+        "name": "GWB1",
+        "code": "GWB1",
         "language": "Английский",
         "level": "B2",
         "target_group": "школьники",
         "duration_months": 9,
         "description": "Программа для школьников уровня upper-intermediate.",
+    },
+    {
+        "name": "GWB1+",
+        "code": "GWB1PLUS",
+        "language": "Английский",
+        "level": "B2",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Усиленная программа для школьников upper-intermediate.",
+    },
+    {
+        "name": "GWB2",
+        "code": "GWB2",
+        "language": "Английский",
+        "level": "B2",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Продолжающая программа upper-intermediate.",
+    },
+    {
+        "name": "GWB2+",
+        "code": "GWB2PLUS",
+        "language": "Английский",
+        "level": "C1",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Продвинутая школьная программа по английскому языку.",
+    },
+    {
+        "name": "GWC1",
+        "code": "GWC1",
+        "language": "Английский",
+        "level": "C1",
+        "target_group": "школьники",
+        "duration_months": 9,
+        "description": "Продвинутая программа для школьников.",
     },
     {
         "name": "Взрослые групповые",
@@ -97,13 +169,13 @@ PROGRAMS_DATA = [
         "description": "Групповая программа английского языка для взрослых.",
     },
     {
-        "name": "Мини-группа (2 чел.)",
+        "name": "Мини-группа",
         "code": "MINI-GROUP",
         "language": "Английский",
         "level": "B1",
         "target_group": "взрослые",
         "duration_months": 6,
-        "description": "Мини-группа (2 человека) английского языка.",
+        "description": "Мини-группа английского языка.",
     },
     {
         "name": "Индивидуальные занятия",
@@ -147,22 +219,39 @@ DAYS_ORDER = [
 # Соответствие названий групп → названиям программ (для определения program_id)
 GROUP_NAME_TO_PROGRAM: dict[str, str] = {
     "Дошкольники": "Дошкольники",
-    "FH1": "FH1, AS1",
-    "AS1": "FH1, AS1",
-    "AS2": "AS2, AS3, AS4",
-    "AS3": "AS2, AS3, AS4",
-    "AS4": "AS2, AS3, AS4",
-    "GWA1+": "GWA1+, GWA2",
-    "GWA2": "GWA1+, GWA2",
-    "GWB1": "GWB1, GWB1+, GWB2, GWB2+, GWC1",
-    "GWB1+": "GWB1, GWB1+, GWB2, GWB2+, GWC1",
-    "GWB2": "GWB1, GWB1+, GWB2, GWB2+, GWC1",
-    "GWB2+": "GWB1, GWB1+, GWB2, GWB2+, GWC1",
-    "GWC1": "GWB1, GWB1+, GWB2, GWB2+, GWC1",
+    "FH1": "FH1",
+    "AS1": "AS1",
+    "AS2": "AS2",
+    "AS3": "AS3",
+    "AS4": "AS4",
+    "GWA1+": "GWA1+",
+    "GWA2": "GWA2",
+    "GWB1": "GWB1",
+    "GWB1+": "GWB1+",
+    "GWB2": "GWB2",
+    "GWB2+": "GWB2+",
+    "GWC1": "GWC1",
     "Взрослые групповые": "Взрослые групповые",
-    "Мини-группа (2 чел.)": "Мини-группа (2 чел.)",
+    "Мини-группа": "Мини-группа",
     "Индивидуальные занятия": "Индивидуальные занятия",
+    "Китайский язык": "Китайский язык",
+    # Поддержка legacy-данных в существующих таблицах
+    "FH1, AS1": "FH1",
+    "AS2, AS3, AS4": "AS2",
+    "GWA1+, GWA2": "GWA1+",
+    "GWB1, GWB1+, GWB2, GWB2+, GWC1": "GWB1",
+    "Мини-группа (2 чел.)": "Мини-группа",
     "Китайский": "Китайский язык",
+}
+
+CHINESE_TEACHER_NAMES = {
+    "Арнольд Валерия Евгеньевна",
+    "Белова Александра Анатольевна",
+    "Быковская Марина Эдуардовна",
+    "Винокурова Елена Александровна",
+    "Воронцова Анна Вадимовна",
+    "Данилова Мария Анатольевна",
+    "Евдокимова Полина Евгеньевна",
 }
 
 
@@ -170,6 +259,8 @@ GROUP_NAME_TO_PROGRAM: dict[str, str] = {
 
 
 def _teacher_language(teacher: Teacher) -> str:
+    if teacher.full_name in CHINESE_TEACHER_NAMES:
+        return "Китайский"
     s = (teacher.subject or "").strip().lower()
     if "китай" in s:
         return "Китайский"
@@ -256,24 +347,9 @@ async def _ensure_groups_for_programs(
     for t in teachers:
         teachers_by_lang[_teacher_language(t)].append(t)
 
-    # Для каждой программы нужно убедиться, что существует хотя бы одна группа с этим названием
-    program_to_canonical_group_name = {
-        "Дошкольники": "Дошкольники",
-        "FH1, AS1": "FH1",
-        "AS2, AS3, AS4": "AS2",
-        "GWA1+, GWA2": "GWA1+",
-        "GWB1, GWB1+, GWB2, GWB2+, GWC1": "GWB1",
-        "Взрослые групповые": "Взрослые групповые",
-        "Мини-группа (2 чел.)": "Мини-группа (2 чел.)",
-        "Индивидуальные занятия": "Индивидуальные занятия",
-        "Китайский язык": "Китайский",
-    }
-
     created = 0
-    for prog_name, group_name in program_to_canonical_group_name.items():
-        program = programs.get(prog_name)
-        if not program:
-            continue
+    for prog_name, program in programs.items():
+        group_name = prog_name
 
         # Check if group exists
         result = await session.execute(
@@ -518,12 +594,6 @@ async def _link_teacher_groups(session: AsyncSession) -> None:
     )
     teachers = teachers_result.scalars().all()
 
-    # Все существующие TeacherGroup
-    existing_tg_result = await session.execute(select(TeacherGroup))
-    existing_pairs: set[tuple[int, int]] = {
-        (tg.teacher_id, tg.group_id) for tg in existing_tg_result.scalars().all()
-    }
-
     # Загружаем группы с языком курса
     groups_result = await session.execute(
         select(Group, Course.language.label("lang"))
@@ -533,6 +603,23 @@ async def _link_teacher_groups(session: AsyncSession) -> None:
     groups_by_lang: dict[str, list[Group]] = defaultdict(list)
     for row in groups_result:
         groups_by_lang[row.lang].append(row.Group)
+
+    # Удаляем невалидные language-cross привязки, оставляем только по языку преподавателя
+    existing_tg_result = await session.execute(
+        select(TeacherGroup, Teacher, Course.language.label("lang"))
+        .join(Teacher, Teacher.id == TeacherGroup.teacher_id)
+        .join(Group, Group.id == TeacherGroup.group_id)
+        .join(Course, Course.id == Group.course_id)
+    )
+    existing_pairs: set[tuple[int, int]] = set()
+    removed = 0
+    for row in existing_tg_result:
+        teacher_lang = _teacher_language(row.Teacher)
+        if row.lang != teacher_lang:
+            await session.delete(row.TeacherGroup)
+            removed += 1
+            continue
+        existing_pairs.add((row.TeacherGroup.teacher_id, row.TeacherGroup.group_id))
 
     created = 0
     for teacher in teachers:
@@ -548,6 +635,8 @@ async def _link_teacher_groups(session: AsyncSession) -> None:
 
     await session.flush()
     print(f"  ✅ Создано привязок преподаватель–группа: {created}")
+    if removed:
+        print(f"  ✅ Удалено невалидных language-cross привязок: {removed}")
 
 
 async def _ensure_student_groups(session: AsyncSession) -> None:

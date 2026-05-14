@@ -35,9 +35,9 @@ STUDENTS_PER_GROUP = {
     "GWB2+": 6,
     "GWC1": 6,
     "Взрослые групповые": 10,
-    "Мини-группа (2 чел.)": 2,
+    "Мини-группа": 2,
     "Индивидуальные занятия": 1,
-    "Китайский": 8,
+    "Китайский язык": 8,
 }
 CHILD_5_10_GROUPS = {"Дошкольники", "FH1"}
 SCHOOL_11_16_GROUPS = {"AS1", "AS2", "AS3", "AS4"}
@@ -56,6 +56,10 @@ def _preferred_student_type(group_name: str) -> list[str]:
 
 
 def _target_students_per_group(group_name: str) -> int:
+    if group_name == "Мини-группа (2 чел.)":
+        group_name = "Мини-группа"
+    if group_name == "Китайский":
+        group_name = "Китайский язык"
     return STUDENTS_PER_GROUP.get(group_name, 8)
 
 

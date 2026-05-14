@@ -2,17 +2,18 @@
 Seed преподавателей для ABC Language School
 """
 import asyncio
+from sqlalchemy import select
 from app.core.database import AsyncSessionLocal, init_db
 from app.models.teacher import Teacher
 
 TEACHERS_DATA = [
-    {"full_name": "Арнольд Валерия Евгеньевна", "email": "teacher01@abc-school.ru", "phone": "+79130001001", "subject": "Английский", "language_level": "C1", "experience_years": 10, "bio": "Преподаватель английского языка.", "is_active": True},
-    {"full_name": "Белова Александра Анатольевна", "email": "teacher02@abc-school.ru", "phone": "+79130001002", "subject": "Английский", "language_level": "C1", "experience_years": 12, "bio": "Преподаватель английского языка.", "is_active": True},
-    {"full_name": "Быковская Марина Эдуардовна", "email": "teacher03@abc-school.ru", "phone": "+79130001003", "subject": "Английский", "language_level": "C1", "experience_years": 9, "bio": "Преподаватель английского языка.", "is_active": True},
+    {"full_name": "Арнольд Валерия Евгеньевна", "email": "teacher01@abc-school.ru", "phone": "+79130001001", "subject": "Китайский", "language_level": "C1", "experience_years": 10, "bio": "Преподаватель китайского языка.", "is_active": True},
+    {"full_name": "Белова Александра Анатольевна", "email": "teacher02@abc-school.ru", "phone": "+79130001002", "subject": "Китайский", "language_level": "C1", "experience_years": 12, "bio": "Преподаватель китайского языка.", "is_active": True},
+    {"full_name": "Быковская Марина Эдуардовна", "email": "teacher03@abc-school.ru", "phone": "+79130001003", "subject": "Китайский", "language_level": "C1", "experience_years": 9, "bio": "Преподаватель китайского языка.", "is_active": True},
     {"full_name": "Винокурова Елена Александровна", "email": "teacher04@abc-school.ru", "phone": "+79130001004", "subject": "Китайский", "language_level": "B2", "experience_years": 8, "bio": "Преподаватель китайского языка.", "is_active": True},
     {"full_name": "Воронцова Анна Вадимовна", "email": "teacher05@abc-school.ru", "phone": "+79130001005", "subject": "Китайский", "language_level": "C1", "experience_years": 7, "bio": "Преподаватель китайского языка.", "is_active": True},
-    {"full_name": "Данилова Мария Анатольевна", "email": "teacher06@abc-school.ru", "phone": "+79130001006", "subject": "Английский", "language_level": "B2", "experience_years": 10, "bio": "Преподаватель английского языка.", "is_active": True},
-    {"full_name": "Евдокимова Полина Евгеньевна", "email": "teacher07@abc-school.ru", "phone": "+79130001007", "subject": "Английский", "language_level": "C2", "experience_years": 14, "bio": "Преподаватель английского языка.", "is_active": True},
+    {"full_name": "Данилова Мария Анатольевна", "email": "teacher06@abc-school.ru", "phone": "+79130001006", "subject": "Китайский", "language_level": "B2", "experience_years": 10, "bio": "Преподаватель китайского языка.", "is_active": True},
+    {"full_name": "Евдокимова Полина Евгеньевна", "email": "teacher07@abc-school.ru", "phone": "+79130001007", "subject": "Китайский", "language_level": "C2", "experience_years": 14, "bio": "Преподаватель китайского языка.", "is_active": True},
     {"full_name": "Зудяева Надежда Андреевна", "email": "teacher08@abc-school.ru", "phone": "+79130001008", "subject": "Английский", "language_level": "C1", "experience_years": 11, "bio": "Преподаватель английского языка.", "is_active": True},
     {"full_name": "Иванова Мария Петровна", "email": "teacher09@abc-school.ru", "phone": "+79130001009", "subject": "Английский", "language_level": "C1", "experience_years": 9, "bio": "Преподаватель английского языка.", "is_active": True},
     {"full_name": "Караваева Алина Денисовна", "email": "teacher10@abc-school.ru", "phone": "+79130001010", "subject": "Английский", "language_level": "B2", "experience_years": 6, "bio": "Преподаватель английского языка.", "is_active": True},
@@ -39,24 +40,28 @@ TEACHERS_DATA = [
 async def seed_teachers():
     await init_db()
     async with AsyncSessionLocal() as db:
-        for teacher_data in TEACHERS_DATA:
-            # Check by email if provided, otherwise by full_name
-            email = teacher_data.get("email")
-            if email:
-                existing = await db.execute(
-                    Teacher.__table__.select().where(Teacher.email == email)
-                )
-            else:
-                existing = await db.execute(
-                    Teacher.__table__.select().where(Teacher.full_name == teacher_data["full_name"])
-                )
-            if existing.scalar_one_or_none():
-                print(f"Преподаватель {teacher_data['full_name']} уже существует")
-                continue
+        existing_teachers = (
+            await db.execute(select(Teacher).order_by(Teacher.id))
+        ).scalars().all()
+        by_email = {t.email: t for t in existing_teachers if t.email}
+        by_full_name = {t.full_name: t for t in existing_teachers}
 
-            teacher = Teacher(**teacher_data)
-            db.add(teacher)
-            print(f"Добавлен преподаватель: {teacher_data['full_name']}")
+        for teacher_data in TEACHERS_DATA:
+            email = teacher_data.get("email")
+            existing = by_email.get(email) if email else None
+            if existing is None:
+                existing = by_full_name.get(teacher_data["full_name"])
+
+            if existing:
+                for key, value in teacher_data.items():
+                    setattr(existing, key, value)
+                print(f"Обновлён преподаватель: {teacher_data['full_name']}")
+                by_email[existing.email] = existing
+                by_full_name[existing.full_name] = existing
+            else:
+                teacher = Teacher(**teacher_data)
+                db.add(teacher)
+                print(f"Добавлен преподаватель: {teacher_data['full_name']}")
 
         await db.commit()
         print("✅ Seed преподавателей завершен")
