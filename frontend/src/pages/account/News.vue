@@ -89,7 +89,7 @@ const STATUS_LABELS: Record<string, string> = {
   review: 'На модерации',
   scheduled: 'Запланировано',
   published: 'Опубликовано',
-  archived: 'Архив',
+  archived: 'Архивировано',
 }
 
 function statusLabel(s: string): string {
@@ -105,7 +105,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const r = await http.get('/news')
+    const r = await http.get('/admin/news')
     const payload = r.data
     newsList.value = Array.isArray(payload) ? payload : (payload?.items || [])
   } catch {
