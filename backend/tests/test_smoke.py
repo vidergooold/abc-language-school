@@ -204,9 +204,6 @@ async def _seed_student_profile_progress_data(db_engine) -> int:
     from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus, StudentGroup
     from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
     from app.models.student import Student, StudentStatus, StudentType
-async def _seed_schedulable_lesson(db_engine) -> int:
-    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
-    from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
     from app.models.teacher import Teacher
 
     SessionLocal = async_sessionmaker(
@@ -216,7 +213,6 @@ async def _seed_schedulable_lesson(db_engine) -> int:
         unique_suffix = uuid4().hex
         course = Course(
             name=f"Smoke Profile Course {unique_suffix}",
-            name="Smoke Transfer Course",
             language="English",
             level=CourseLevel.beginner,
             category=CourseCategory.children,
@@ -227,10 +223,6 @@ async def _seed_schedulable_lesson(db_engine) -> int:
             email=f"profile-teacher-{unique_suffix}@smoke-tests.example.com",
         )
         classroom = Classroom(name=f"Smoke Profile Room {unique_suffix}")
-            full_name="Smoke Transfer Teacher",
-            email=f"transfer-teacher-{unique_suffix}@smoke-tests.example.com",
-        )
-        classroom = Classroom(name=f"Smoke Transfer Room {unique_suffix}")
         session.add_all([course, teacher, classroom])
         await session.flush()
 
@@ -241,10 +233,6 @@ async def _seed_schedulable_lesson(db_engine) -> int:
             status=GroupStatus.active,
             language="English",
             program_name="General English",
-            name="Smoke Transfer Group",
-            course_id=course.id,
-            teacher_id=teacher.id,
-            status=GroupStatus.active,
         )
         session.add(group)
         await session.flush()
@@ -293,6 +281,56 @@ async def _seed_schedulable_lesson(db_engine) -> int:
         )
         await session.commit()
         return group.id
+
+
+async def _seed_schedulable_lesson(db_engine) -> int:
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
+    from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
+    from app.models.teacher import Teacher
+
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with SessionLocal() as session:
+        unique_suffix = uuid4().hex
+        course = Course(
+            name="Smoke Transfer Course",
+            language="English",
+            level=CourseLevel.beginner,
+            category=CourseCategory.children,
+            price_per_month=1000,
+        )
+        teacher = Teacher(
+            full_name="Smoke Transfer Teacher",
+            email=f"transfer-teacher-{unique_suffix}@smoke-tests.example.com",
+        )
+        classroom = Classroom(name=f"Smoke Transfer Room {unique_suffix}")
+        session.add_all([course, teacher, classroom])
+        await session.flush()
+
+        group = Group(
+            name="Smoke Transfer Group",
+            course_id=course.id,
+            teacher_id=teacher.id,
+            status=GroupStatus.active,
+        )
+        session.add(group)
+        await session.flush()
+
+        lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.scheduled,
+            is_recurring=True,
+        )
+        session.add(lesson)
+        await session.commit()
+        await session.refresh(lesson)
+        return lesson.id
 
 
 async def _seed_student_profile_progress_data_academic_window(db_engine) -> int:
@@ -427,13 +465,6 @@ async def _seed_student_profile_progress_data_academic_window(db_engine) -> int:
         )
         await session.commit()
         return group.id
-            status=LessonStatus.scheduled,
-            is_recurring=True,
-        )
-        session.add(lesson)
-        await session.commit()
-        await session.refresh(lesson)
-        return lesson.id
 
 
 async def _seed_group_15_with_nullable_course_fields(db_engine) -> int:

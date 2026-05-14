@@ -34,8 +34,8 @@
       <select v-model="filterStatus">
         <option value="">Все статусы</option>
         <option value="active">Активные</option>
-        <option value="waiting">Ожидают группу</option>
-        <option value="inactive">Неактивные</option>
+        <option value="waiting">Ожидают</option>
+        <option value="inactive">Архивные</option>
         <option value="graduated">Выпуск</option>
         <option value="expelled">Отчислены</option>
       </select>
@@ -77,9 +77,9 @@
         <div class="form-row">
           <label>Статус</label>
           <select v-model="newStudent.status">
-            <option value="active">Активен</option>
-            <option value="waiting">Ожидает группу</option>
-            <option value="inactive">Не активен</option>
+            <option value="active">Активный</option>
+            <option value="waiting">Ожидает</option>
+            <option value="inactive">Архивный</option>
             <option value="graduated">Выпущен</option>
             <option value="expelled">Отчислен</option>
           </select>
@@ -152,9 +152,9 @@
         <div class="form-row">
           <label>Статус</label>
           <select v-model="editStudent.status">
-            <option value="active">Активен</option>
-            <option value="waiting">Ожидает группу</option>
-            <option value="inactive">Не активен</option>
+            <option value="active">Активный</option>
+            <option value="waiting">Ожидает</option>
+            <option value="inactive">Архивный</option>
             <option value="graduated">Выпущен</option>
             <option value="expelled">Отчислен</option>
           </select>
@@ -331,9 +331,9 @@ function getAge(birthdate: string): number {
 }
 function statusLabel(s: string): string {
   return {
-    active: 'Активен',
-    waiting: 'Ожидает группу',
-    inactive: 'Не активен',
+    active: 'Активный',
+    waiting: 'Ожидает',
+    inactive: 'Архивный',
     graduated: 'Выпущен',
     expelled: 'Отчислен',
   }[s] ?? (s || '—')
@@ -540,7 +540,7 @@ async function archiveStudent(student: any) {
   const ok = window.confirm(`Архивировать ученика "${student.full_name}"?`)
   if (!ok) return
   try {
-    const res = await http.put(`/students/${student.id}`, { status: 'inactive' })
+    const res = await http.patch(`/students/${student.id}`, { status: 'inactive' })
     const idx = students.value.findIndex((s) => s.id === student.id)
     if (idx !== -1) students.value[idx] = res.data
   } catch (err: any) {

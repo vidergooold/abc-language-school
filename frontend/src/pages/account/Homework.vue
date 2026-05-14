@@ -28,7 +28,7 @@
         </div>
       </div>
       <div v-else class="empty-state">
-        <p>Нет данных</p>
+        <p>Домашние задания не добавлены</p>
       </div>
     </template>
     <template v-else>
