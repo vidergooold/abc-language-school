@@ -28,7 +28,7 @@
           <div class="jr-action"></div>
         </div>
       </div>
-      <div v-else class="empty-state"><p>Материалы урока для вашей группы пока не добавлены.</p></div>
+      <div v-else class="empty-state"><p>Материалы не добавлены</p></div>
     </template>
     <template v-else>
 

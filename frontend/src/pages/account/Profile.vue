@@ -43,8 +43,9 @@
         </div>
         <div v-if="myGradeRows.length" class="grades-list">
           <div v-for="item in myGradeRows" :key="item.key" class="grade-row">
-            <span>{{ item.date }}</span>
-            <strong>{{ item.grade }}</strong>
+            <span class="grade-date">{{ item.date }}</span>
+            <span v-if="item.group" class="grade-group">{{ item.group }}</span>
+            <strong class="grade-value">{{ item.grade }}</strong>
           </div>
         </div>
         <p v-else class="field-hint">Оценок пока нет.</p>
@@ -107,7 +108,7 @@ const successMsg = ref('')
 const errorMsg = ref('')
 const studentProfile = ref<any | null>(null)
 const studentGroup = ref<any | null>(null)
-const myGradeRows = ref<Array<{ key: string; date: string; grade: string; slot_date: string }>>([])
+const myGradeRows = ref<Array<{ key: string; date: string; grade: string; slot_date: string; group: string }>>([])
 const gradeAverages = ref({ month: '—', academic_year: '—' })
 
 const form = ref({
@@ -140,9 +141,9 @@ onMounted(() => {
 
 function studentStatusLabel(status: string) {
   return {
-    waiting: 'Ожидает группу',
-    active: 'Активен',
-    inactive: 'Не активен',
+    waiting: 'Ожидает',
+    active: 'Активный',
+    inactive: 'Архивный',
     graduated: 'Выпущен',
     expelled: 'Отчислен',
   }[status] || status || '—'
@@ -182,7 +183,8 @@ async function loadMyGrades() {
     const res = await http.get('/progress/my')
     const lessons = Array.isArray(res.data?.lessons) ? res.data.lessons : []
     const records = res.data?.records || {}
-    const rows: Array<{ key: string; date: string; grade: string; slot_date: string }> = []
+    const groupName: string = res.data?.group?.name || ''
+    const rows: Array<{ key: string; date: string; grade: string; slot_date: string; group: string }> = []
     for (const lesson of lessons) {
       const record = records[`${res.data?.student?.id}:${lesson.id}:${lesson.slot_date}`]
       if (!record || record.grade == null) continue
@@ -191,6 +193,7 @@ async function loadMyGrades() {
         date: lessonDateLabel(lesson.slot_date),
         grade: String(record.grade),
         slot_date: lesson.slot_date,
+        group: groupName,
       })
     }
     myGradeRows.value = rows.sort((a, b) => (a.slot_date < b.slot_date ? 1 : a.slot_date > b.slot_date ? -1 : 0))
@@ -312,13 +315,17 @@ async function save() {
 }
 .grade-row {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   background: #fff7f0;
   border: 1px solid #ffe3cf;
   border-radius: 10px;
   padding: 8px 12px;
   font-size: 14px;
 }
+.grade-date { color: #888; white-space: nowrap; }
+.grade-group { flex: 1; color: #555; font-size: 13px; }
+.grade-value { margin-left: auto; font-size: 16px; color: var(--brand-purple); }
 
 .form-actions { margin-top: 20px; }
 .btn-save { background: var(--brand-orange); color: #fff; border: none; padding: 12px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
