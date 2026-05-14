@@ -8,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.attendance import get_group_grades
 from app.core.database import get_db
-from app.core.security import require_staff
+from app.core.security import require_staff, require_student
 from app.models.attendance import Attendance
+from app.models.group import StudentGroup
 from app.models.schedule import DayOfWeek, Lesson, LessonStatus
+from app.models.user import User
 
 router = APIRouter(prefix="/progress", tags=["Progress"])
 
@@ -63,6 +65,60 @@ async def get_progress(
         date_to=date_to,
         db=db,
     )
+
+
+@router.get("/my")
+async def get_my_progress(
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_student),
+):
+    student_group_result = await db.execute(
+        select(StudentGroup)
+        .where(
+            and_(
+                StudentGroup.student_email == current_user.email,
+                StudentGroup.is_active == True,
+            )
+        )
+        .order_by(StudentGroup.enrolled_at.desc())
+        .limit(1)
+    )
+    student_group = student_group_result.scalar_one_or_none()
+    if student_group is None:
+        return {
+            "group": None,
+            "students": [],
+            "lessons": [],
+            "records": {},
+            "attention_student_ids": [],
+            "averages": {},
+        }
+
+    payload = await get_group_grades(
+        group_id=student_group.group_id,
+        date_from=date_from,
+        date_to=date_to,
+        db=db,
+    )
+
+    student_id = student_group.id
+    student_key = str(student_id)
+    student_payload = next((s for s in payload.get("students", []) if s.get("id") == student_id), None)
+    filtered_records = {
+        key: value
+        for key, value in (payload.get("records", {}) or {}).items()
+        if key.startswith(f"{student_id}:")
+    }
+
+    return {
+        "group": payload.get("group"),
+        "student": student_payload,
+        "lessons": payload.get("lessons", []),
+        "records": filtered_records,
+        "averages": payload.get("averages", {}).get(student_key, {"month": None, "academic_year": None}),
+    }
 
 
 @router.post("/dates")

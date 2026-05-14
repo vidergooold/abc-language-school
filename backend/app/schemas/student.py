@@ -7,9 +7,10 @@ from app.models.student import StudentType, StudentStatus
 class StudentBase(BaseModel):
     full_name: str
     student_type: StudentType = StudentType.adult
-    status: StudentStatus = StudentStatus.active
+    status: StudentStatus = StudentStatus.waiting
     phone: Optional[str] = None
     email: Optional[str] = None
+    photo: Optional[str] = None
     address: Optional[str] = None
     birthdate: Optional[date] = None
     parent_name: Optional[str] = None
@@ -34,6 +35,7 @@ class StudentUpdate(BaseModel):
     status: Optional[StudentStatus] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    photo: Optional[str] = None
     address: Optional[str] = None
     birthdate: Optional[date] = None
     parent_name: Optional[str] = None

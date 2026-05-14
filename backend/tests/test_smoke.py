@@ -199,6 +199,90 @@ async def _seed_progress_group(db_engine) -> int:
         return group.id
 
 
+async def _seed_student_profile_progress_data(db_engine) -> int:
+    from app.models.attendance import Attendance, AttendanceStatus
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus, StudentGroup
+    from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
+    from app.models.student import Student, StudentStatus, StudentType
+    from app.models.teacher import Teacher
+
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with SessionLocal() as session:
+        unique_suffix = uuid4().hex
+        course = Course(
+            name=f"Smoke Profile Course {unique_suffix}",
+            language="English",
+            level=CourseLevel.beginner,
+            category=CourseCategory.children,
+            price_per_month=1000,
+        )
+        teacher = Teacher(
+            full_name="Smoke Profile Teacher",
+            email=f"profile-teacher-{unique_suffix}@smoke-tests.example.com",
+        )
+        classroom = Classroom(name=f"Smoke Profile Room {unique_suffix}")
+        session.add_all([course, teacher, classroom])
+        await session.flush()
+
+        group = Group(
+            name=f"Smoke Profile Group {unique_suffix}",
+            course_id=course.id,
+            teacher_id=teacher.id,
+            status=GroupStatus.active,
+            language="English",
+            program_name="General English",
+        )
+        session.add(group)
+        await session.flush()
+
+        session.add(
+            Student(
+                full_name="Smoke Student",
+                email="student@smoke-tests.example.com",
+                phone="+70000000000",
+                student_type=StudentType.child,
+                status=StudentStatus.active,
+            )
+        )
+        student_group = StudentGroup(
+            group_id=group.id,
+            student_name="Smoke Student",
+            student_email="student@smoke-tests.example.com",
+            student_type="child",
+        )
+        session.add(student_group)
+        await session.flush()
+
+        now = datetime.now()
+        lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(now.year, now.month, max(1, min(15, now.day)), 10, 0, 0),
+            is_recurring=False,
+        )
+        session.add(lesson)
+        await session.flush()
+
+        session.add(
+            Attendance(
+                lesson_id=lesson.id,
+                student_group_id=student_group.id,
+                status=AttendanceStatus.present,
+                grade=5,
+                lesson_date=lesson.lesson_date,
+            )
+        )
+        await session.commit()
+        return group.id
+
+
 async def _seed_group_15_with_nullable_course_fields(db_engine) -> int:
     from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
 
@@ -440,6 +524,41 @@ async def test_student_progress_endpoint_forbidden(client: AsyncClient, db_engin
     )
 
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_student_profile_me_returns_student_and_group(
+    client: AsyncClient,
+    db_engine,
+    student_token: str,
+):
+    await _seed_student_profile_progress_data(db_engine)
+    response = await client.get(
+        "/api/v1/students/me",
+        headers=auth_headers(student_token),
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["student"]["email"] == "student@smoke-tests.example.com"
+    assert payload["group"]["program_name"] == "General English"
+
+
+@pytest.mark.asyncio
+async def test_student_progress_my_returns_averages(
+    client: AsyncClient,
+    db_engine,
+    student_token: str,
+):
+    await _seed_student_profile_progress_data(db_engine)
+    response = await client.get(
+        "/api/v1/progress/my",
+        headers=auth_headers(student_token),
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["student"]["id"] > 0
+    assert payload["averages"]["month"] == 5.0
+    assert payload["averages"]["academic_year"] == 5.0
 
 
 async def test_no_token_messages_inbox(client: AsyncClient):
