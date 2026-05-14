@@ -71,17 +71,12 @@ async def _normalize_lesson_payload(db: AsyncSession, data: LessonCreate) -> Les
     course_name = await db.scalar(select(Course.name).where(Course.id == group.course_id))
     candidates.append(course_name)
 
-    duration_minutes = next(
-        (
-            duration
-            for duration in (
-                canonical_program_duration_minutes(program_name)
-                for program_name in candidates
-            )
-            if duration is not None
-        ),
-        None,
-    )
+    duration_minutes: Optional[int] = None
+    for program_name in candidates:
+        duration = canonical_program_duration_minutes(program_name)
+        if duration is not None:
+            duration_minutes = duration
+            break
     if duration_minutes is None:
         return data
 
@@ -596,6 +591,7 @@ async def cancel_lesson(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_admin),
 ):
+    # Сохраняем 404 для диагностики неверного id, затем запрещаем отмену бизнес-правилом.
     lesson = await db.scalar(select(Lesson.id).where(Lesson.id == lesson_id))
     if lesson is None:
         raise HTTPException(status_code=404, detail="Занятие не найдено")

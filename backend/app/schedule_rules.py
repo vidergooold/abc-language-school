@@ -51,6 +51,8 @@ def canonical_program_duration_minutes(program_name: Optional[str]) -> Optional[
             for part in (token.strip() for token in key.split(","))
             if part in CANONICAL_PROGRAM_DURATION_MINUTES
         }
+        if len(matched) > 1:
+            return None
         if len(matched) == 1:
             return next(iter(matched))
     return None

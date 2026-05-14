@@ -5,7 +5,6 @@ from app.schedule_rules import (
     derive_time_end,
     is_non_study_date,
 )
-from seed_real_schedule import _lesson_duration_minutes
 from seed_requirements import TARGET_LESSONS_PER_TEACHER
 
 
@@ -49,7 +48,7 @@ def test_non_study_periods_repeat_annually():
 
 
 def test_seed_duration_mapping_and_minimum_lessons_target():
-    assert _lesson_duration_minutes("FH1") == 50
-    assert _lesson_duration_minutes("Мини-группа (2 чел.)") == 45
-    assert _lesson_duration_minutes("Китайский") == 45
+    assert canonical_program_duration_minutes("FH1") == 50
+    assert canonical_program_duration_minutes("Мини-группа (2 чел.)") == 45
+    assert canonical_program_duration_minutes("Китайский") == 45
     assert TARGET_LESSONS_PER_TEACHER == 5
