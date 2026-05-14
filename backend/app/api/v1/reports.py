@@ -3,7 +3,7 @@ import csv
 import io
 from datetime import datetime, timedelta
 from decimal import Decimal
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import Response
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +18,8 @@ from app.models.payment import Invoice, Payment, PaymentStatus
 from app.models.teacher import Teacher
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
+MAX_PDF_ROWS = 200
+MAX_PDF_LINE_LENGTH = 1200
 
 
 def _make_hash(params: dict) -> str:
@@ -34,6 +36,20 @@ def _rows_from_data(data):
     return []
 
 
+def _period_bounds(period: str):
+    try:
+        year, month = period.split("-")
+        year_int = int(year)
+        month_int = int(month)
+        if month_int < 1 or month_int > 12:
+            raise ValueError("month out of range")
+    except Exception:
+        raise HTTPException(status_code=400, detail="period должен быть в формате YYYY-MM")
+    start = datetime(year_int, month_int, 1)
+    end = datetime(year_int + (1 if month_int == 12 else 0), 1 if month_int == 12 else month_int + 1, 1)
+    return start, end
+
+
 def _to_csv_bytes(rows: list[dict]) -> bytes:
     output = io.StringIO()
     if not rows:
@@ -48,20 +64,32 @@ def _to_csv_bytes(rows: list[dict]) -> bytes:
 
 
 def _to_simple_pdf_bytes(title: str, rows: list[dict]) -> bytes:
+    """Generate a minimal text-only PDF for report export from row dictionaries."""
     lines = [title, ""]
     if not rows:
         lines.append("No data")
     else:
-        for row in rows[:200]:
+        for row in rows[:MAX_PDF_ROWS]:
             line = "; ".join(f"{k}: {row.get(k)}" for k in sorted(row.keys()))
-            lines.append(line[:1200])
+            lines.append(line[:MAX_PDF_LINE_LENGTH] + ("…" if len(line) > MAX_PDF_LINE_LENGTH else ""))
+        if len(rows) > MAX_PDF_ROWS:
+            lines.append(f"... truncated: showing first {MAX_PDF_ROWS} of {len(rows)} rows")
 
     text_parts = []
     for line in lines:
-        safe = str(line).replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+        safe = (
+            str(line)
+            .replace("\\", "\\\\")
+            .replace("(", "\\(")
+            .replace(")", "\\)")
+            .replace("\r", " ")
+            .replace("\n", " ")
+            .replace("\t", " ")
+        )
         text_parts.append(f"({safe}) Tj")
         text_parts.append("T*")
     content = "BT /F1 10 Tf 50 790 Td " + " ".join(text_parts) + " ET"
+    # PDF text stream in this lightweight implementation uses latin-1; unsupported chars are replaced.
     content_bytes = content.encode("latin-1", errors="replace")
 
     objects = []
@@ -160,6 +188,19 @@ async def report_attendance(
     }
 
     async def build():
+        async def _attendance_count(lesson_ids, status: AttendanceStatus | None = None):
+            base = (
+                select(func.count())
+                .select_from(Attendance)
+                .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
+                .where(Attendance.lesson_id.in_(lesson_ids))
+            )
+            if status is not None:
+                base = base.where(Attendance.status == status)
+            if student_name:
+                base = base.where(StudentGroup.student_name.ilike(f"%{student_name}%"))
+            return (await db.scalar(base)) or 0
+
         groups_q = select(Group)
         if group_id:
             groups_q = groups_q.where(Group.id == group_id)
@@ -173,13 +214,7 @@ async def report_attendance(
                 lesson_q = lesson_q.where(Lesson.teacher_id == teacher_id)
             if period:
                 # фильтр по периоду через lesson_date
-                year, month = period.split("-")
-                from datetime import date
-                start = datetime(int(year), int(month), 1)
-                if int(month) == 12:
-                    end = datetime(int(year) + 1, 1, 1)
-                else:
-                    end = datetime(int(year), int(month) + 1, 1)
+                start, end = _period_bounds(period)
                 lesson_q = lesson_q.where(
                     and_(Lesson.lesson_date >= start, Lesson.lesson_date < end)
                 )
@@ -190,72 +225,10 @@ async def report_attendance(
             if not lesson_ids:
                 continue
 
-            total_att = await db.scalar(
-                select(func.count()).select_from(Attendance)
-                .where(Attendance.lesson_id.in_(lesson_ids))
-            ) or 0
-            if student_name:
-                total_att = await db.scalar(
-                    select(func.count()).select_from(Attendance)
-                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
-                    .where(
-                        and_(
-                            Attendance.lesson_id.in_(lesson_ids),
-                            StudentGroup.student_name.ilike(f"%{student_name}%"),
-                        )
-                    )
-                ) or 0
-            present = await db.scalar(
-                select(func.count()).select_from(Attendance)
-                .where(and_(
-                    Attendance.lesson_id.in_(lesson_ids),
-                    Attendance.status == AttendanceStatus.present,
-                ))
-            ) or 0
-            if student_name:
-                present = await db.scalar(
-                    select(func.count()).select_from(Attendance)
-                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
-                    .where(and_(
-                        Attendance.lesson_id.in_(lesson_ids),
-                        Attendance.status == AttendanceStatus.present,
-                        StudentGroup.student_name.ilike(f"%{student_name}%"),
-                    ))
-                ) or 0
-            absent = await db.scalar(
-                select(func.count()).select_from(Attendance)
-                .where(and_(
-                    Attendance.lesson_id.in_(lesson_ids),
-                    Attendance.status == AttendanceStatus.absent,
-                ))
-            ) or 0
-            if student_name:
-                absent = await db.scalar(
-                    select(func.count()).select_from(Attendance)
-                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
-                    .where(and_(
-                        Attendance.lesson_id.in_(lesson_ids),
-                        Attendance.status == AttendanceStatus.absent,
-                        StudentGroup.student_name.ilike(f"%{student_name}%"),
-                    ))
-                ) or 0
-            excused = await db.scalar(
-                select(func.count()).select_from(Attendance)
-                .where(and_(
-                    Attendance.lesson_id.in_(lesson_ids),
-                    Attendance.status == AttendanceStatus.excused,
-                ))
-            ) or 0
-            if student_name:
-                excused = await db.scalar(
-                    select(func.count()).select_from(Attendance)
-                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
-                    .where(and_(
-                        Attendance.lesson_id.in_(lesson_ids),
-                        Attendance.status == AttendanceStatus.excused,
-                        StudentGroup.student_name.ilike(f"%{student_name}%"),
-                    ))
-                ) or 0
+            total_att = await _attendance_count(lesson_ids, None)
+            present = await _attendance_count(lesson_ids, AttendanceStatus.present)
+            absent = await _attendance_count(lesson_ids, AttendanceStatus.absent)
+            excused = await _attendance_count(lesson_ids, AttendanceStatus.excused)
 
             rows.append({
                 "group_id":    group.id,
@@ -308,9 +281,7 @@ async def report_teacher_load(
             if group_id:
                 lessons_query = lessons_query.where(Lesson.group_id == group_id)
             if period:
-                year, month = period.split("-")
-                start = datetime(int(year), int(month), 1)
-                end = datetime(int(year) + (1 if int(month) == 12 else 0), 1 if int(month) == 12 else int(month) + 1, 1)
+                start, end = _period_bounds(period)
                 lessons_query = lessons_query.where(and_(Lesson.lesson_date >= start, Lesson.lesson_date < end))
             lessons_result = await db.execute(lessons_query)
             lessons = lessons_result.scalars().all()
@@ -406,9 +377,7 @@ async def report_lessons_conducted(
     if teacher_id:
         lessons_query = lessons_query.where(Lesson.teacher_id == teacher_id)
     if period:
-        year, month = period.split("-")
-        start = datetime(int(year), int(month), 1)
-        end = datetime(int(year) + (1 if int(month) == 12 else 0), 1 if int(month) == 12 else int(month) + 1, 1)
+        start, end = _period_bounds(period)
         lessons_query = lessons_query.where(and_(Lesson.lesson_date >= start, Lesson.lesson_date < end))
     if student_name:
         lessons_query = lessons_query.join(StudentGroup, StudentGroup.group_id == Lesson.group_id).where(

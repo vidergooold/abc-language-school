@@ -281,8 +281,8 @@ function parseAttachments(raw: string | null | undefined): string[] {
 function attachmentName(link: string, idx: number): string {
   try {
     const u = new URL(link)
-    const part = u.pathname.split('/').pop()
-    return part || `Вложение ${idx + 1}`
+    const filename = u.pathname.split('/').pop()
+    return filename || `Вложение ${idx + 1}`
   } catch {
     return `Вложение ${idx + 1}`
   }
@@ -292,16 +292,19 @@ async function onMaterialFilesSelected(event: Event) {
   const target = event.target as HTMLInputElement
   const files = target.files
   if (!files?.length) return
-  const links: string[] = []
-  for (const file of Array.from(files)) {
-    const value = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(String(reader.result || ''))
-      reader.onerror = () => reject(reader.error)
-      reader.readAsDataURL(file)
-    })
-    if (value) links.push(value)
-  }
+  const links = (
+    await Promise.all(
+      Array.from(files).map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result || ''))
+            reader.onerror = () => reject(reader.error)
+            reader.readAsDataURL(file)
+          })
+      )
+    )
+  ).filter(Boolean)
   const existing = form.attachments_text
     .split('\n')
     .map((line: string) => line.trim())

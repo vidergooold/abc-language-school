@@ -277,16 +277,19 @@ async function onHomeworkFilesSelected(event: Event) {
   const target = event.target as HTMLInputElement
   const files = target.files
   if (!files?.length) return
-  const links: string[] = []
-  for (const file of Array.from(files)) {
-    const value = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(String(reader.result || ''))
-      reader.onerror = () => reject(reader.error)
-      reader.readAsDataURL(file)
-    })
-    if (value) links.push(value)
-  }
+  const links = (
+    await Promise.all(
+      Array.from(files).map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result || ''))
+            reader.onerror = () => reject(reader.error)
+            reader.readAsDataURL(file)
+          })
+      )
+    )
+  ).filter(Boolean)
   const existing = form.attachment_urls_text.split('\n').map((x: string) => x.trim()).filter(Boolean)
   form.attachment_urls_text = [...existing, ...links].join('\n')
   target.value = ''

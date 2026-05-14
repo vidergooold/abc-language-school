@@ -334,7 +334,8 @@ async function exportReport(format: 'excel' | 'pdf') {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${currentReportType.value}.${format === 'excel' ? 'csv' : 'pdf'}`
+    const actualFileExtension = format === 'excel' ? 'csv' : 'pdf'
+    link.download = `${currentReportType.value}.${actualFileExtension}`
     document.body.appendChild(link)
     link.click()
     link.remove()
