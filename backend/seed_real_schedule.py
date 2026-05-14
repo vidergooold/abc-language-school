@@ -5,7 +5,7 @@ Seed реального расписания ABC Language School.
 """
 from typing import Optional
 import asyncio
-from datetime import time
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -70,6 +70,28 @@ TEACHER_LANGUAGE_BY_LASTNAME = {
     "Фомина": "Английский",
 }
 ALLOWED_TEACHER_LASTNAMES = set(TEACHER_LANGUAGE_BY_LASTNAME.keys())
+
+CANONICAL_PROGRAM_DURATION_MINUTES = {
+    "дошкольники": 45,
+    "fh1": 50,
+    "as1": 50,
+    "as2": 60,
+    "as3": 60,
+    "as4": 60,
+    "gwa1+": 75,
+    "gwa2": 75,
+    "gwb1": 90,
+    "gwb1+": 90,
+    "gwb2": 90,
+    "gwb2+": 90,
+    "gwc1": 90,
+    "взрослые групповые": 90,
+    "мини-группа": 45,
+    "мини-группа (2 чел.)": 45,
+    "индивидуальные занятия": 45,
+    "китайский": 45,
+    "китайский язык": 45,
+}
 
 GROUPS_SCHEDULE = [
     {"group_name": "Дошкольники", "teacher_lastname": "Данилова", "branch_name": "МАОУ СОШ №221", "day_of_week": DayOfWeek.monday, "time_start": time(15, 0), "time_end": time(16, 30), "classroom": "каб. 311"},
@@ -154,12 +176,30 @@ async def _get_or_create_group(
     return group
 
 
-async def _get_or_create_classroom(db: AsyncSession, name: str) -> Classroom:
-    result = await db.execute(select(Classroom).where(Classroom.name == name))
+def _lesson_duration_minutes(group_name: str) -> Optional[int]:
+    key = (group_name or "").strip().lower().replace("ё", "е")
+    if key in CANONICAL_PROGRAM_DURATION_MINUTES:
+        return CANONICAL_PROGRAM_DURATION_MINUTES[key]
+    if key.startswith("мини-группа"):
+        return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
+    return None
+
+
+def _derive_time_end(time_start: time, duration_minutes: int) -> time:
+    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time().replace(second=0, microsecond=0)
+
+
+async def _get_or_create_classroom(db: AsyncSession, name: str, branch_id: int) -> Classroom:
+    result = await db.execute(
+        select(Classroom).where(
+            Classroom.name == name,
+            Classroom.branch_id == branch_id,
+        )
+    )
     classroom = result.scalar_one_or_none()
     if classroom:
         return classroom
-    classroom = Classroom(name=name, capacity=12, is_active=True)
+    classroom = Classroom(name=name, capacity=12, branch_id=branch_id, is_active=True)
     db.add(classroom)
     await db.flush()
     return classroom
@@ -239,7 +279,7 @@ async def seed_real_schedule() -> None:
                 skipped_invalid_data += 1
                 continue
 
-            classroom = await _get_or_create_classroom(db, classroom_name)
+            classroom = await _get_or_create_classroom(db, classroom_name, branch.id)
             expected_language = TEACHER_LANGUAGE_BY_LASTNAME.get(lastname)
             if expected_language is None:
                 print(f"⚠️  Для преподавателя '{lastname}' не найден язык обучения — строка пропущена")
@@ -269,6 +309,14 @@ async def seed_real_schedule() -> None:
                 skipped_exists += 1
                 continue
 
+            duration_minutes = _lesson_duration_minutes(entry["group_name"])
+            if duration_minutes is None:
+                print(
+                    f"⚠️  Не удалось определить длительность программы для группы '{entry['group_name']}' — строка пропущена"
+                )
+                skipped_invalid_data += 1
+                continue
+
             lesson = Lesson(
                 group_id=group.id,
                 teacher_id=teacher.id,
@@ -276,7 +324,7 @@ async def seed_real_schedule() -> None:
                 branch_id=branch.id,
                 day_of_week=entry["day_of_week"],
                 time_start=entry["time_start"],
-                time_end=entry["time_end"],
+                time_end=_derive_time_end(entry["time_start"], duration_minutes),
                 status=LessonStatus.scheduled,
                 is_recurring=True,
             )

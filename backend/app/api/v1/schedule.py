@@ -11,7 +11,7 @@
   POST /classrooms           — require_admin
 """
 from typing import List, Optional
-from datetime import datetime, time
+from datetime import date, datetime, time, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,9 +47,108 @@ DAY_OF_WEEK_BY_INDEX = {
     6: "sunday",
 }
 
+CANONICAL_PROGRAM_DURATION_MINUTES = {
+    "дошкольники": 45,
+    "fh1": 50,
+    "as1": 50,
+    "as2": 60,
+    "as3": 60,
+    "as4": 60,
+    "gwa1+": 75,
+    "gwa2": 75,
+    "gwb1": 90,
+    "gwb1+": 90,
+    "gwb2": 90,
+    "gwb2+": 90,
+    "gwc1": 90,
+    "взрослые групповые": 90,
+    "мини-группа": 45,
+    "мини-группа (2 чел.)": 45,
+    "индивидуальные занятия": 45,
+    "китайский язык": 45,
+    "китайский": 45,
+    "fh1, as1": 50,
+    "as2, as3, as4": 60,
+    "gwa1+, gwa2": 75,
+    "gwb1, gwb1+, gwb2, gwb2+, gwc1": 90,
+}
+
+FIXED_NON_STUDY_DATES = {
+    (2, 23),
+    (3, 8),
+    (5, 1),
+    (5, 9),
+    (11, 4),
+}
+
 
 def _enum_value(value):
     return value.value if hasattr(value, "value") else value
+
+
+def _normalize_program_key(name: Optional[str]) -> str:
+    return (name or "").strip().lower().replace("ё", "е")
+
+
+def _canonical_program_duration_minutes(program_name: Optional[str]) -> Optional[int]:
+    key = _normalize_program_key(program_name)
+    if not key:
+        return None
+    if key in CANONICAL_PROGRAM_DURATION_MINUTES:
+        return CANONICAL_PROGRAM_DURATION_MINUTES[key]
+    if key.startswith("мини-группа"):
+        return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
+    return None
+
+
+def _derive_time_end(time_start: time, duration_minutes: int) -> time:
+    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time().replace(second=0, microsecond=0)
+
+
+def _is_non_study_date(lesson_date: date) -> bool:
+    month_day = (lesson_date.month, lesson_date.day)
+    if month_day in FIXED_NON_STUDY_DATES:
+        return True
+    if (lesson_date.month, lesson_date.day) >= (6, 1) and (lesson_date.month, lesson_date.day) < (9, 1):
+        return True
+    if (lesson_date.month, lesson_date.day) >= (12, 30) or (lesson_date.month, lesson_date.day) <= (1, 7):
+        return True
+    return False
+
+
+async def _normalize_lesson_payload(db: AsyncSession, data: LessonCreate) -> LessonCreate:
+    group = await db.scalar(select(Group).where(Group.id == data.group_id))
+    if group is None:
+        return data
+
+    candidates: list[Optional[str]] = []
+    if data.program_id is not None:
+        explicit_program = await db.scalar(
+            select(EducationalProgram.name).where(EducationalProgram.id == data.program_id)
+        )
+        candidates.append(explicit_program)
+    candidates.extend([group.program_name, group.name])
+    course_name = await db.scalar(select(Course.name).where(Course.id == group.course_id))
+    candidates.append(course_name)
+
+    duration_minutes = next(
+        (
+            duration
+            for duration in (
+                _canonical_program_duration_minutes(program_name)
+                for program_name in candidates
+            )
+            if duration is not None
+        ),
+        None,
+    )
+    if duration_minutes is None:
+        return data
+
+    derived_end = _derive_time_end(data.time_start, duration_minutes)
+    if derived_end == data.time_end:
+        return data
+    return data.model_copy(update={"time_end": derived_end})
 
 
 async def _resolve_teacher_id_for_user(db: AsyncSession, current_user: User) -> Optional[int]:
@@ -121,6 +220,8 @@ async def _validate_schedule_payload(db: AsyncSession, data: LessonCreate) -> No
         raise HTTPException(status_code=400, detail="Время окончания должно быть позже времени начала")
 
     if data.lesson_date is not None:
+        if _is_non_study_date(data.lesson_date.date()):
+            raise HTTPException(status_code=400, detail="Дата занятия попадает в неучебный период")
         expected_day = DAY_OF_WEEK_BY_INDEX[data.lesson_date.weekday()]
         if _enum_value(data.day_of_week) != expected_day:
             raise HTTPException(
@@ -460,6 +561,7 @@ async def create_lesson(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_staff),
 ):
+    data = await _normalize_lesson_payload(db, data)
     if current_user.role == UserRole.teacher:
         teacher_id = await _resolve_teacher_id_for_user(db, current_user)
         if teacher_id is None:
@@ -504,6 +606,7 @@ async def update_lesson(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_staff),
 ):
+    data = await _normalize_lesson_payload(db, data)
     result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
@@ -553,13 +656,10 @@ async def cancel_lesson(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_admin),
 ):
-    result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
-    lesson = result.scalar_one_or_none()
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Занятие не найдено")
-    lesson.status = LessonStatus.cancelled
-    await db.commit()
-    return {"ok": True}
+    raise HTTPException(
+        status_code=409,
+        detail="Занятие нельзя отменить: используйте перенос на другую дату/время/аудиторию",
+    )
 
 
 @router.post("/schedule/check-conflicts")
@@ -568,6 +668,7 @@ async def check_conflicts_only(
     db: AsyncSession = Depends(get_db),
     _: None = Depends(require_staff),
 ):
+    data = await _normalize_lesson_payload(db, data)
     await _validate_schedule_payload(db, data)
     conflicts = await check_schedule_conflicts(
         db=db,

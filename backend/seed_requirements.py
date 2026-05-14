@@ -17,7 +17,7 @@
 import asyncio
 import sys
 from collections import defaultdict
-from datetime import time
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -124,6 +124,28 @@ PROGRAMS_DATA = [
     },
 ]
 
+CANONICAL_PROGRAM_DURATION_MINUTES = {
+    "дошкольники": 45,
+    "fh1": 50,
+    "as1": 50,
+    "as2": 60,
+    "as3": 60,
+    "as4": 60,
+    "gwa1+": 75,
+    "gwa2": 75,
+    "gwb1": 90,
+    "gwb1+": 90,
+    "gwb2": 90,
+    "gwb2+": 90,
+    "gwc1": 90,
+    "взрослые групповые": 90,
+    "мини-группа": 45,
+    "мини-группа (2 чел.)": 45,
+    "индивидуальные занятия": 45,
+    "китайский": 45,
+    "китайский язык": 45,
+}
+
 # Слоты времени для расширения расписания
 DAILY_SLOTS: list[tuple[time, time]] = [
     (time(9, 0), time(10, 30)),
@@ -173,6 +195,19 @@ def _teacher_language(teacher: Teacher) -> str:
     if "китай" in s:
         return "Китайский"
     return "Английский"
+
+
+def _program_duration_minutes(program_name: str) -> int:
+    key = (program_name or "").strip().lower().replace("ё", "е")
+    if key in CANONICAL_PROGRAM_DURATION_MINUTES:
+        return CANONICAL_PROGRAM_DURATION_MINUTES[key]
+    if key.startswith("мини-группа"):
+        return CANONICAL_PROGRAM_DURATION_MINUTES["мини-группа"]
+    return 90
+
+
+def _derive_time_end(time_start: time, duration_minutes: int) -> time:
+    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time().replace(second=0, microsecond=0)
 
 
 # ─── Шаги seed ───────────────────────────────────────────────────────────────
@@ -414,12 +449,12 @@ async def _extend_teacher_schedules(
 
         added = 0
         slot_iter = (
-            (day, t_start, t_end)
+            (day, t_start)
             for day in DAYS_ORDER
-            for t_start, t_end in DAILY_SLOTS
+            for t_start, _ in DAILY_SLOTS
         )
 
-        for day, t_start, t_end in slot_iter:
+        for day, t_start in slot_iter:
             if added >= needed:
                 break
 
@@ -453,6 +488,8 @@ async def _extend_teacher_schedules(
                     break
             if program is None:
                 program = t_programs[added % len(t_programs)]
+            duration_minutes = _program_duration_minutes(program.name)
+            t_end = _derive_time_end(t_start, duration_minutes)
 
             # Выбираем филиал (round-robin по счётчику добавленных уроков)
             branch = branches[added % len(branches)]
