@@ -32,9 +32,9 @@ STUDENTS_PER_GROUP = {
     "GWB2+": 6,
     "GWC1": 6,
     "Взрослые групповые": 10,
-    "Мини-группа (2 чел.)": 2,
+    "Мини-группа": 2,
     "Индивидуальные занятия": 1,
-    "Китайский": 8,
+    "Китайский язык": 8,
 }
 CHILD_5_10_GROUPS = {"Дошкольники", "FH1"}
 SCHOOL_11_16_GROUPS = {"AS1", "AS2", "AS3", "AS4"}
@@ -42,19 +42,39 @@ ADULT_18_45_GROUPS = set(STUDENTS_PER_GROUP) - CHILD_5_10_GROUPS - SCHOOL_11_16_
 
 PROGRAM_TO_GROUP_NAME = {
     "Дошкольники": "Дошкольники",
+    "FH1": "FH1",
+    "AS1": "AS1",
+    "AS2": "AS2",
+    "AS3": "AS3",
+    "AS4": "AS4",
+    "GWA1+": "GWA1+",
+    "GWA2": "GWA2",
+    "GWB1": "GWB1",
+    "GWB1+": "GWB1+",
+    "GWB2": "GWB2",
+    "GWB2+": "GWB2+",
+    "GWC1": "GWC1",
+    "Взрослые групповые": "Взрослые групповые",
+    "Мини-группа": "Мини-группа",
+    "Индивидуальные занятия": "Индивидуальные занятия",
+    CHINESE_PROGRAM_NAME: CHINESE_PROGRAM_NAME,
+    # Поддержка старых объединённых программ: мапим в канонические названия групп
     "FH1, AS1": "FH1",
     "AS2, AS3, AS4": "AS2",
     "GWA1+, GWA2": "GWA1+",
     "GWB1, GWB1+, GWB2, GWB2+, GWC1": "GWB1",
-    "Взрослые групповые": "Взрослые групповые",
-    "Мини-группа (2 чел.)": "Мини-группа (2 чел.)",
-    "Индивидуальные занятия": "Индивидуальные занятия",
-    CHINESE_PROGRAM_NAME: "Китайский",
+    "Мини-группа (2 чел.)": "Мини-группа",
+    "Китайский": CHINESE_PROGRAM_NAME,
 }
 
 TEACHER_SUBJECTS = {
+    "Арнольд Валерия Евгеньевна": "chinese",
+    "Белова Александра Анатольевна": "chinese",
+    "Быковская Марина Эдуардовна": "chinese",
     "Винокурова Елена Александровна": "chinese",
     "Воронцова Анна Вадимовна": "chinese",
+    "Данилова Мария Анатольевна": "chinese",
+    "Евдокимова Полина Евгеньевна": "chinese",
 }
 
 DAY_SEQUENCE = [
@@ -88,7 +108,7 @@ def _teacher_language(teacher: Teacher) -> str:
 
 
 def _program_group_size(program_name: str) -> int:
-    if program_name == "Мини-группа (2 чел.)":
+    if program_name in {"Мини-группа", "Мини-группа (2 чел.)"}:
         return GROUP_SIZE_MINI
     if program_name == "Индивидуальные занятия":
         return GROUP_SIZE_INDIVIDUAL
