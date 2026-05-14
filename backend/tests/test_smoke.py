@@ -1078,6 +1078,61 @@ async def test_publish_scheduled_news_inserts_status_history(
     )
 
 
+async def test_admin_news_list_keeps_archived_and_public_excludes_it(
+    client: AsyncClient, admin_token: str
+):
+    """Archived news stays in admin list but disappears from public list."""
+    create_response = await client.post(
+        "/api/v1/admin/news",
+        headers=auth_headers(admin_token),
+        json={
+            "title": f"Archive visibility {uuid4()}",
+            "body": "Archive visibility body",
+            "status": "published",
+        },
+    )
+    assert create_response.status_code == 201, (
+        f"Published news creation failed ({create_response.status_code}): "
+        f"{create_response.text}"
+    )
+    created_news = create_response.json()
+    news_id = created_news["id"]
+    assert created_news["status"] == "published"
+
+    admin_before_archive = await client.get(
+        "/api/v1/admin/news", headers=auth_headers(admin_token)
+    )
+    assert admin_before_archive.status_code == 200
+    before_item = next(
+        (item for item in admin_before_archive.json() if item["id"] == news_id), None
+    )
+    assert before_item is not None
+    assert before_item["status"] == "published"
+
+    archive_response = await client.post(
+        f"/api/v1/admin/news/{news_id}/archive", headers=auth_headers(admin_token)
+    )
+    assert archive_response.status_code == 200, (
+        f"Archiving news failed ({archive_response.status_code}): {archive_response.text}"
+    )
+    assert archive_response.json()["status"] == "archived"
+
+    admin_after_archive = await client.get(
+        "/api/v1/admin/news", headers=auth_headers(admin_token)
+    )
+    assert admin_after_archive.status_code == 200
+    after_item = next(
+        (item for item in admin_after_archive.json() if item["id"] == news_id), None
+    )
+    assert after_item is not None
+    assert after_item["status"] == "archived"
+
+    public_news = await client.get("/api/v1/news")
+    assert public_news.status_code == 200
+    public_ids = {item["id"] for item in public_news.json().get("items", [])}
+    assert news_id not in public_ids
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Group 8 — Forms smoke regressions
 # ═══════════════════════════════════════════════════════════════════════════
