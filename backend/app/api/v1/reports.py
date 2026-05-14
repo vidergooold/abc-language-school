@@ -1,7 +1,10 @@
 import hashlib, json
+import csv
+import io
 from datetime import datetime, timedelta
 from decimal import Decimal
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import Response
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +22,85 @@ router = APIRouter(prefix="/reports", tags=["Reports"])
 
 def _make_hash(params: dict) -> str:
     return hashlib.md5(json.dumps(params, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def _rows_from_data(data):
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        if isinstance(data.get("items"), list):
+            return data["items"]
+        return [data]
+    return []
+
+
+def _to_csv_bytes(rows: list[dict]) -> bytes:
+    output = io.StringIO()
+    if not rows:
+        output.write("no_data\n")
+    else:
+        headers = sorted({key for row in rows for key in row.keys()})
+        writer = csv.DictWriter(output, fieldnames=headers)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({k: row.get(k) for k in headers})
+    return output.getvalue().encode("utf-8")
+
+
+def _to_simple_pdf_bytes(title: str, rows: list[dict]) -> bytes:
+    lines = [title, ""]
+    if not rows:
+        lines.append("No data")
+    else:
+        for row in rows[:200]:
+            line = "; ".join(f"{k}: {row.get(k)}" for k in sorted(row.keys()))
+            lines.append(line[:1200])
+
+    text_parts = []
+    for line in lines:
+        safe = str(line).replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+        text_parts.append(f"({safe}) Tj")
+        text_parts.append("T*")
+    content = "BT /F1 10 Tf 50 790 Td " + " ".join(text_parts) + " ET"
+    content_bytes = content.encode("latin-1", errors="replace")
+
+    objects = []
+    objects.append(b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n")
+    objects.append(b"2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj\n")
+    objects.append(b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n")
+    objects.append(b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n")
+    objects.append(f"5 0 obj << /Length {len(content_bytes)} >> stream\n".encode("ascii") + content_bytes + b"\nendstream endobj\n")
+
+    pdf = io.BytesIO()
+    pdf.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(pdf.tell())
+        pdf.write(obj)
+    xref_pos = pdf.tell()
+    pdf.write(f"xref\n0 {len(offsets)}\n".encode("ascii"))
+    pdf.write(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        pdf.write(f"{off:010d} 00000 n \n".encode("ascii"))
+    pdf.write(f"trailer << /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF".encode("ascii"))
+    return pdf.getvalue()
+
+
+def _export_response(report_name: str, data, export_format: str):
+    rows = _rows_from_data(data)
+    if export_format == "excel":
+        return Response(
+            content=_to_csv_bytes(rows),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="{report_name}.csv"'},
+        )
+    if export_format == "pdf":
+        return Response(
+            content=_to_simple_pdf_bytes(report_name, rows),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{report_name}.pdf"'},
+        )
+    return {"data": data}
 
 
 async def _get_or_build(
@@ -59,6 +141,9 @@ async def _get_or_build(
 async def report_attendance(
     period: str = Query(None, description="YYYY-MM, напр. 2026-04"),
     group_id: int = Query(None),
+    teacher_id: int = Query(None),
+    student_name: str = Query(None),
+    export_format: str = Query("json"),
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
@@ -67,7 +152,12 @@ async def report_attendance(
     Для каждой группы: всего занятий, посещено, пропущено, % посещаемости.
     Кэшируется на 30 минут.
     """
-    params = {"period": period, "group_id": group_id}
+    params = {
+        "period": period,
+        "group_id": group_id,
+        "teacher_id": teacher_id,
+        "student_name": student_name,
+    }
 
     async def build():
         groups_q = select(Group)
@@ -79,6 +169,8 @@ async def report_attendance(
         rows = []
         for group in groups:
             lesson_q = select(Lesson).where(Lesson.group_id == group.id)
+            if teacher_id:
+                lesson_q = lesson_q.where(Lesson.teacher_id == teacher_id)
             if period:
                 # фильтр по периоду через lesson_date
                 year, month = period.split("-")
@@ -102,6 +194,17 @@ async def report_attendance(
                 select(func.count()).select_from(Attendance)
                 .where(Attendance.lesson_id.in_(lesson_ids))
             ) or 0
+            if student_name:
+                total_att = await db.scalar(
+                    select(func.count()).select_from(Attendance)
+                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
+                    .where(
+                        and_(
+                            Attendance.lesson_id.in_(lesson_ids),
+                            StudentGroup.student_name.ilike(f"%{student_name}%"),
+                        )
+                    )
+                ) or 0
             present = await db.scalar(
                 select(func.count()).select_from(Attendance)
                 .where(and_(
@@ -109,6 +212,16 @@ async def report_attendance(
                     Attendance.status == AttendanceStatus.present,
                 ))
             ) or 0
+            if student_name:
+                present = await db.scalar(
+                    select(func.count()).select_from(Attendance)
+                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
+                    .where(and_(
+                        Attendance.lesson_id.in_(lesson_ids),
+                        Attendance.status == AttendanceStatus.present,
+                        StudentGroup.student_name.ilike(f"%{student_name}%"),
+                    ))
+                ) or 0
             absent = await db.scalar(
                 select(func.count()).select_from(Attendance)
                 .where(and_(
@@ -116,6 +229,16 @@ async def report_attendance(
                     Attendance.status == AttendanceStatus.absent,
                 ))
             ) or 0
+            if student_name:
+                absent = await db.scalar(
+                    select(func.count()).select_from(Attendance)
+                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
+                    .where(and_(
+                        Attendance.lesson_id.in_(lesson_ids),
+                        Attendance.status == AttendanceStatus.absent,
+                        StudentGroup.student_name.ilike(f"%{student_name}%"),
+                    ))
+                ) or 0
             excused = await db.scalar(
                 select(func.count()).select_from(Attendance)
                 .where(and_(
@@ -123,6 +246,16 @@ async def report_attendance(
                     Attendance.status == AttendanceStatus.excused,
                 ))
             ) or 0
+            if student_name:
+                excused = await db.scalar(
+                    select(func.count()).select_from(Attendance)
+                    .join(StudentGroup, StudentGroup.id == Attendance.student_group_id)
+                    .where(and_(
+                        Attendance.lesson_id.in_(lesson_ids),
+                        Attendance.status == AttendanceStatus.excused,
+                        StudentGroup.student_name.ilike(f"%{student_name}%"),
+                    ))
+                ) or 0
 
             rows.append({
                 "group_id":    group.id,
@@ -136,11 +269,18 @@ async def report_attendance(
             })
         return rows
 
-    return await _get_or_build(db, "attendance", params, build)
+    payload = await _get_or_build(db, "attendance", params, build)
+    if export_format in ("excel", "pdf"):
+        return _export_response("attendance-report", payload["data"], export_format)
+    return payload
 
 
 @router.get("/teacher-load")
 async def report_teacher_load(
+    period: str = Query(None, description="YYYY-MM, напр. 2026-04"),
+    teacher_id: int = Query(None),
+    group_id: int = Query(None),
+    export_format: str = Query("json"),
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
@@ -151,19 +291,28 @@ async def report_teacher_load(
     - Средняя заполненность групп
     Кэшируется на 15 минут.
     """
-    params = {"type": "teacher_load"}
+    params = {"type": "teacher_load", "period": period, "teacher_id": teacher_id, "group_id": group_id}
 
     async def build():
-        teachers_result = await db.execute(select(Teacher).where(Teacher.is_active == True))
+        teachers_query = select(Teacher).where(Teacher.is_active == True)
+        if teacher_id:
+            teachers_query = teachers_query.where(Teacher.id == teacher_id)
+        teachers_result = await db.execute(teachers_query)
         teachers = teachers_result.scalars().all()
         rows = []
         for t in teachers:
-            lessons_result = await db.execute(
-                select(Lesson).where(and_(
-                    Lesson.teacher_id == t.id,
-                    Lesson.status == LessonStatus.scheduled,
-                ))
-            )
+            lessons_query = select(Lesson).where(and_(
+                Lesson.teacher_id == t.id,
+                Lesson.status == LessonStatus.scheduled,
+            ))
+            if group_id:
+                lessons_query = lessons_query.where(Lesson.group_id == group_id)
+            if period:
+                year, month = period.split("-")
+                start = datetime(int(year), int(month), 1)
+                end = datetime(int(year) + (1 if int(month) == 12 else 0), 1 if int(month) == 12 else int(month) + 1, 1)
+                lessons_query = lessons_query.where(and_(Lesson.lesson_date >= start, Lesson.lesson_date < end))
+            lessons_result = await db.execute(lessons_query)
             lessons = lessons_result.scalars().all()
             hours_per_week = sum(
                 (datetime.combine(datetime.today(), l.time_end) -
@@ -188,7 +337,98 @@ async def report_teacher_load(
             })
         return sorted(rows, key=lambda x: x["hours_per_week"], reverse=True)
 
-    return await _get_or_build(db, "teacher_load", params, build, ttl_minutes=15)
+    payload = await _get_or_build(db, "teacher_load", params, build, ttl_minutes=15)
+    if export_format in ("excel", "pdf"):
+        return _export_response("teacher-workload-report", payload["data"], export_format)
+    return payload
+
+
+@router.get("/financial")
+async def report_financial(
+    period: str = Query(None, description="YYYY-MM, напр. 2026-04"),
+    group_id: int = Query(None),
+    teacher_id: int = Query(None),
+    student_name: str = Query(None),
+    export_format: str = Query("json"),
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_admin),
+):
+    query = select(Invoice).order_by(Invoice.due_date.desc())
+    if period:
+        query = query.where(Invoice.period == period)
+    if group_id:
+        query = query.where(Invoice.group_id == group_id)
+    if student_name:
+        query = query.where(Invoice.student_name.ilike(f"%{student_name}%"))
+    if teacher_id:
+        query = query.join(Group, Group.id == Invoice.group_id).where(Group.teacher_id == teacher_id)
+
+    invoices = (await db.execute(query)).scalars().all()
+    rows = []
+    for inv in invoices:
+        rows.append({
+            "invoice_id": inv.id,
+            "student_name": inv.student_name,
+            "group_id": inv.group_id,
+            "period": inv.period,
+            "amount": float(inv.amount or 0),
+            "amount_paid": float(inv.amount_paid or 0),
+            "debt": float((inv.amount or Decimal(0)) - (inv.amount_paid or Decimal(0))),
+            "status": inv.status.value if hasattr(inv.status, "value") else str(inv.status),
+            "due_date": inv.due_date.isoformat() if inv.due_date else None,
+        })
+    total_amount = sum(r["amount"] for r in rows)
+    total_paid = sum(r["amount_paid"] for r in rows)
+    data = {
+        "total_invoiced": round(total_amount, 2),
+        "total_paid": round(total_paid, 2),
+        "total_debt": round(total_amount - total_paid, 2),
+        "items": rows,
+    }
+    if export_format in ("excel", "pdf"):
+        return _export_response("financial-report", data, export_format)
+    return data
+
+
+@router.get("/lessons-conducted")
+async def report_lessons_conducted(
+    period: str = Query(None, description="YYYY-MM, напр. 2026-04"),
+    group_id: int = Query(None),
+    teacher_id: int = Query(None),
+    student_name: str = Query(None),
+    export_format: str = Query("json"),
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_admin),
+):
+    lessons_query = select(Lesson).where(Lesson.status.in_([LessonStatus.completed, LessonStatus.rescheduled]))
+    if group_id:
+        lessons_query = lessons_query.where(Lesson.group_id == group_id)
+    if teacher_id:
+        lessons_query = lessons_query.where(Lesson.teacher_id == teacher_id)
+    if period:
+        year, month = period.split("-")
+        start = datetime(int(year), int(month), 1)
+        end = datetime(int(year) + (1 if int(month) == 12 else 0), 1 if int(month) == 12 else int(month) + 1, 1)
+        lessons_query = lessons_query.where(and_(Lesson.lesson_date >= start, Lesson.lesson_date < end))
+    if student_name:
+        lessons_query = lessons_query.join(StudentGroup, StudentGroup.group_id == Lesson.group_id).where(
+            StudentGroup.student_name.ilike(f"%{student_name}%")
+        )
+
+    lessons_result = await db.execute(lessons_query)
+    lessons = lessons_result.scalars().all()
+    rows = [{
+        "lesson_id": lesson.id,
+        "group_id": lesson.group_id,
+        "teacher_id": lesson.teacher_id,
+        "lesson_date": lesson.lesson_date.isoformat() if lesson.lesson_date else None,
+        "status": lesson.status.value if hasattr(lesson.status, "value") else str(lesson.status),
+        "topic": lesson.topic or "",
+    } for lesson in lessons]
+    data = {"count": len(rows), "items": rows}
+    if export_format in ("excel", "pdf"):
+        return _export_response("lessons-conducted-report", data, export_format)
+    return data
 
 
 @router.get("/debts")

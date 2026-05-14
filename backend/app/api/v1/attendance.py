@@ -564,6 +564,7 @@ async def get_group_materials_matrix(
             "slot_date": ld.isoformat(),
             "time_start": lesson.time_start.isoformat() if lesson.time_start else None,
             "topic": lesson.topic or "",
+            "material_attachments": lesson.material_attachments,
             "is_custom_date": True,
         })
 
@@ -808,6 +809,7 @@ async def get_materials_by_group(
                     "id": lesson.id,
                     "lesson_date": ld.isoformat(),
                     "topic": lesson.topic,
+                    "material_attachments": lesson.material_attachments,
                     "description": lesson.topic or "",  # Use topic as description for now
                 })
 

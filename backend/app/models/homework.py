@@ -19,6 +19,7 @@ class Homework(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
+    attachment_urls_json = Column(Text, nullable=True)
     lesson_date = Column(DateTime, nullable=True)   # дата занятия, на котором задано
     due_date = Column(DateTime, nullable=False)
     status = Column(SAEnum(HomeworkStatus), nullable=False, default=HomeworkStatus.assigned)

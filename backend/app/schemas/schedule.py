@@ -48,6 +48,7 @@ class LessonCreate(BaseModel):
     time_start: time
     time_end: time
     topic: Optional[str] = None
+    material_attachments: Optional[str] = None
     is_recurring: bool = True
     lesson_date: Optional[datetime] = None
 
@@ -63,6 +64,7 @@ class LessonManageOut(BaseModel):
     time_start: time
     time_end: time
     topic: Optional[str] = None
+    material_attachments: Optional[str] = None
     status: LessonStatus
     is_recurring: bool
     lesson_date: Optional[datetime] = None

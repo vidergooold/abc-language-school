@@ -2,6 +2,36 @@
   <div class="lesson-material-page">
     <h1>Материал урока</h1>
 
+    <template v-if="auth.isStudent">
+      <div v-if="loading" class="skeleton-list">
+        <div class="skeleton-card" v-for="n in 4" :key="n"></div>
+      </div>
+      <div v-else-if="studentError" class="empty-state">
+        <p>{{ studentError }}</p>
+      </div>
+      <div v-else-if="studentMaterials.length" class="journal-wrap">
+        <div class="journal-head">
+          <div class="jh-date">Дата занятия</div>
+          <div class="jh-topic">Материал урока</div>
+          <div class="jh-action"></div>
+        </div>
+        <div v-for="lesson in studentMaterials" :key="lesson.id" class="journal-row">
+          <div class="jr-date">{{ formatDateTime(lesson.lesson_date, lesson.time_start) }}</div>
+          <div class="jr-topic">
+            <span class="topic-plain">{{ lesson.topic || lesson.description || 'Материал не заполнен' }}</span>
+            <ul v-if="parseAttachments(lesson.material_attachments).length" class="attachment-list">
+              <li v-for="(link, idx) in parseAttachments(lesson.material_attachments)" :key="`${lesson.id}-${idx}`">
+                <a :href="link" target="_blank" rel="noopener noreferrer">{{ attachmentName(link, idx) }}</a>
+              </li>
+            </ul>
+          </div>
+          <div class="jr-action"></div>
+        </div>
+      </div>
+      <div v-else class="empty-state"><p>Материалы урока для вашей группы пока не добавлены.</p></div>
+    </template>
+    <template v-else>
+
     <!-- Оранжевая панель фильтров -->
     <div class="filters-card report-filters">
       <div class="filter-grid">
@@ -81,6 +111,11 @@
               <li v-for="(line, i) in topicLines(lesson.topic)" :key="i">{{ line }}</li>
             </ul>
             <span v-else class="topic-plain">{{ lesson.topic || 'Тема не заполнена' }}</span>
+            <ul v-if="parseAttachments(lesson.material_attachments).length" class="attachment-list">
+              <li v-for="(link, idx) in parseAttachments(lesson.material_attachments)" :key="`${lesson.id}-${idx}`">
+                <a :href="link" target="_blank" rel="noopener noreferrer">{{ attachmentName(link, idx) }}</a>
+              </li>
+            </ul>
           </div>
           <div class="jr-action">
             <button class="btn-pencil" @click="openEdit(lesson)" title="Редактировать">✏️</button>
@@ -111,6 +146,16 @@
               required
             ></textarea>
           </label>
+          <label class="full">Вложения (каждая ссылка с новой строки)
+            <textarea
+              v-model="form.attachments_text"
+              rows="3"
+              placeholder="https://...&#10;https://..."
+            ></textarea>
+          </label>
+          <label class="full">Прикрепить файл/фото
+            <input type="file" @change="onMaterialFilesSelected" multiple />
+          </label>
         </div>
 
         <p v-if="formError" class="form-error">{{ formError }}</p>
@@ -123,23 +168,29 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, onMounted } from 'vue'
 import http from '@/api/http'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const loading = ref(false)
 const saving = ref(false)
 const modal = ref(false)
 const editingId = ref<number | null>(null)
 const formError = ref('')
+const studentError = ref('')
 
 const branches = ref<any[]>([])
 const teachers = ref<any[]>([])
 const groups = ref<any[]>([])
 const lessons = ref<any[]>([])
+const studentMaterials = ref<any[]>([])
 const editingLesson = ref<any | null>(null)
 
 const filters = reactive({
@@ -151,7 +202,7 @@ const filters = reactive({
   student_name: '',
 })
 
-const emptyForm = () => ({ lesson_date: '', topic: '' })
+const emptyForm = () => ({ lesson_date: '', topic: '', attachments_text: '' })
 const form = reactive(emptyForm())
 
 // Текущая группа и преподаватель для заголовка
@@ -216,6 +267,49 @@ function toIsoDate(dateStr: string): string {
   return `${dateStr}T00:00:00`
 }
 
+function parseAttachments(raw: string | null | undefined): string[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed.map((v) => String(v)).filter(Boolean)
+  } catch {
+    // ignore malformed data
+  }
+  return []
+}
+
+function attachmentName(link: string, idx: number): string {
+  try {
+    const u = new URL(link)
+    const part = u.pathname.split('/').pop()
+    return part || `Вложение ${idx + 1}`
+  } catch {
+    return `Вложение ${idx + 1}`
+  }
+}
+
+async function onMaterialFilesSelected(event: Event) {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (!files?.length) return
+  const links: string[] = []
+  for (const file of Array.from(files)) {
+    const value = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result || ''))
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(file)
+    })
+    if (value) links.push(value)
+  }
+  const existing = form.attachments_text
+    .split('\n')
+    .map((line: string) => line.trim())
+    .filter(Boolean)
+  form.attachments_text = [...existing, ...links].join('\n')
+  target.value = ''
+}
+
 function clearFilters() {
   filters.date_from = ''
   filters.date_to = ''
@@ -260,6 +354,22 @@ async function loadLessons() {
   finally { loading.value = false }
 }
 
+async function loadMyMaterials() {
+  loading.value = true
+  studentError.value = ''
+  try {
+    const res = await http.get('/materials/my')
+    studentMaterials.value = Array.isArray(res.data)
+      ? res.data.slice().sort((a: any, b: any) => String(b.lesson_date || '').localeCompare(String(a.lesson_date || '')))
+      : []
+  } catch {
+    studentMaterials.value = []
+    studentError.value = 'Не удалось загрузить материалы урока'
+  } finally {
+    loading.value = false
+  }
+}
+
 function openCreate() {
   if (!filters.group_id) return
   Object.assign(form, emptyForm())
@@ -273,6 +383,7 @@ function openEdit(lesson: any) {
   Object.assign(form, {
     lesson_date: lesson.lesson_date ? lesson.lesson_date.slice(0, 10) : '',
     topic: lesson.topic || '',
+    attachments_text: parseAttachments(lesson.material_attachments).join('\n'),
   })
   editingLesson.value = lesson
   editingId.value = lesson.id
@@ -308,6 +419,9 @@ async function saveLesson() {
       time_start: template.time_start?.slice(0, 8),
       time_end: template.time_end?.slice(0, 8),
       topic: form.topic.trim(),
+      material_attachments: JSON.stringify(
+        form.attachments_text.split('\n').map((line: string) => line.trim()).filter(Boolean)
+      ),
       is_recurring: false,
       lesson_date: toIsoDate(form.lesson_date),
     }
@@ -323,7 +437,13 @@ async function saveLesson() {
   } finally { saving.value = false }
 }
 
-onMounted(loadBranches)
+onMounted(async () => {
+  if (auth.isStudent) {
+    await loadMyMaterials()
+    return
+  }
+  await loadBranches()
+})
 </script>
 
 <style scoped>
@@ -559,6 +679,14 @@ onMounted(loadBranches)
   font-size: 14px;
   color: #374151;
   line-height: 1.5;
+}
+.attachment-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.attachment-list a {
+  color: #0f766e;
 }
 
 .jr-action {

@@ -48,8 +48,41 @@
           <input type="text" v-model.trim="filters.student_name" placeholder="Поиск по имени" @input="applyLocalFilters" />
           <button type="button" class="clear-btn" @click="filters.student_name = ''; applyLocalFilters()">Очистить</button>
         </div>
+        <div class="field filter-field">
+          <label>Период отчёта</label>
+          <input type="month" v-model="filters.report_period" />
+        </div>
       </div>
     </div>
+
+    <section v-if="isAdmin" class="report-panel">
+      <h3>Отчёты</h3>
+      <div class="report-actions">
+        <button type="button" class="clear-btn" @click="loadReport('financial')">Финансовый</button>
+        <button type="button" class="clear-btn" @click="loadReport('attendance')">Посещаемость</button>
+        <button type="button" class="clear-btn" @click="loadReport('lessons-conducted')">Проведённые занятия</button>
+        <button type="button" class="clear-btn" @click="loadReport('teacher-load')">Нагрузка преподавателей</button>
+      </div>
+      <div v-if="reportLoading" class="loading">Загрузка отчёта...</div>
+      <div v-else-if="reportRows.length" class="report-export">
+        <button type="button" class="clear-btn" @click="exportReport('excel')">Экспорт Excel</button>
+        <button type="button" class="clear-btn" @click="exportReport('pdf')">Экспорт PDF</button>
+      </div>
+      <div v-if="reportRows.length" class="table-wrap">
+        <table class="payment-table">
+          <thead>
+            <tr>
+              <th v-for="col in reportColumns" :key="col">{{ col }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, idx) in reportRows.slice(0, 20)" :key="idx">
+              <td v-for="col in reportColumns" :key="`${idx}-${col}`">{{ row[col] ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <section v-if="selectedGroup" class="group-head">
       <h2>{{ selectedGroup.name }}</h2>
@@ -94,6 +127,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import http from '@/api/http'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
+const isAdmin = computed(() => auth.user?.role === 'admin')
 
 type InvoiceLike = {
   id: number
@@ -117,6 +154,10 @@ const students = ref<any[]>([])
 const invoices = ref<InvoiceLike[]>([])
 const selectedGroup = ref<any | null>(null)
 const loading = ref(false)
+const reportLoading = ref(false)
+const currentReportType = ref('financial')
+const reportRows = ref<any[]>([])
+const reportColumns = ref<string[]>([])
 
 const filters = reactive({
   branch_id: null as number | null,
@@ -125,6 +166,7 @@ const filters = reactive({
   study_year: 2025,
   only_debtors: false,
   student_name: '',
+  report_period: '',
 })
 
 const monthColumns = computed(() => {
@@ -250,6 +292,56 @@ function applyLocalFilters() {
     )
   }
   visibleRows.value = list
+}
+
+function reportParams() {
+  return {
+    period: filters.report_period || undefined,
+    group_id: filters.group_id || undefined,
+    teacher_id: filters.teacher_id || undefined,
+    student_name: filters.student_name || undefined,
+  }
+}
+
+async function loadReport(type: string) {
+  currentReportType.value = type
+  reportLoading.value = true
+  try {
+    const res = await http.get(`/reports/${type}`, { params: reportParams() })
+    const data = res.data?.data ?? res.data
+    const rows = Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data)
+        ? data
+        : [data]
+    reportRows.value = rows
+    reportColumns.value = Array.from(new Set(rows.flatMap((row: any) => Object.keys(row || {}))))
+  } catch {
+    reportRows.value = []
+    reportColumns.value = []
+  } finally {
+    reportLoading.value = false
+  }
+}
+
+async function exportReport(format: 'excel' | 'pdf') {
+  try {
+    const response = await http.get(`/reports/${currentReportType.value}`, {
+      params: { ...reportParams(), export_format: format },
+      responseType: 'blob',
+    })
+    const blob = new Blob([response.data], { type: response.headers['content-type'] || 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${currentReportType.value}.${format === 'excel' ? 'csv' : 'pdf'}`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch {
+    // ignore export error in UI
+  }
 }
 
 function iconTitle(status: string) {
@@ -441,6 +533,25 @@ function formatRub(value: number) {
   font-size: 22px;
   font-weight: 800;
   color: #111827;
+}
+
+.report-panel {
+  background: #fff7f0;
+  border: 1px solid #ffe3cf;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.report-panel h3 {
+  margin: 0 0 8px;
+  color: var(--brand-purple);
+}
+.report-actions,
+.report-export {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .price-line {

@@ -16,7 +16,14 @@
         <div v-for="hw in sortedHomeworks" :key="hw.id" class="journal-row">
           <div class="jr-date">{{ formatDateTime(hw.lesson_date || hw.created_at) }}</div>
           <div class="jr-task">
-            <span class="task-text">{{ hw.description || hw.title || '—' }}</span>
+            <div>
+              <span class="task-text">{{ hw.description || hw.title || '—' }}</span>
+              <ul v-if="parseAttachmentUrls(hw.attachment_urls_json).length" class="attachment-list">
+                <li v-for="(link, idx) in parseAttachmentUrls(hw.attachment_urls_json)" :key="`${hw.id}-${idx}`">
+                  <a :href="link" target="_blank" rel="noopener noreferrer">{{ attachmentName(link, idx) }}</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -104,7 +111,14 @@
           <div v-for="hw in filteredHomeworks" :key="hw.id" class="journal-row">
             <div class="jr-date">{{ formatDateTime(hw.lesson_date) }}</div>
             <div class="jr-task">
-              <span class="task-text">{{ hw.description || hw.title || '—' }}</span>
+              <div>
+                <span class="task-text">{{ hw.description || hw.title || '—' }}</span>
+                <ul v-if="parseAttachmentUrls(hw.attachment_urls_json).length" class="attachment-list">
+                  <li v-for="(link, idx) in parseAttachmentUrls(hw.attachment_urls_json)" :key="`${hw.id}-${idx}`">
+                    <a :href="link" target="_blank" rel="noopener noreferrer">{{ attachmentName(link, idx) }}</a>
+                  </li>
+                </ul>
+              </div>
               <button class="btn-pencil" @click="openEdit(hw)" title="Редактировать">✏️</button>
             </div>
           </div>
@@ -134,6 +148,12 @@
               placeholder="Опишите домашнее задание..."
               required
             ></textarea>
+          </label>
+          <label class="full">Вложения (каждая ссылка с новой строки)
+            <textarea v-model="form.attachment_urls_text" rows="3" placeholder="https://...&#10;https://..."></textarea>
+          </label>
+          <label class="full">Прикрепить файл/фото
+            <input type="file" @change="onHomeworkFilesSelected" multiple />
           </label>
         </div>
 
@@ -182,7 +202,7 @@ const filters = reactive({
   student_name: '',
 })
 
-const emptyForm = () => ({ lesson_date: '', description: '' })
+const emptyForm = () => ({ lesson_date: '', description: '', attachment_urls_text: '' })
 const form = reactive(emptyForm())
 
 const currentGroup = computed(() => groups.value.find((g: any) => g.id === filters.group_id) || null)
@@ -232,6 +252,44 @@ function formatDateTime(iso: string | null): string {
   // попробуем взять время из связанного занятия
   const timeStr = iso.includes('T') ? iso.slice(11, 16) : ''
   return timeStr && timeStr !== '00:00' ? `${datePart} ${timeStr}` : datePart
+}
+
+function parseAttachmentUrls(raw: string | null | undefined): string[] {
+  if (!raw) return []
+  try {
+    const arr = JSON.parse(raw)
+    return Array.isArray(arr) ? arr.map((v) => String(v)).filter(Boolean) : []
+  } catch {
+    return []
+  }
+}
+
+function attachmentName(link: string, idx: number): string {
+  try {
+    const u = new URL(link)
+    return u.pathname.split('/').pop() || `Вложение ${idx + 1}`
+  } catch {
+    return `Вложение ${idx + 1}`
+  }
+}
+
+async function onHomeworkFilesSelected(event: Event) {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (!files?.length) return
+  const links: string[] = []
+  for (const file of Array.from(files)) {
+    const value = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result || ''))
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(file)
+    })
+    if (value) links.push(value)
+  }
+  const existing = form.attachment_urls_text.split('\n').map((x: string) => x.trim()).filter(Boolean)
+  form.attachment_urls_text = [...existing, ...links].join('\n')
+  target.value = ''
 }
 
 function clearFilters() {
@@ -325,6 +383,7 @@ function openCreate() {
 function openEdit(hw: any) {
   form.lesson_date = hw.lesson_date ? hw.lesson_date.slice(0, 10) : ''
   form.description = hw.description || hw.title || ''
+  form.attachment_urls_text = parseAttachmentUrls(hw.attachment_urls_json).join('\n')
   editingId.value = hw.id
   formError.value = ''
   modal.value = true
@@ -332,6 +391,7 @@ function openEdit(hw: any) {
 
 async function save() {
   if (!form.description.trim()) { formError.value = 'Введите текст задания'; return }
+  if (!form.lesson_date) { formError.value = 'Укажите дату занятия, к которому относится задание'; return }
   if (!filters.group_id) { formError.value = 'Сначала выберите группу'; return }
 
   saving.value = true
@@ -343,6 +403,9 @@ async function save() {
       await http.put(`/homeworks/${editingId.value}`, {
         title: form.description.slice(0, 200),
         description: form.description,
+        attachment_urls_json: JSON.stringify(
+          form.attachment_urls_text.split('\n').map((line: string) => line.trim()).filter(Boolean)
+        ),
         lesson_date: lessonDateIso,
         due_date: lessonDateIso ?? new Date().toISOString(),
       })
@@ -358,6 +421,9 @@ async function save() {
       await http.post('/homeworks/', {
         title: form.description.slice(0, 200),
         description: form.description,
+        attachment_urls_json: JSON.stringify(
+          form.attachment_urls_text.split('\n').map((line: string) => line.trim()).filter(Boolean)
+        ),
         lesson_date: lessonDateIso,
         due_date: lessonDateIso ?? new Date().toISOString(),
         group_id: filters.group_id,
@@ -621,6 +687,14 @@ async function save() {
   line-height: 1.5;
   flex: 1;
   white-space: pre-wrap;
+}
+.attachment-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.attachment-list a {
+  color: #0f766e;
 }
 
 .btn-pencil {

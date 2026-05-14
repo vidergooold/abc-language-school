@@ -640,6 +640,34 @@ async def test_student_homeworks_my(client: AsyncClient, student_token: str):
     assert response.status_code == 200
 
 
+async def test_student_materials_my(client: AsyncClient, student_token: str):
+    """GET /api/v1/materials/my with a student token returns 200."""
+    response = await client.get(
+        "/api/v1/materials/my", headers=auth_headers(student_token)
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+async def test_admin_reports_export_formats(client: AsyncClient, admin_token: str):
+    """Admin can export reports to csv/pdf formats."""
+    csv_response = await client.get(
+        "/api/v1/reports/attendance",
+        params={"export_format": "excel"},
+        headers=auth_headers(admin_token),
+    )
+    assert csv_response.status_code == 200
+    assert "text/csv" in csv_response.headers.get("content-type", "")
+
+    pdf_response = await client.get(
+        "/api/v1/reports/financial",
+        params={"export_format": "pdf"},
+        headers=auth_headers(admin_token),
+    )
+    assert pdf_response.status_code == 200
+    assert "application/pdf" in pdf_response.headers.get("content-type", "")
+
+
 async def test_teacher_students_without_trailing_slash(client: AsyncClient, teacher_token: str):
     """GET /api/v1/students must work without trailing slash for staff users."""
     response = await client.get(
