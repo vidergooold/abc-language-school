@@ -9,6 +9,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     Time,
 )
 from sqlalchemy.orm import relationship
@@ -79,6 +80,7 @@ class Lesson(Base):
     time_start = Column(Time, nullable=False)
     time_end = Column(Time, nullable=False)
     topic = Column(String(255), nullable=True)
+    material_attachments = Column(Text, nullable=True)
     status = Column(SAEnum(LessonStatus), nullable=False, default=LessonStatus.scheduled)
     lesson_date = Column(DateTime, nullable=True)
     is_recurring = Column(Boolean, default=True)

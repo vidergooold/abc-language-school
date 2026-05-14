@@ -7,7 +7,7 @@ transport — no real HTTP calls are made to external servers.
 Run with:
     python -m pytest backend/tests/test_smoke.py -v
 """
-from datetime import datetime, time, timezone
+from datetime import date, datetime, time, timezone
 import os
 from uuid import uuid4
 import pytest
@@ -199,6 +199,11 @@ async def _seed_progress_group(db_engine) -> int:
         return group.id
 
 
+async def _seed_student_profile_progress_data(db_engine) -> int:
+    from app.models.attendance import Attendance, AttendanceStatus
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus, StudentGroup
+    from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
+    from app.models.student import Student, StudentStatus, StudentType
 async def _seed_schedulable_lesson(db_engine) -> int:
     from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus
     from app.models.schedule import Classroom, DayOfWeek, Lesson, LessonStatus
@@ -210,6 +215,7 @@ async def _seed_schedulable_lesson(db_engine) -> int:
     async with SessionLocal() as session:
         unique_suffix = uuid4().hex
         course = Course(
+            name=f"Smoke Profile Course {unique_suffix}",
             name="Smoke Transfer Course",
             language="English",
             level=CourseLevel.beginner,
@@ -217,6 +223,10 @@ async def _seed_schedulable_lesson(db_engine) -> int:
             price_per_month=1000,
         )
         teacher = Teacher(
+            full_name="Smoke Profile Teacher",
+            email=f"profile-teacher-{unique_suffix}@smoke-tests.example.com",
+        )
+        classroom = Classroom(name=f"Smoke Profile Room {unique_suffix}")
             full_name="Smoke Transfer Teacher",
             email=f"transfer-teacher-{unique_suffix}@smoke-tests.example.com",
         )
@@ -225,6 +235,12 @@ async def _seed_schedulable_lesson(db_engine) -> int:
         await session.flush()
 
         group = Group(
+            name=f"Smoke Profile Group {unique_suffix}",
+            course_id=course.id,
+            teacher_id=teacher.id,
+            status=GroupStatus.active,
+            language="English",
+            program_name="General English",
             name="Smoke Transfer Group",
             course_id=course.id,
             teacher_id=teacher.id,
@@ -233,6 +249,25 @@ async def _seed_schedulable_lesson(db_engine) -> int:
         session.add(group)
         await session.flush()
 
+        session.add(
+            Student(
+                full_name="Smoke Student",
+                email="student@smoke-tests.example.com",
+                phone="+70000000000",
+                student_type=StudentType.child,
+                status=StudentStatus.active,
+            )
+        )
+        student_group = StudentGroup(
+            group_id=group.id,
+            student_name="Smoke Student",
+            student_email="student@smoke-tests.example.com",
+            student_type="child",
+        )
+        session.add(student_group)
+        await session.flush()
+
+        now = datetime.now()
         lesson = Lesson(
             group_id=group.id,
             teacher_id=teacher.id,
@@ -240,6 +275,158 @@ async def _seed_schedulable_lesson(db_engine) -> int:
             day_of_week=DayOfWeek.monday,
             time_start=time(10, 0),
             time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(now.year, now.month, 15, 10, 0, 0),
+            is_recurring=False,
+        )
+        session.add(lesson)
+        await session.flush()
+
+        session.add(
+            Attendance(
+                lesson_id=lesson.id,
+                student_group_id=student_group.id,
+                status=AttendanceStatus.present,
+                grade=5,
+                lesson_date=lesson.lesson_date,
+            )
+        )
+        await session.commit()
+        return group.id
+
+
+async def _seed_student_profile_progress_data_academic_window(db_engine) -> int:
+    from app.models.student import Student, StudentStatus, StudentType
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus, StudentGroup
+    from app.models.teacher import Teacher
+    from app.models.schedule import Classroom, Lesson, LessonStatus, DayOfWeek
+    from app.models.attendance import Attendance, AttendanceStatus
+
+    unique_suffix = uuid4().hex[:8]
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with SessionLocal() as session:
+        teacher = Teacher(
+            full_name=f"Smoke AY Teacher {unique_suffix}",
+            email=f"smoke-ay-teacher-{unique_suffix}@smoke-tests.example.com",
+            phone="+70000000001",
+            is_active=True,
+        )
+        session.add(teacher)
+        await session.flush()
+
+        classroom = Classroom(
+            name=f"Smoke AY Room {unique_suffix}",
+            capacity=12,
+            is_active=True,
+        )
+        session.add(classroom)
+        await session.flush()
+
+        course = Course(
+            name=f"Smoke AY Course {unique_suffix}",
+            language="English",
+            level=CourseLevel.beginner,
+            category=CourseCategory.children,
+            price_per_month=1000,
+        )
+        session.add(course)
+        await session.flush()
+
+        group = Group(
+            name=f"Smoke AY Group {unique_suffix}",
+            course_id=course.id,
+            teacher_id=teacher.id,
+            status=GroupStatus.active,
+            language="English",
+            program_name="General English",
+        )
+        session.add(group)
+        await session.flush()
+
+        session.add(
+            Student(
+                full_name="Smoke Student",
+                email="student@smoke-tests.example.com",
+                phone="+70000000000",
+                student_type=StudentType.child,
+                status=StudentStatus.active,
+            )
+        )
+        student_group = StudentGroup(
+            group_id=group.id,
+            student_name="Smoke Student",
+            student_email="student@smoke-tests.example.com",
+            student_type="child",
+            enrolled_at=datetime(2099, 1, 1, 0, 0, 0),
+        )
+        session.add(student_group)
+        await session.flush()
+
+        sep_lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(2025, 9, 15, 10, 0, 0),
+            is_recurring=False,
+        )
+        jan_lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(2026, 1, 10, 10, 0, 0),
+            is_recurring=False,
+        )
+        jun_lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(2026, 6, 10, 10, 0, 0),
+            is_recurring=False,
+        )
+        session.add_all([sep_lesson, jan_lesson, jun_lesson])
+        await session.flush()
+
+        session.add_all(
+            [
+                Attendance(
+                    lesson_id=sep_lesson.id,
+                    student_group_id=student_group.id,
+                    status=AttendanceStatus.present,
+                    grade=5,
+                    lesson_date=sep_lesson.lesson_date,
+                ),
+                Attendance(
+                    lesson_id=jan_lesson.id,
+                    student_group_id=student_group.id,
+                    status=AttendanceStatus.present,
+                    grade=4,
+                    lesson_date=jan_lesson.lesson_date,
+                ),
+                Attendance(
+                    lesson_id=jun_lesson.id,
+                    student_group_id=student_group.id,
+                    status=AttendanceStatus.present,
+                    grade=3,
+                    lesson_date=jun_lesson.lesson_date,
+                ),
+            ]
+        )
+        await session.commit()
+        return group.id
             status=LessonStatus.scheduled,
             is_recurring=True,
         )
@@ -492,6 +679,59 @@ async def test_student_progress_endpoint_forbidden(client: AsyncClient, db_engin
     assert response.status_code == 403
 
 
+@pytest.mark.asyncio
+async def test_student_profile_me_returns_student_and_group(
+    client: AsyncClient,
+    db_engine,
+    student_token: str,
+):
+    await _seed_student_profile_progress_data(db_engine)
+    response = await client.get(
+        "/api/v1/students/me",
+        headers=auth_headers(student_token),
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["student"]["email"] == "student@smoke-tests.example.com"
+    assert payload["group"]["program_name"] == "General English"
+
+
+@pytest.mark.asyncio
+async def test_student_progress_my_returns_averages(
+    client: AsyncClient,
+    db_engine,
+    student_token: str,
+):
+    await _seed_student_profile_progress_data(db_engine)
+    response = await client.get(
+        "/api/v1/progress/my",
+        headers=auth_headers(student_token),
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["student"]["id"] > 0
+    assert payload["averages"]["month"] == 5.0
+    assert payload["averages"]["academic_year"] == 5.0
+
+
+@pytest.mark.asyncio
+async def test_academic_year_average_uses_sept_to_may_window(
+    client: AsyncClient,
+    db_engine,
+    student_token: str,
+):
+    await _seed_student_profile_progress_data_academic_window(db_engine)
+    response = await client.get(
+        "/api/v1/progress/my",
+        params={"date_to": date(2026, 6, 30).isoformat()},
+        headers=auth_headers(student_token),
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["averages"]["academic_year"] == 4.5
+    assert payload["averages"]["month"] == 3.0
+
+
 async def test_no_token_messages_inbox(client: AsyncClient):
     """GET /api/v1/messages/inbox without a token returns 401."""
     response = await client.get("/api/v1/messages/inbox")
@@ -582,6 +822,34 @@ async def test_student_homeworks_my(client: AsyncClient, student_token: str):
         "/api/v1/homeworks/my", headers=auth_headers(student_token)
     )
     assert response.status_code == 200
+
+
+async def test_student_materials_my(client: AsyncClient, student_token: str):
+    """GET /api/v1/materials/my with a student token returns 200."""
+    response = await client.get(
+        "/api/v1/materials/my", headers=auth_headers(student_token)
+    )
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+async def test_admin_reports_export_formats(client: AsyncClient, admin_token: str):
+    """Admin can export reports to csv/pdf formats."""
+    csv_response = await client.get(
+        "/api/v1/reports/attendance",
+        params={"export_format": "excel"},
+        headers=auth_headers(admin_token),
+    )
+    assert csv_response.status_code == 200
+    assert "text/csv" in csv_response.headers.get("content-type", "")
+
+    pdf_response = await client.get(
+        "/api/v1/reports/financial",
+        params={"export_format": "pdf"},
+        headers=auth_headers(admin_token),
+    )
+    assert pdf_response.status_code == 200
+    assert "application/pdf" in pdf_response.headers.get("content-type", "")
 
 
 async def test_teacher_students_without_trailing_slash(client: AsyncClient, teacher_token: str):

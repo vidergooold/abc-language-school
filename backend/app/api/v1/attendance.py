@@ -9,6 +9,7 @@
   GET  /attendance/report                   — require_staff (фильтрованный отчёт)
 """
 from datetime import date, datetime, timezone, timedelta
+from calendar import monthrange
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -58,6 +59,17 @@ _DOW_BY_WEEKDAY_INDEX = {
     5: DayOfWeek.saturday,
     6: DayOfWeek.sunday,
 }
+_VALID_GRADES_FOR_AVERAGING = (3, 4, 5)  # valid grades on the 5-point scale for averaging
+
+
+def get_academic_year_window(d: date) -> tuple[date, date]:
+    if d.month >= 9:
+        start_year = d.year
+        end_year = d.year + 1
+    else:
+        start_year = d.year - 1
+        end_year = d.year
+    return date(start_year, 9, 1), date(end_year, 5, 31)
 
 
 # ─── Студент: своя посещаемость ────────────────────────────────────────────────
@@ -562,6 +574,7 @@ async def get_group_materials_matrix(
             "slot_date": ld.isoformat(),
             "time_start": lesson.time_start.isoformat() if lesson.time_start else None,
             "topic": lesson.topic or "",
+            "material_attachments": lesson.material_attachments,
             "is_custom_date": True,
         })
 
@@ -806,6 +819,7 @@ async def get_materials_by_group(
                     "id": lesson.id,
                     "lesson_date": ld.isoformat(),
                     "topic": lesson.topic,
+                    "material_attachments": lesson.material_attachments,
                     "description": lesson.topic or "",  # Use topic as description for now
                 })
 
@@ -1066,6 +1080,65 @@ async def get_group_grades(
         )
         attendance_records = records_result.scalars().all()
 
+    grade_averages: dict[str, dict[str, Optional[float]]] = {
+        str(student_id): {"month": None, "academic_year": None}
+        for student_id in student_ids
+    }
+    if student_ids:
+        reference_date = date_to or date.today()
+        month_start = date(reference_date.year, reference_date.month, 1)
+        month_end = date(
+            reference_date.year,
+            reference_date.month,
+            monthrange(reference_date.year, reference_date.month)[1],
+        )
+        # Academic year average: Sep 1 – May 31 (inclusive).
+        # Учебный год: 1 сентября – 31 мая, июнь–август не входят в годовой средний балл.
+        academic_year_start, academic_year_end = get_academic_year_window(reference_date)
+
+        month_records_result = await db.execute(
+            select(Attendance).where(
+                and_(
+                    Attendance.student_group_id.in_(student_ids),
+                    Attendance.grade.is_not(None),
+                    Attendance.lesson_date >= datetime(month_start.year, month_start.month, month_start.day),
+                    Attendance.lesson_date <= datetime(month_end.year, month_end.month, month_end.day, 23, 59, 59),
+                )
+            )
+        )
+        academic_records_result = await db.execute(
+            select(Attendance).where(
+                and_(
+                    Attendance.student_group_id.in_(student_ids),
+                    Attendance.grade.is_not(None),
+                    Attendance.lesson_date >= datetime(
+                        academic_year_start.year, academic_year_start.month, academic_year_start.day
+                    ),
+                    Attendance.lesson_date <= datetime(
+                        academic_year_end.year, academic_year_end.month, academic_year_end.day, 23, 59, 59
+                    ),
+                )
+            )
+        )
+
+        month_scores: dict[int, list[int]] = {}
+        for rec in month_records_result.scalars().all():
+            if rec.grade in _VALID_GRADES_FOR_AVERAGING:
+                month_scores.setdefault(rec.student_group_id, []).append(rec.grade)
+
+        academic_scores: dict[int, list[int]] = {}
+        for rec in academic_records_result.scalars().all():
+            if rec.grade in _VALID_GRADES_FOR_AVERAGING:
+                academic_scores.setdefault(rec.student_group_id, []).append(rec.grade)
+
+        for student_id in student_ids:
+            month_values = month_scores.get(student_id, [])
+            year_values = academic_scores.get(student_id, [])
+            grade_averages[str(student_id)] = {
+                "month": round(sum(month_values) / len(month_values), 2) if month_values else None,
+                "academic_year": round(sum(year_values) / len(year_values), 2) if year_values else None,
+            }
+
     records: dict[str, dict] = {}
     attention_student_ids: set[int] = set()
     absent_counts: dict[int, int] = {}
@@ -1133,4 +1206,5 @@ async def get_group_grades(
         "lessons": unique_slots,
         "records": records,
         "attention_student_ids": sorted(attention_student_ids),
+        "averages": grade_averages,
     }

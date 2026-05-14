@@ -24,6 +24,32 @@
         <strong>Важно:</strong> при регистрации сотрудника его аккаунт создаётся со статусом «ученик». Администратор вручную назначит роль после проверки.
       </div>
 
+      <div v-if="auth.isStudent && studentProfile" class="student-card">
+        <h2>Данные ученика</h2>
+        <div class="student-grid">
+          <div><strong>ФИО:</strong> {{ studentProfile.full_name || '—' }}</div>
+          <div><strong>Телефон:</strong> {{ studentProfile.phone || '—' }}</div>
+          <div><strong>Email:</strong> {{ studentProfile.email || auth.user?.email || '—' }}</div>
+          <div><strong>Дата рождения:</strong> {{ studentProfile.birthdate ? String(studentProfile.birthdate).slice(0, 10) : '—' }}</div>
+          <div><strong>Статус:</strong> {{ studentStatusLabel(studentProfile.status) }}</div>
+          <div><strong>Тип:</strong> {{ studentTypeLabel(studentProfile.student_type) }}</div>
+          <div><strong>Группа:</strong> {{ studentGroup?.name || 'Ожидает распределения' }}</div>
+        </div>
+
+        <h3 class="grades-title">Оценки</h3>
+        <div class="grades-summary">
+          <span>Средний за месяц: <strong>{{ gradeAverages.month }}</strong></span>
+          <span>Средний за учебный год: <strong>{{ gradeAverages.academic_year }}</strong></span>
+        </div>
+        <div v-if="myGradeRows.length" class="grades-list">
+          <div v-for="item in myGradeRows" :key="item.key" class="grade-row">
+            <span>{{ item.date }}</span>
+            <strong>{{ item.grade }}</strong>
+          </div>
+        </div>
+        <p v-else class="field-hint">Оценок пока нет.</p>
+      </div>
+
       <!-- Форма -->
       <div class="profile-form">
         <div class="form-section">
@@ -79,6 +105,10 @@ const loading = ref(false)
 const saving = ref(false)
 const successMsg = ref('')
 const errorMsg = ref('')
+const studentProfile = ref<any | null>(null)
+const studentGroup = ref<any | null>(null)
+const myGradeRows = ref<Array<{ key: string; date: string; grade: string; slot_date: string }>>([])
+const gradeAverages = ref({ month: '—', academic_year: '—' })
 
 const form = ref({
   full_name: '',
@@ -102,7 +132,77 @@ const passwordMismatch = computed(() =>
 
 onMounted(() => {
   form.value.full_name = auth.user?.full_name || ''
+  if (auth.isStudent) {
+    loadStudentProfile()
+    loadMyGrades()
+  }
 })
+
+function studentStatusLabel(status: string) {
+  return {
+    waiting: 'Ожидает группу',
+    active: 'Активен',
+    inactive: 'Не активен',
+    graduated: 'Выпущен',
+    expelled: 'Отчислен',
+  }[status] || status || '—'
+}
+
+function studentTypeLabel(type: string) {
+  return {
+    child: 'Школьник',
+    adult: 'Взрослый',
+    preschool: 'Дошкольник',
+  }[type] || type || '—'
+}
+
+function lessonDateLabel(slotDate: string) {
+  if (!slotDate) return '—'
+  return new Date(`${slotDate}T00:00:00`).toLocaleDateString('ru-RU')
+}
+
+function formatAverage(value: number | null | undefined) {
+  if (value == null) return '—'
+  return Number(value).toFixed(2)
+}
+
+async function loadStudentProfile() {
+  try {
+    const res = await http.get('/students/me')
+    studentProfile.value = res.data?.student || null
+    studentGroup.value = res.data?.group || null
+  } catch {
+    studentProfile.value = null
+    studentGroup.value = null
+  }
+}
+
+async function loadMyGrades() {
+  try {
+    const res = await http.get('/progress/my')
+    const lessons = Array.isArray(res.data?.lessons) ? res.data.lessons : []
+    const records = res.data?.records || {}
+    const rows: Array<{ key: string; date: string; grade: string; slot_date: string }> = []
+    for (const lesson of lessons) {
+      const record = records[`${res.data?.student?.id}:${lesson.id}:${lesson.slot_date}`]
+      if (!record || record.grade == null) continue
+      rows.push({
+        key: `${lesson.id}:${lesson.slot_date}`,
+        date: lessonDateLabel(lesson.slot_date),
+        grade: String(record.grade),
+        slot_date: lesson.slot_date,
+      })
+    }
+    myGradeRows.value = rows.sort((a, b) => (a.slot_date < b.slot_date ? 1 : a.slot_date > b.slot_date ? -1 : 0))
+    gradeAverages.value = {
+      month: formatAverage(res.data?.averages?.month),
+      academic_year: formatAverage(res.data?.averages?.academic_year),
+    }
+  } catch {
+    myGradeRows.value = []
+    gradeAverages.value = { month: '—', academic_year: '—' }
+  }
+}
 
 async function save() {
   if (passwordMismatch.value) return
@@ -173,6 +273,51 @@ async function save() {
   padding: 16px 18px;
   margin-top: 16px;
   line-height: 1.6;
+}
+
+.student-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 2px solid #ffe3cf;
+}
+.student-card h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+  color: var(--brand-purple);
+}
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.grades-title {
+  font-size: 16px;
+  margin: 8px 0;
+  color: var(--brand-purple);
+}
+.grades-summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.grades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.grade-row {
+  display: flex;
+  justify-content: space-between;
+  background: #fff7f0;
+  border: 1px solid #ffe3cf;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
 }
 
 .form-actions { margin-top: 20px; }

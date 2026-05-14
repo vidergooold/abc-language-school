@@ -86,7 +86,7 @@
 
         <div class="filter-field">
           <label>Группа</label>
-          <select v-model="rf.group_id" @change="loadReport()" :disabled="!rf.teacher_id">
+          <select v-model="rf.group_id" @change="loadReport()">
             <option :value="null">-- Выберите группу --</option>
             <option v-for="g in reportGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
           </select>
@@ -325,7 +325,7 @@ function formatDate(iso: string) {
   })
 }
 function statusLabel(s: string) {
-  return ({ present: 'Был', absent: 'Не был', late: 'Опоздал', excused: 'Уваж. прич.' } as any)[s] ?? s
+  return ({ present: 'Присутствовал', absent: 'Пропуск', late: 'Опоздал', excused: 'Болезнь со справкой' } as any)[s] ?? s
 }
 const todayStr = new Date().toISOString().slice(0, 10)
 const defaultDateFrom = new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString().slice(0, 10)
@@ -356,9 +356,8 @@ const statCards = computed(() => [
 const filters = computed(() => [
   { key: 'all',     label: 'Все',            count: records.value.length },
   { key: 'present', label: 'Присутствовал', count: counts.value.present },
-  { key: 'absent',  label: 'Отсутствовал',  count: counts.value.absent  },
-  { key: 'late',    label: 'Опоздал',         count: counts.value.late    },
-  { key: 'excused', label: 'Уваж. прич.',   count: counts.value.excused },
+  { key: 'absent',  label: 'Пропуск',  count: counts.value.absent  },
+  { key: 'excused', label: 'Болезнь со справкой',   count: counts.value.excused },
 ])
 const filteredRecords = computed(() =>
   activeFilter.value === 'all'
@@ -393,6 +392,7 @@ const matrixLessons = ref<any[]>([])
 const matrixRecords = ref<Record<string, string>>({})
 const matrixSaving = ref<Record<string, boolean>>({})
 const matrixColumnSaving = ref<Record<string, boolean>>({})
+const ATTENDANCE_MATRIX_CYCLE: string[] = ['present', 'absent', 'excused']
 
 // ── ДЛЯ ВСЕХ ВКЛАДОК ──────────────────────────────────────────────────────
 const materialsLoading = ref(false)
@@ -485,7 +485,7 @@ async function refreshCurrentMatrixView() {
 
 function getStatusSymbol(status: string | null) {
   if (!status) return '○'
-  return { present: '+', absent: '-', late: 'Л', excused: 'У' }[status] || '○'
+  return { present: '+', absent: '-', late: 'Л', excused: 'Б' }[status] || '○'
 }
 
 function statusClass(status: string | null) {
@@ -574,7 +574,8 @@ async function loadGroupMatrix() {
 
 async function toggleAttendanceCell(studentGroupId: number, lessonId: number, slotDate: string) {
   const current = getMatrixStatus(studentGroupId, lessonId, slotDate)
-  const nextStatus = current === 'present' ? 'absent' : 'present'
+  const currentIndex = ATTENDANCE_MATRIX_CYCLE.indexOf(current || '')
+  const nextStatus = ATTENDANCE_MATRIX_CYCLE[(currentIndex + 1 + ATTENDANCE_MATRIX_CYCLE.length) % ATTENDANCE_MATRIX_CYCLE.length] || 'present'
   const key = matrixSlotKey(studentGroupId, lessonId, slotDate)
 
   matrixSaving.value = { ...matrixSaving.value, [key]: true }

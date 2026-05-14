@@ -12,6 +12,7 @@ class StudentType(str, enum.Enum):
 
 
 class StudentStatus(str, enum.Enum):
+    waiting = "waiting"       # ожидает распределения
     active = "active"         # обучается
     inactive = "inactive"     # не обучается
     graduated = "graduated"   # выпустился
@@ -30,6 +31,7 @@ class Student(Base):
     # Контактные данные
     phone = Column(String(50), nullable=True)
     email = Column(String(255), nullable=True)
+    photo = Column(String(1024), nullable=True)
     address = Column(String(500), nullable=True)
     birthdate = Column(Date, nullable=True)
 

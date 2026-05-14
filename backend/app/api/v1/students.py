@@ -1,14 +1,22 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, or_
+from pydantic import BaseModel
+from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin, require_staff
+from app.core.security import require_admin, require_staff, require_student
+from app.models.group import StudentGroup, Group
 from app.models.student import Student, StudentType, StudentStatus
+from app.models.user import User
 from app.schemas.student import StudentCreate, StudentUpdate, StudentOut
 
 router = APIRouter(prefix="/students", tags=["Students"])
+
+
+class StudentProfileOut(BaseModel):
+    student: Optional[StudentOut] = None
+    group: Optional[dict] = None
 
 
 @router.get("", response_model=List[StudentOut])
@@ -37,6 +45,41 @@ async def get_students(
     q = q.order_by(Student.full_name)
     result = await db.execute(q)
     return result.scalars().all()
+
+
+@router.get("/me", response_model=StudentProfileOut)
+async def get_my_student_profile(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_student),
+):
+    student_result = await db.execute(select(Student).where(Student.email == current_user.email))
+    student = student_result.scalar_one_or_none()
+
+    group_result = await db.execute(
+        select(StudentGroup, Group)
+        .join(Group, Group.id == StudentGroup.group_id)
+        .where(
+            and_(
+                StudentGroup.student_email == current_user.email,
+                StudentGroup.is_active.is_(True),
+            )
+        )
+        .order_by(StudentGroup.enrolled_at.desc())
+        .limit(1)
+    )
+    group_row = group_result.first()
+    group_payload = None
+    if group_row is not None:
+        _, group = group_row
+        group_payload = {
+            "id": group.id,
+            "name": group.name,
+            "language": group.language,
+            "program_name": group.program_name,
+            "status": group.status.value if hasattr(group.status, "value") else str(group.status),
+        }
+
+    return {"student": student, "group": group_payload}
 
 
 @router.get("/{student_id}", response_model=StudentOut)

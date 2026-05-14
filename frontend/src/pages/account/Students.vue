@@ -13,6 +13,18 @@
     <!-- Фильтры -->
     <div class="filters">
       <input v-model="search" type="text" placeholder="🔍 Поиск по имени или телефону" />
+      <select v-model.number="filterGroupId">
+        <option :value="null">Все группы</option>
+        <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
+      </select>
+      <select v-model="filterProgram">
+        <option value="">Все программы</option>
+        <option v-for="program in programOptions" :key="program" :value="program">{{ program }}</option>
+      </select>
+      <select v-model="filterLanguage">
+        <option value="">Все языки</option>
+        <option v-for="language in languageOptions" :key="language" :value="language">{{ language }}</option>
+      </select>
       <select v-model="filterType">
         <option value="">Все типы</option>
         <option value="child">Школьники</option>
@@ -22,6 +34,7 @@
       <select v-model="filterStatus">
         <option value="">Все статусы</option>
         <option value="active">Активные</option>
+        <option value="waiting">Ожидают группу</option>
         <option value="inactive">Неактивные</option>
         <option value="graduated">Выпуск</option>
         <option value="expelled">Отчислены</option>
@@ -49,6 +62,10 @@
           <input v-model="newStudent.birthdate" type="date" />
         </div>
         <div class="form-row">
+          <label>Фото (URL)</label>
+          <input v-model="newStudent.photo" type="url" placeholder="https://..." />
+        </div>
+        <div class="form-row">
           <label>Тип ученика *</label>
           <select v-model="newStudent.student_type" required>
             <option value="">Выберите тип</option>
@@ -61,6 +78,7 @@
           <label>Статус</label>
           <select v-model="newStudent.status">
             <option value="active">Активен</option>
+            <option value="waiting">Ожидает группу</option>
             <option value="inactive">Не активен</option>
             <option value="graduated">Выпущен</option>
             <option value="expelled">Отчислен</option>
@@ -116,6 +134,10 @@
           <input v-model="editStudent.birthdate" type="date" />
         </div>
         <div class="form-row">
+          <label>Фото (URL)</label>
+          <input v-model="editStudent.photo" type="url" placeholder="https://..." />
+        </div>
+        <div class="form-row">
           <label>Возраст (лет)</label>
           <input v-model.number="editStudent.age" type="number" min="1" max="120" placeholder="Введите возраст" />
         </div>
@@ -131,6 +153,7 @@
           <label>Статус</label>
           <select v-model="editStudent.status">
             <option value="active">Активен</option>
+            <option value="waiting">Ожидает группу</option>
             <option value="inactive">Не активен</option>
             <option value="graduated">Выпущен</option>
             <option value="expelled">Отчислен</option>
@@ -182,6 +205,7 @@
             <td><span class="status-badge" :class="'status-' + (s.status || 'active')">{{ statusLabel(s.status) }}</span></td>
             <td v-if="auth.user?.role === 'admin'" class="actions-col">
               <button class="btn-edit" @click="startEdit(s)">Редактировать</button>
+              <button class="btn-archive" @click="archiveStudent(s)">Архивировать</button>
               <button class="btn-delete" @click="deleteStudent(s)">Удалить</button>
             </td>
           </tr>
@@ -203,9 +227,13 @@ import http from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const defaultStudentStatus = 'waiting'
 const loading = ref(true)
 const students = ref<any[]>([])
 const search = ref('')
+const filterGroupId = ref<number | null>(null)
+const filterProgram = ref('')
+const filterLanguage = ref('')
 const filterType = ref('')
 const filterStatus = ref('')
 const showAddForm = ref(false)
@@ -218,8 +246,9 @@ const newStudent = ref({
   email: '',
   phone: '',
   birthdate: '',
+  photo: '',
   student_type: '',
-  status: 'active',
+  status: defaultStudentStatus,
   group_id: null as number | null,
   create_account: true,
   password: 'student123',
@@ -229,13 +258,19 @@ const editStudent = ref({
   email: '',
   phone: '',
   birthdate: '',
+  photo: '',
   age: null as number | null,
   student_type: 'adult',
-  status: 'active',
+  status: defaultStudentStatus,
 })
 const editStudentGroupId = ref<number | null>(null)
 const originalGroupId = ref<number | null>(null)
 const studentNameToGroupId = ref<Record<string, number>>({})
+const groupsById = computed(() => {
+  const map = new Map<number, any>()
+  for (const g of groups.value) map.set(g.id, g)
+  return map
+})
 
 function groupName(groupId: number): string {
   return groups.value.find(g => g.id === groupId)?.name?.split(' — ')[0] || '—'
@@ -248,9 +283,38 @@ const filtered = computed(() =>
       (s.phone ?? '').includes(search.value) ||
       (s.email ?? '').toLowerCase().includes(search.value.toLowerCase())
     )
+    .filter(s => !filterGroupId.value || studentNameToGroupId.value[s.full_name] === filterGroupId.value)
+    .filter(s => {
+      if (!filterProgram.value) return true
+      const groupId = studentNameToGroupId.value[s.full_name]
+      const group = groupId ? groupsById.value.get(groupId) : null
+      return (group?.program_name || '').toLowerCase() === filterProgram.value.toLowerCase()
+    })
+    .filter(s => {
+      if (!filterLanguage.value) return true
+      const groupId = studentNameToGroupId.value[s.full_name]
+      const group = groupId ? groupsById.value.get(groupId) : null
+      return (group?.language || '').toLowerCase() === filterLanguage.value.toLowerCase()
+    })
     .filter(s => !filterType.value || s.student_type === filterType.value)
     .filter(s => !filterStatus.value || s.status === filterStatus.value)
 )
+
+const programOptions = computed(() => {
+  const values = new Set<string>()
+  for (const g of groups.value) {
+    if (g.program_name) values.add(g.program_name)
+  }
+  return Array.from(values).sort((a, b) => a.localeCompare(b, 'ru'))
+})
+
+const languageOptions = computed(() => {
+  const values = new Set<string>()
+  for (const g of groups.value) {
+    if (g.language) values.add(g.language)
+  }
+  return Array.from(values).sort((a, b) => a.localeCompare(b, 'ru'))
+})
 
 function typeLabel(t: string): string {
   return { child: 'Школьник', adult: 'Взрослый', preschool: 'Дошкольник' }[t] ?? t
@@ -268,6 +332,7 @@ function getAge(birthdate: string): number {
 function statusLabel(s: string): string {
   return {
     active: 'Активен',
+    waiting: 'Ожидает группу',
     inactive: 'Не активен',
     graduated: 'Выпущен',
     expelled: 'Отчислен',
@@ -321,8 +386,9 @@ async function addStudent() {
       email: newStudent.value.email || null,
       phone: newStudent.value.phone || null,
       birthdate: newStudent.value.birthdate || null,
+      photo: newStudent.value.photo || null,
       student_type: newStudent.value.student_type,
-      status: newStudent.value.status,
+      status: newStudent.value.status || defaultStudentStatus,
     }
 
     const res = await http.post('/students', payload)
@@ -353,8 +419,9 @@ async function addStudent() {
       email: '',
       phone: '',
       birthdate: '',
+      photo: '',
       student_type: '',
-      status: 'active',
+      status: defaultStudentStatus,
       group_id: null,
       create_account: true,
       password: 'student123',
@@ -373,8 +440,9 @@ function cancelAdd() {
     email: '',
     phone: '',
     birthdate: '',
+    photo: '',
     student_type: '',
-    status: 'active',
+    status: defaultStudentStatus,
     group_id: null,
     create_account: true,
     password: 'student123',
@@ -389,9 +457,10 @@ function startEdit(student: any) {
     email: student.email || '',
     phone: student.phone || '',
     birthdate: student.birthdate ? String(student.birthdate).slice(0, 10) : '',
+    photo: student.photo || '',
     age: student.age ?? null,
     student_type: student.student_type || 'adult',
-    status: student.status || 'active',
+    status: student.status || defaultStudentStatus,
   }
   editStudentGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
   originalGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
@@ -408,6 +477,7 @@ async function updateStudent() {
       email: editStudent.value.email || null,
       phone: editStudent.value.phone || null,
       birthdate: editStudent.value.birthdate || null,
+      photo: editStudent.value.photo || null,
       age: editStudent.value.age ?? null,
       student_type: editStudent.value.student_type,
       status: editStudent.value.status,
@@ -466,6 +536,18 @@ async function deleteStudent(student: any) {
   }
 }
 
+async function archiveStudent(student: any) {
+  const ok = window.confirm(`Архивировать ученика "${student.full_name}"?`)
+  if (!ok) return
+  try {
+    const res = await http.put(`/students/${student.id}`, { status: 'inactive' })
+    const idx = students.value.findIndex((s) => s.id === student.id)
+    if (idx !== -1) students.value[idx] = res.data
+  } catch (err: any) {
+    alert('Ошибка: ' + (err.response?.data?.detail || 'Не удалось архивировать ученика'))
+  }
+}
+
 function cancelEdit() {
   editStudentId.value = null
   editStudent.value = {
@@ -473,9 +555,10 @@ function cancelEdit() {
     email: '',
     phone: '',
     birthdate: '',
+    photo: '',
     age: null,
     student_type: 'adult',
-    status: 'active',
+    status: defaultStudentStatus,
   }
   editStudentGroupId.value = null
   originalGroupId.value = null
@@ -517,6 +600,7 @@ onMounted(load)
 
 .status-badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
 .status-active     { background: #e6f9ef; color: #22a55b; }
+.status-waiting    { background: #e8f4ff; color: #2a7bbf; }
 .status-inactive   { background: #fdeaea; color: #e03c3c; }
 .status-graduated  { background: #fff4cc; color: #b76b00; }
 .status-expelled   { background: #ffe3eb; color: #b91c1c; }
@@ -548,4 +632,6 @@ onMounted(load)
 .btn-edit:hover { background: #ece3ff; }
 .btn-delete { background: #fdeaea; color: #b91c1c; border: 1px solid #f6b7b7; padding: 6px 10px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px; margin-left: 8px; }
 .btn-delete:hover { background: #fbd8d8; }
+.btn-archive { background: #fff4cc; color: #8a5a00; border: 1px solid #f0d58a; padding: 6px 10px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px; margin-left: 8px; }
+.btn-archive:hover { background: #ffefb3; }
 </style>

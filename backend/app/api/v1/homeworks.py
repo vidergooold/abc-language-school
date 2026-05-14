@@ -84,6 +84,8 @@ async def create_homework(
     current_user: User = Depends(require_staff),
 ):
     """Создать домашнее задание — администратор или преподаватель (только своё)"""
+    if data.lesson_date is None:
+        raise HTTPException(status_code=400, detail="lesson_date обязателен для домашнего задания")
     if current_user.role == UserRole.teacher:
         teacher_id = await _resolve_teacher_id(db, current_user)
         if teacher_id is None:
@@ -108,6 +110,8 @@ async def update_homework(
     homework = result.scalar_one_or_none()
     if not homework:
         raise HTTPException(status_code=404, detail="Домашнее задание не найдено")
+    if "lesson_date" in data.model_dump(exclude_unset=True) and data.lesson_date is None:
+        raise HTTPException(status_code=400, detail="lesson_date обязателен для домашнего задания")
     if current_user.role == UserRole.teacher:
         teacher_id = await _resolve_teacher_id(db, current_user)
         if teacher_id is None or homework.teacher_id != teacher_id:

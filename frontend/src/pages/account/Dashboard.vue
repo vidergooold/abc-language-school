@@ -71,6 +71,30 @@
         </div>
       </section>
 
+      <section v-if="isAdmin" class="payment-attendance-block">
+        <div class="block-head">
+          <h2>Панель администратора</h2>
+        </div>
+        <div class="block-grid">
+          <article class="mini-card">
+            <span class="mini-label">Активные ученики</span>
+            <strong class="mini-value">{{ adminWidgets.activeStudents }}</strong>
+          </article>
+          <article class="mini-card">
+            <span class="mini-label">Активные группы</span>
+            <strong class="mini-value">{{ adminWidgets.activeGroups }}</strong>
+          </article>
+          <article class="mini-card">
+            <span class="mini-label">Занятия сегодня</span>
+            <strong class="mini-value">{{ adminWidgets.todayLessons }}</strong>
+          </article>
+          <article class="mini-card">
+            <span class="mini-label">Должники</span>
+            <strong class="mini-value">{{ adminWidgets.debtors }}</strong>
+          </article>
+        </div>
+      </section>
+
       <form @submit.prevent="save" class="card-form">
         <section class="form-section">
           <div class="section-head">
@@ -165,6 +189,13 @@ const groupLabel = computed(() => {
 
 const displayName = computed(() => auth.user?.full_name || auth.user?.email || 'Пользователь')
 const isStudent = computed(() => auth.user?.role === 'student')
+const isAdmin = computed(() => auth.user?.role === 'admin')
+const adminWidgets = ref({
+  activeStudents: 0,
+  activeGroups: 0,
+  todayLessons: 0,
+  debtors: 0,
+})
 
 const paymentSummary = ref<null | {
   total_paid: number
@@ -208,6 +239,9 @@ onMounted(() => {
   if (isStudent.value) {
     loadPaymentAttendanceSummary()
   }
+  if (isAdmin.value) {
+    loadAdminWidgets()
+  }
 })
 
 function money(value: number) {
@@ -224,6 +258,35 @@ async function loadPaymentAttendanceSummary() {
     paymentSummary.value = data
   } catch {
     paymentSummary.value = null
+  }
+}
+
+async function loadAdminWidgets() {
+  try {
+    const [funnelRes, groupsRes, scheduleRes, debtorsRes] = await Promise.all([
+      http.get('/analytics/enrollment-funnel'),
+      http.get('/groups'),
+      http.get('/schedule'),
+      http.get('/reports/debts'),
+    ])
+    const funnel = Array.isArray(funnelRes.data) ? funnelRes.data : []
+    const activeStage = funnel.find((s: any) => s.stage === 'Активны сейчас')
+    adminWidgets.value.activeStudents = Number(activeStage?.count || 0)
+    adminWidgets.value.activeGroups = Array.isArray(groupsRes.data) ? groupsRes.data.length : 0
+
+    const today = new Date()
+    const todayIso = today.toISOString().slice(0, 10)
+    const todayWeekday = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][today.getDay()]
+    const lessons = Array.isArray(scheduleRes.data) ? scheduleRes.data : []
+    adminWidgets.value.todayLessons = lessons.filter((lesson: any) => {
+      const lessonDate = String(lesson.lesson_date || '').slice(0, 10)
+      if (lessonDate) return lessonDate === todayIso
+      return String(lesson.day_of_week || '').toLowerCase() === todayWeekday
+    }).length
+
+    adminWidgets.value.debtors = Number(debtorsRes.data?.count || 0)
+  } catch {
+    adminWidgets.value = { activeStudents: 0, activeGroups: 0, todayLessons: 0, debtors: 0 }
   }
 }
 

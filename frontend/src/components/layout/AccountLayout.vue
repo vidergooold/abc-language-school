@@ -11,8 +11,8 @@
         <RouterLink to="/account" exact-active-class="router-link-active" class="sidebar-link">👤 Профиль</RouterLink>
         <RouterLink to="/account/schedule" class="sidebar-link">🗓 Расписание</RouterLink>
         <RouterLink to="/account/attendance" class="sidebar-link">✅ Посещаемость</RouterLink>
-        <RouterLink to="/account/lesson-material" class="sidebar-link" v-if="isStaff">📘 Материал урока</RouterLink>
-        <RouterLink to="/account/homework" class="sidebar-link" v-if="isStaff">📝 Домашние задания</RouterLink>
+        <RouterLink to="/account/lesson-material" class="sidebar-link">📘 Материал урока</RouterLink>
+        <RouterLink to="/account/homework" class="sidebar-link">📝 Домашние задания</RouterLink>
         <RouterLink to="/account/payment" class="sidebar-link" v-if="isStaff">💳 Оплата обучения</RouterLink>
         <RouterLink to="/account/progress" class="sidebar-link" v-if="isStaff">📈 Промежуточная успеваемость</RouterLink>
 

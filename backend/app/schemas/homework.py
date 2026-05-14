@@ -7,6 +7,7 @@ from app.models.homework import HomeworkStatus
 class HomeworkBase(BaseModel):
     title: str
     description: Optional[str] = None
+    attachment_urls_json: Optional[str] = None
     lesson_date: Optional[datetime] = None
     due_date: datetime
     status: HomeworkStatus = HomeworkStatus.assigned
@@ -21,6 +22,7 @@ class HomeworkCreate(HomeworkBase):
 class HomeworkUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    attachment_urls_json: Optional[str] = None
     lesson_date: Optional[datetime] = None
     due_date: Optional[datetime] = None
     status: Optional[HomeworkStatus] = None

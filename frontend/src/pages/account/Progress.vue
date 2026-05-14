@@ -96,6 +96,10 @@
           <tr v-for="(student, index) in visibleStudents" :key="student.id" :class="{ attention: attentionIds.has(student.id) }">
             <td class="student-cell">{{ index + 1 }}. {{ student.student_name }}</td>
             <td class="extra-cell">
+              <div class="avg-stack">
+                <span class="avg-chip">Мес: {{ formatAverage(studentAverages(student.id)?.month) }}</span>
+                <span class="avg-chip">Год: {{ formatAverage(studentAverages(student.id)?.academic_year) }}</span>
+              </div>
               <button
                 class="note-chip"
                 :class="{ active: studentNotes(student.id).length > 0 }"
@@ -190,6 +194,7 @@ const groups = ref<any[]>([])
 const lessons = ref<LessonSlot[]>([])
 const students = ref<MatrixStudent[]>([])
 const records = ref<Record<string, CellRecord>>({})
+const averages = ref<Record<string, { month: number | null; academic_year: number | null }>>({})
 const attentionIds = ref<Set<number>>(new Set())
 const groupInfo = ref<any | null>(null)
 const loading = ref(false)
@@ -291,6 +296,7 @@ async function loadMatrix() {
     students.value = payload?.students || []
     lessons.value = payload?.lessons || []
     records.value = payload?.records || {}
+    averages.value = payload?.averages || {}
     attentionIds.value = new Set<number>(payload?.attention_student_ids || [])
   } catch {
     resetMatrix()
@@ -304,6 +310,7 @@ function resetMatrix() {
   students.value = []
   lessons.value = []
   records.value = {}
+  averages.value = {}
   attentionIds.value = new Set()
 }
 
@@ -321,6 +328,15 @@ function cellRecord(studentId: number, lesson: LessonSlot) {
 
 function cellGrade(studentId: number, lesson: LessonSlot) {
   return cellRecord(studentId, lesson)?.grade ?? null
+}
+
+function studentAverages(studentId: number) {
+  return averages.value[String(studentId)] || null
+}
+
+function formatAverage(value: number | null | undefined) {
+  if (value == null) return '—'
+  return Number(value).toFixed(2)
 }
 
 function gradeClass(studentId: number, lesson: LessonSlot) {
@@ -801,6 +817,23 @@ async function saveLessonNote() {
 .extra-cell,
 .lesson-cell {
   text-align: center;
+}
+
+.avg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.avg-chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  background: #e8f4ff;
+  color: #2a7bbf;
+  padding: 2px 8px;
 }
 
 .cell-stack {
