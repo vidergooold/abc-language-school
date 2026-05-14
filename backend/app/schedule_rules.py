@@ -57,9 +57,7 @@ def canonical_program_duration_minutes(program_name: Optional[str]) -> Optional[
 
 
 def derive_time_end(time_start: time, duration_minutes: int) -> time:
-    return (
-        datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)
-    ).time().replace(second=0, microsecond=0)
+    return (datetime.combine(date.today(), time_start) + timedelta(minutes=duration_minutes)).time()
 
 
 def is_non_study_date(lesson_date: date) -> bool:

@@ -159,10 +159,6 @@ def _lesson_duration_minutes(group_name: str) -> Optional[int]:
     return canonical_program_duration_minutes(group_name)
 
 
-def _derive_time_end(time_start: time, duration_minutes: int) -> time:
-    return derive_time_end(time_start, duration_minutes)
-
-
 async def _get_or_create_classroom(db: AsyncSession, name: str, branch_id: int) -> Classroom:
     result = await db.execute(
         select(Classroom).where(
@@ -298,7 +294,7 @@ async def seed_real_schedule() -> None:
                 branch_id=branch.id,
                 day_of_week=entry["day_of_week"],
                 time_start=entry["time_start"],
-                time_end=_derive_time_end(entry["time_start"], duration_minutes),
+                time_end=derive_time_end(entry["time_start"], duration_minutes),
                 status=LessonStatus.scheduled,
                 is_recurring=True,
             )

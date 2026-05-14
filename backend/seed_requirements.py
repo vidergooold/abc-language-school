@@ -180,10 +180,6 @@ def _program_duration_minutes(program_name: str) -> int:
     return canonical_program_duration_minutes(program_name) or 90
 
 
-def _derive_time_end(time_start: time, duration_minutes: int) -> time:
-    return derive_time_end(time_start, duration_minutes)
-
-
 # ─── Шаги seed ───────────────────────────────────────────────────────────────
 
 
@@ -463,7 +459,7 @@ async def _extend_teacher_schedules(
             if program is None:
                 program = t_programs[added % len(t_programs)]
             duration_minutes = _program_duration_minutes(program.name)
-            t_end = _derive_time_end(t_start, duration_minutes)
+            t_end = derive_time_end(t_start, duration_minutes)
 
             # Выбираем филиал (round-robin по счётчику добавленных уроков)
             branch = branches[added % len(branches)]
