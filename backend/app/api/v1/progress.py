@@ -79,7 +79,7 @@ async def get_my_progress(
         .where(
             and_(
                 StudentGroup.student_email == current_user.email,
-                StudentGroup.is_active == True,
+                StudentGroup.is_active.is_(True),
             )
         )
         .order_by(StudentGroup.enrolled_at.desc())
@@ -103,13 +103,13 @@ async def get_my_progress(
         db=db,
     )
 
-    student_id = student_group.id
-    student_key = str(student_id)
-    student_payload = next((s for s in payload.get("students", []) if s.get("id") == student_id), None)
+    student_group_id = student_group.id
+    student_key = str(student_group_id)
+    student_payload = next((s for s in payload.get("students", []) if s.get("id") == student_group_id), None)
     filtered_records = {
         key: value
         for key, value in (payload.get("records", {}) or {}).items()
-        if key.startswith(f"{student_id}:")
+        if key.startswith(f"{student_group_id}:")
     }
 
     return {

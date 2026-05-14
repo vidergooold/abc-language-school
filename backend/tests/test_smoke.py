@@ -264,7 +264,7 @@ async def _seed_student_profile_progress_data(db_engine) -> int:
             time_start=time(10, 0),
             time_end=time(11, 0),
             status=LessonStatus.completed,
-            lesson_date=datetime(now.year, now.month, max(1, min(15, now.day)), 10, 0, 0),
+            lesson_date=datetime(now.year, now.month, 15, 10, 0, 0),
             is_recurring=False,
         )
         session.add(lesson)

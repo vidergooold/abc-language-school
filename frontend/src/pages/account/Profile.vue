@@ -193,7 +193,7 @@ async function loadMyGrades() {
         slot_date: lesson.slot_date,
       })
     }
-    myGradeRows.value = rows.sort((a, b) => b.slot_date.localeCompare(a.slot_date))
+    myGradeRows.value = rows.sort((a, b) => (a.slot_date < b.slot_date ? 1 : a.slot_date > b.slot_date ? -1 : 0))
     gradeAverages.value = {
       month: formatAverage(res.data?.averages?.month),
       academic_year: formatAverage(res.data?.averages?.academic_year),

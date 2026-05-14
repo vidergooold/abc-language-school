@@ -61,7 +61,7 @@ async def get_my_student_profile(
         .where(
             and_(
                 StudentGroup.student_email == current_user.email,
-                StudentGroup.is_active == True,
+                StudentGroup.is_active.is_(True),
             )
         )
         .order_by(StudentGroup.enrolled_at.desc())

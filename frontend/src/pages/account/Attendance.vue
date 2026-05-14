@@ -392,6 +392,7 @@ const matrixLessons = ref<any[]>([])
 const matrixRecords = ref<Record<string, string>>({})
 const matrixSaving = ref<Record<string, boolean>>({})
 const matrixColumnSaving = ref<Record<string, boolean>>({})
+const ATTENDANCE_MATRIX_CYCLE: string[] = ['present', 'absent', 'excused']
 
 // ── ДЛЯ ВСЕХ ВКЛАДОК ──────────────────────────────────────────────────────
 const materialsLoading = ref(false)
@@ -573,7 +574,8 @@ async function loadGroupMatrix() {
 
 async function toggleAttendanceCell(studentGroupId: number, lessonId: number, slotDate: string) {
   const current = getMatrixStatus(studentGroupId, lessonId, slotDate)
-  const nextStatus = current === 'present' ? 'absent' : current === 'absent' ? 'excused' : 'present'
+  const currentIndex = ATTENDANCE_MATRIX_CYCLE.indexOf(current || '')
+  const nextStatus = ATTENDANCE_MATRIX_CYCLE[(currentIndex + 1 + ATTENDANCE_MATRIX_CYCLE.length) % ATTENDANCE_MATRIX_CYCLE.length] || 'present'
   const key = matrixSlotKey(studentGroupId, lessonId, slotDate)
 
   matrixSaving.value = { ...matrixSaving.value, [key]: true }

@@ -227,6 +227,7 @@ import http from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const defaultStudentStatus = 'waiting'
 const loading = ref(true)
 const students = ref<any[]>([])
 const search = ref('')
@@ -247,7 +248,7 @@ const newStudent = ref({
   birthdate: '',
   photo: '',
   student_type: '',
-  status: 'waiting',
+  status: defaultStudentStatus,
   group_id: null as number | null,
   create_account: true,
   password: 'student123',
@@ -260,11 +261,16 @@ const editStudent = ref({
   photo: '',
   age: null as number | null,
   student_type: 'adult',
-  status: 'waiting',
+  status: defaultStudentStatus,
 })
 const editStudentGroupId = ref<number | null>(null)
 const originalGroupId = ref<number | null>(null)
 const studentNameToGroupId = ref<Record<string, number>>({})
+const groupsById = computed(() => {
+  const map = new Map<number, any>()
+  for (const g of groups.value) map.set(g.id, g)
+  return map
+})
 
 function groupName(groupId: number): string {
   return groups.value.find(g => g.id === groupId)?.name?.split(' — ')[0] || '—'
@@ -281,13 +287,13 @@ const filtered = computed(() =>
     .filter(s => {
       if (!filterProgram.value) return true
       const groupId = studentNameToGroupId.value[s.full_name]
-      const group = groups.value.find((g) => g.id === groupId)
+      const group = groupId ? groupsById.value.get(groupId) : null
       return (group?.program_name || '').toLowerCase() === filterProgram.value.toLowerCase()
     })
     .filter(s => {
       if (!filterLanguage.value) return true
       const groupId = studentNameToGroupId.value[s.full_name]
-      const group = groups.value.find((g) => g.id === groupId)
+      const group = groupId ? groupsById.value.get(groupId) : null
       return (group?.language || '').toLowerCase() === filterLanguage.value.toLowerCase()
     })
     .filter(s => !filterType.value || s.student_type === filterType.value)
@@ -382,7 +388,7 @@ async function addStudent() {
       birthdate: newStudent.value.birthdate || null,
       photo: newStudent.value.photo || null,
       student_type: newStudent.value.student_type,
-      status: newStudent.value.group_id ? (newStudent.value.status || 'active') : 'waiting',
+      status: newStudent.value.status || defaultStudentStatus,
     }
 
     const res = await http.post('/students', payload)
@@ -415,7 +421,7 @@ async function addStudent() {
       birthdate: '',
       photo: '',
       student_type: '',
-      status: 'waiting',
+      status: defaultStudentStatus,
       group_id: null,
       create_account: true,
       password: 'student123',
@@ -436,7 +442,7 @@ function cancelAdd() {
     birthdate: '',
     photo: '',
     student_type: '',
-    status: 'waiting',
+    status: defaultStudentStatus,
     group_id: null,
     create_account: true,
     password: 'student123',
@@ -454,7 +460,7 @@ function startEdit(student: any) {
     photo: student.photo || '',
     age: student.age ?? null,
     student_type: student.student_type || 'adult',
-    status: student.status || 'waiting',
+    status: student.status || defaultStudentStatus,
   }
   editStudentGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
   originalGroupId.value = studentNameToGroupId.value[student.full_name] ?? null
@@ -552,7 +558,7 @@ function cancelEdit() {
     photo: '',
     age: null,
     student_type: 'adult',
-    status: 'waiting',
+    status: defaultStudentStatus,
   }
   editStudentGroupId.value = null
   originalGroupId.value = null

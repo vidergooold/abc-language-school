@@ -59,6 +59,7 @@ _DOW_BY_WEEKDAY_INDEX = {
     5: DayOfWeek.saturday,
     6: DayOfWeek.sunday,
 }
+_VALID_GRADES_FOR_AVERAGING = (3, 4, 5)  # valid grades on the 5-point scale for averaging
 
 
 # ─── Студент: своя посещаемость ────────────────────────────────────────────────
@@ -1072,14 +1073,14 @@ async def get_group_grades(
         for student_id in student_ids
     }
     if student_ids:
-        average_reference = date_to or date.today()
-        month_start = date(average_reference.year, average_reference.month, 1)
+        reference_date = date_to or date.today()
+        month_start = date(reference_date.year, reference_date.month, 1)
         month_end = date(
-            average_reference.year,
-            average_reference.month,
-            monthrange(average_reference.year, average_reference.month)[1],
+            reference_date.year,
+            reference_date.month,
+            monthrange(reference_date.year, reference_date.month)[1],
         )
-        academic_start_year = average_reference.year if average_reference.month >= 9 else average_reference.year - 1
+        academic_start_year = reference_date.year if reference_date.month >= 9 else reference_date.year - 1
         academic_year_start = date(academic_start_year, 9, 1)
         academic_year_end = date(academic_start_year + 1, 8, 31)
 
@@ -1110,12 +1111,12 @@ async def get_group_grades(
 
         month_scores: dict[int, list[int]] = {}
         for rec in month_records_result.scalars().all():
-            if rec.grade in (3, 4, 5):
+            if rec.grade in _VALID_GRADES_FOR_AVERAGING:
                 month_scores.setdefault(rec.student_group_id, []).append(rec.grade)
 
         academic_scores: dict[int, list[int]] = {}
         for rec in academic_records_result.scalars().all():
-            if rec.grade in (3, 4, 5):
+            if rec.grade in _VALID_GRADES_FOR_AVERAGING:
                 academic_scores.setdefault(rec.student_group_id, []).append(rec.grade)
 
         for student_id in student_ids:
