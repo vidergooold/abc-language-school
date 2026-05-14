@@ -62,6 +62,16 @@ _DOW_BY_WEEKDAY_INDEX = {
 _VALID_GRADES_FOR_AVERAGING = (3, 4, 5)  # valid grades on the 5-point scale for averaging
 
 
+def get_academic_year_window(d: date) -> tuple[date, date]:
+    if d.month >= 9:
+        start_year = d.year
+        end_year = d.year + 1
+    else:
+        start_year = d.year - 1
+        end_year = d.year
+    return date(start_year, 9, 1), date(end_year, 5, 31)
+
+
 # ─── Студент: своя посещаемость ────────────────────────────────────────────────
 @router.get("/my", response_model=List[AttendanceOut])
 async def get_my_attendance(
@@ -1082,9 +1092,9 @@ async def get_group_grades(
             reference_date.month,
             monthrange(reference_date.year, reference_date.month)[1],
         )
-        academic_start_year = reference_date.year if reference_date.month >= 9 else reference_date.year - 1
-        academic_year_start = date(academic_start_year, 9, 1)
-        academic_year_end = date(academic_start_year + 1, 8, 31)
+        # Academic year average: Sep 1 – May 31 (inclusive).
+        # Учебный год: 1 сентября – 31 мая, июнь–август не входят в годовой средний балл.
+        academic_year_start, academic_year_end = get_academic_year_window(reference_date)
 
         month_records_result = await db.execute(
             select(Attendance).where(

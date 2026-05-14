@@ -7,7 +7,7 @@ transport — no real HTTP calls are made to external servers.
 Run with:
     python -m pytest backend/tests/test_smoke.py -v
 """
-from datetime import datetime, time, timezone
+from datetime import date, datetime, time, timezone
 import os
 from uuid import uuid4
 import pytest
@@ -278,6 +278,140 @@ async def _seed_student_profile_progress_data(db_engine) -> int:
                 grade=5,
                 lesson_date=lesson.lesson_date,
             )
+        )
+        await session.commit()
+        return group.id
+
+
+async def _seed_student_profile_progress_data_academic_window(db_engine) -> int:
+    from app.models.student import Student, StudentStatus, StudentType
+    from app.models.group import Course, CourseCategory, CourseLevel, Group, GroupStatus, StudentGroup
+    from app.models.teacher import Teacher
+    from app.models.schedule import Classroom, Lesson, LessonStatus, DayOfWeek
+    from app.models.attendance import Attendance, AttendanceStatus
+
+    unique_suffix = uuid4().hex[:8]
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with SessionLocal() as session:
+        teacher = Teacher(
+            full_name=f"Smoke AY Teacher {unique_suffix}",
+            email=f"smoke-ay-teacher-{unique_suffix}@smoke-tests.example.com",
+            phone="+70000000001",
+            is_active=True,
+        )
+        session.add(teacher)
+        await session.flush()
+
+        classroom = Classroom(
+            name=f"Smoke AY Room {unique_suffix}",
+            capacity=12,
+            is_active=True,
+        )
+        session.add(classroom)
+        await session.flush()
+
+        course = Course(
+            name=f"Smoke AY Course {unique_suffix}",
+            language="English",
+            level=CourseLevel.beginner,
+            category=CourseCategory.children,
+            price_per_month=1000,
+        )
+        session.add(course)
+        await session.flush()
+
+        group = Group(
+            name=f"Smoke AY Group {unique_suffix}",
+            course_id=course.id,
+            teacher_id=teacher.id,
+            status=GroupStatus.active,
+            language="English",
+            program_name="General English",
+        )
+        session.add(group)
+        await session.flush()
+
+        session.add(
+            Student(
+                full_name="Smoke Student",
+                email="student@smoke-tests.example.com",
+                phone="+70000000000",
+                student_type=StudentType.child,
+                status=StudentStatus.active,
+            )
+        )
+        student_group = StudentGroup(
+            group_id=group.id,
+            student_name="Smoke Student",
+            student_email="student@smoke-tests.example.com",
+            student_type="child",
+            enrolled_at=datetime(2099, 1, 1, 0, 0, 0),
+        )
+        session.add(student_group)
+        await session.flush()
+
+        sep_lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(2025, 9, 15, 10, 0, 0),
+            is_recurring=False,
+        )
+        jan_lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(2026, 1, 10, 10, 0, 0),
+            is_recurring=False,
+        )
+        jun_lesson = Lesson(
+            group_id=group.id,
+            teacher_id=teacher.id,
+            classroom_id=classroom.id,
+            day_of_week=DayOfWeek.monday,
+            time_start=time(10, 0),
+            time_end=time(11, 0),
+            status=LessonStatus.completed,
+            lesson_date=datetime(2026, 6, 10, 10, 0, 0),
+            is_recurring=False,
+        )
+        session.add_all([sep_lesson, jan_lesson, jun_lesson])
+        await session.flush()
+
+        session.add_all(
+            [
+                Attendance(
+                    lesson_id=sep_lesson.id,
+                    student_group_id=student_group.id,
+                    status=AttendanceStatus.present,
+                    grade=5,
+                    lesson_date=sep_lesson.lesson_date,
+                ),
+                Attendance(
+                    lesson_id=jan_lesson.id,
+                    student_group_id=student_group.id,
+                    status=AttendanceStatus.present,
+                    grade=4,
+                    lesson_date=jan_lesson.lesson_date,
+                ),
+                Attendance(
+                    lesson_id=jun_lesson.id,
+                    student_group_id=student_group.id,
+                    status=AttendanceStatus.present,
+                    grade=3,
+                    lesson_date=jun_lesson.lesson_date,
+                ),
+            ]
         )
         await session.commit()
         return group.id
@@ -559,6 +693,24 @@ async def test_student_progress_my_returns_averages(
     assert payload["student"]["id"] > 0
     assert payload["averages"]["month"] == 5.0
     assert payload["averages"]["academic_year"] == 5.0
+
+
+@pytest.mark.asyncio
+async def test_academic_year_average_uses_sept_to_may_window(
+    client: AsyncClient,
+    db_engine,
+    student_token: str,
+):
+    await _seed_student_profile_progress_data_academic_window(db_engine)
+    response = await client.get(
+        "/api/v1/progress/my",
+        params={"date_to": date(2026, 6, 30).isoformat()},
+        headers=auth_headers(student_token),
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["averages"]["academic_year"] == 4.5
+    assert payload["averages"]["month"] == 3.0
 
 
 async def test_no_token_messages_inbox(client: AsyncClient):
