@@ -29,9 +29,14 @@ class GroupWithCourseOut(GroupOut):
 router = APIRouter(tags=["Groups"])
 
 
-def _build_group_name(language: str, program_name: str) -> str:
+def _build_group_name(language: str, program_name: str, *, is_individual: bool = False) -> str:
     language_key = normalize_program_key(language)
     program_key = normalize_program_key(program_name)
+    if is_individual:
+        prefix = "Инд."
+        if program_key.startswith(language_key):
+            return f"{prefix} {program_name}"
+        return f"{prefix} {language} {program_name}".strip()
     if program_key.startswith(language_key):
         return program_name
     return f"{language} {program_name}".strip()
@@ -214,11 +219,12 @@ async def create_group(
             raise HTTPException(status_code=404, detail="Подходящий курс не найден")
 
         group = Group(
-            name=(data.name or _build_group_name(selected_language, program.name)).strip(),
+            name=(data.name or _build_group_name(selected_language, program.name, is_individual=data.is_individual)).strip(),
             course_id=course.id,
             teacher_id=teacher.id,
             language=selected_language,
             program_name=program.name,
+            is_individual=data.is_individual,
             start_date=data.start_date,
             end_date=data.end_date,
         )

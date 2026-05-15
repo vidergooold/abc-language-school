@@ -46,6 +46,7 @@ class GroupCreate(BaseModel):
     lesson_days: list[DayOfWeek] = Field(default_factory=list)
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
+    is_individual: bool = False
 
     @model_validator(mode="after")
     def validate_create_mode(self):
@@ -93,6 +94,7 @@ class GroupOut(BaseModel):
     teacher_id: Optional[int] = None
     language: Optional[str] = None
     program_name: Optional[str] = None
+    is_individual: bool = False
     status: GroupStatus
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
