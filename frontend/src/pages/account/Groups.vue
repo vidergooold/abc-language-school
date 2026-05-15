@@ -33,7 +33,7 @@
 
           <div class="form-row">
             <label>Программа *</label>
-            <select v-model.number="newGroup.program_id" :disabled="!newGroup.language" @change="onProgramChange" required>
+            <select v-model.number="newGroup.program_id" :disabled="!newGroup.language" required>
               <option :value="''">{{ newGroup.language ? '— выберите программу —' : 'Сначала выберите язык' }}</option>
               <option v-for="program in filteredPrograms" :key="program.id" :value="program.id">{{ program.name }}</option>
             </select>
@@ -219,6 +219,7 @@ const autoTimeEnd = computed((): string => {
   const duration: number | null = selectedProgram.value.lesson_duration_minutes ?? null
   if (!duration) return ''
   const parts = newGroup.value.time_start.split(':')
+  if (parts.length < 2) return ''
   const totalMinutes = parseInt(parts[0] as string, 10) * 60 + parseInt(parts[1] as string, 10) + duration
   const endH = Math.floor(totalMinutes / 60) % 24
   const endM = totalMinutes % 60
@@ -321,10 +322,6 @@ function onLanguageChange() {
   if (!filteredPrograms.value.some((program: any) => program.id === newGroup.value.program_id)) {
     newGroup.value.program_id = ''
   }
-}
-
-function onProgramChange() {
-  // end time will be recalculated automatically via autoTimeEnd computed
 }
 
 function onBranchChange() {
