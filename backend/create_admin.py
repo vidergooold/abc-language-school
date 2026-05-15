@@ -19,7 +19,10 @@ from app.core.security import hash_password
 from sqlalchemy import select
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@abc-school.ru")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+if not ADMIN_PASSWORD:
+    print("❌ ADMIN_PASSWORD environment variable is not set. Aborting.")
+    sys.exit(1)
 
 
 async def main():
@@ -38,7 +41,7 @@ async def main():
         )
         db.add(admin)
         await db.commit()
-        print(f"✅ Админ создан: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
+        print(f"✅ Админ создан: {ADMIN_EMAIL}")
 
 
 if __name__ == "__main__":
