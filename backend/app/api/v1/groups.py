@@ -172,6 +172,7 @@ async def create_group(
     _=Depends(require_admin),
 ):
     if data.program_id is not None:
+        selected_language = (data.language or "").strip()
         program = await db.scalar(
             select(EducationalProgram).where(
                 EducationalProgram.id == data.program_id,
@@ -181,7 +182,7 @@ async def create_group(
         if program is None:
             raise HTTPException(status_code=404, detail="Программа не найдена")
 
-        if normalize_program_key(program.language) != normalize_program_key(data.language):
+        if normalize_program_key(program.language) != normalize_program_key(selected_language):
             raise HTTPException(status_code=400, detail="Программа не соответствует выбранному языку")
 
         teacher = await db.scalar(
@@ -213,10 +214,10 @@ async def create_group(
             raise HTTPException(status_code=404, detail="Подходящий курс не найден")
 
         group = Group(
-            name=(data.name or _build_group_name(data.language, program.name)).strip(),
+            name=(data.name or _build_group_name(selected_language, program.name)).strip(),
             course_id=course.id,
             teacher_id=teacher.id,
-            language=data.language,
+            language=selected_language,
             program_name=program.name,
             start_date=data.start_date,
             end_date=data.end_date,
@@ -256,7 +257,22 @@ async def create_group(
                     status_code=409,
                     detail={"message": "Обнаружены конфликты расписания", "conflicts": conflicts},
                 )
-            db.add(Lesson(**lesson_data.model_dump()))
+            db.add(
+                Lesson(
+                    group_id=lesson_data.group_id,
+                    teacher_id=lesson_data.teacher_id,
+                    classroom_id=lesson_data.classroom_id,
+                    branch_id=lesson_data.branch_id,
+                    program_id=lesson_data.program_id,
+                    day_of_week=lesson_data.day_of_week,
+                    time_start=lesson_data.time_start,
+                    time_end=lesson_data.time_end,
+                    topic=lesson_data.topic,
+                    material_attachments=lesson_data.material_attachments,
+                    is_recurring=lesson_data.is_recurring,
+                    lesson_date=lesson_data.lesson_date,
+                )
+            )
     else:
         course = await db.scalar(select(Course).where(Course.id == data.course_id))
         if course is None:
