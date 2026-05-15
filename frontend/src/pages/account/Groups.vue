@@ -16,6 +16,14 @@
       <form @submit.prevent="createGroup">
         <div class="form-grid">
           <div class="form-row">
+            <label>Тип занятия *</label>
+            <select v-model="newGroup.lesson_type" required>
+              <option value="group">Групповое занятие</option>
+              <option value="individual">Индивидуальное занятие</option>
+            </select>
+          </div>
+
+          <div class="form-row">
             <label>Язык *</label>
             <select v-model="newGroup.language" @change="onLanguageChange" required>
               <option value="">— выберите язык —</option>
@@ -56,8 +64,13 @@
           </div>
 
           <div class="form-row">
-            <label>Время занятий *</label>
+            <label>Начало занятия *</label>
             <input v-model="newGroup.time_start" type="time" required />
+          </div>
+
+          <div class="form-row">
+            <label>Конец занятия</label>
+            <input :value="autoTimeEnd || '—'" type="text" readonly class="input-readonly" :title="autoTimeEndHint" />
           </div>
 
           <div class="form-row full">
@@ -73,7 +86,7 @@
         <div v-if="createError" class="form-error">{{ createError }}</div>
         <div class="form-actions">
           <button type="submit" :disabled="saving" class="btn-primary">
-            {{ saving ? 'Создание...' : 'Создать группу' }}
+            {{ saving ? 'Создание...' : (newGroup.lesson_type === 'individual' ? 'Создать индивидуальное занятие' : 'Создать группу') }}
           </button>
           <button type="button" @click="cancelCreate" class="btn-secondary">Отмена</button>
         </div>
@@ -93,6 +106,7 @@
         <thead>
           <tr>
             <th>Название</th>
+            <th>Тип</th>
             <th>Язык</th>
             <th>Программа</th>
             <th>Преподаватель</th>
@@ -106,6 +120,7 @@
         <tbody>
           <tr v-for="g in filtered" :key="g.id">
             <td class="col-name">{{ g.name }}</td>
+            <td><span class="type-badge" :class="g.is_individual ? 'individual' : 'group'">{{ g.is_individual ? 'Инд.' : 'Гр.' }}</span></td>
             <td>{{ g.language || '—' }}</td>
             <td>{{ g.program_name || '—' }}</td>
             <td>{{ teacherName(g.teacher_id) }}</td>
@@ -159,6 +174,7 @@ const DAY_LABELS = dayOptions.reduce((acc, day) => {
 }, {} as Record<string, string>)
 
 const emptyGroup = () => ({
+  lesson_type: 'group' as 'group' | 'individual',
   language: '',
   program_id: '' as number | '',
   teacher_id: '' as number | '',
@@ -191,6 +207,30 @@ const filteredPrograms = computed(() => {
 const availableClassrooms = computed(() => {
   if (!newGroup.value.branch_id) return []
   return classrooms.value.filter((classroom: any) => classroom.branch_id === newGroup.value.branch_id)
+})
+
+const selectedProgram = computed(() => {
+  if (!newGroup.value.program_id) return null
+  return programs.value.find((p: any) => p.id === newGroup.value.program_id) ?? null
+})
+
+const autoTimeEnd = computed((): string => {
+  if (!newGroup.value.time_start || !selectedProgram.value) return ''
+  const duration: number | null = selectedProgram.value.lesson_duration_minutes ?? null
+  if (!duration) return ''
+  const parts = newGroup.value.time_start.split(':')
+  if (parts.length < 2) return ''
+  const totalMinutes = parseInt(parts[0] as string, 10) * 60 + parseInt(parts[1] as string, 10) + duration
+  const endH = Math.floor(totalMinutes / 60) % 24
+  const endM = totalMinutes % 60
+  return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
+})
+
+const autoTimeEndHint = computed((): string => {
+  if (!selectedProgram.value) return 'Выберите программу для автоматического расчёта'
+  const duration: number | null = selectedProgram.value.lesson_duration_minutes ?? null
+  if (!duration) return 'Длительность программы не определена'
+  return `Продолжительность занятия: ${duration} мин.`
 })
 
 const groupScheduleMeta = computed(() => {
@@ -354,6 +394,7 @@ async function createGroup() {
       classroom_id: newGroup.value.classroom_id,
       time_start: newGroup.value.time_start,
       lesson_days: newGroup.value.lesson_days,
+      is_individual: newGroup.value.lesson_type === 'individual',
     })
     await load()
     cancelCreate()
@@ -394,6 +435,7 @@ onMounted(load)
 .form-row label { font-weight: 600; color: var(--brand-purple); font-size: 14px; }
 .form-row input, .form-row select { padding: 10px 12px; border-radius: 8px; border: 1.5px solid #ffe3cf; font-size: 15px; outline: none; font-family: inherit; }
 .form-row input:focus, .form-row select:focus { border-color: var(--brand-orange); }
+.input-readonly { background: #f5f5f5; color: #666; cursor: default; }
 .days-checkboxes { display: flex; flex-wrap: wrap; gap: 12px; padding: 10px 12px; border: 1.5px solid #ffe3cf; border-radius: 8px; background: #fff; }
 .days-checkboxes label { display: inline-flex; align-items: center; gap: 6px; color: #444; font-weight: 500; }
 .form-error { color: #b91c1c; font-size: 14px; margin-bottom: 10px; background: #fdeaea; padding: 8px 12px; border-radius: 8px; }
@@ -414,6 +456,10 @@ onMounted(load)
 .status-badge.finished { background: #f3f4f6; color: #6b7280; }
 .status-badge.completed { background: #f3f4f6; color: #6b7280; }
 .status-badge.suspended { background: #fef3c7; color: #92400e; }
+
+.type-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.type-badge.group { background: #dbeafe; color: #1e40af; }
+.type-badge.individual { background: #fce7f3; color: #9d174d; }
 
 @media (max-width: 720px) {
   .form-grid { grid-template-columns: 1fr; }

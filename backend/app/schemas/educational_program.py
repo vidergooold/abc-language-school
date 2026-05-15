@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
+from app.schedule_rules import canonical_program_duration_minutes
 
 
 class ProgramBase(BaseModel):
@@ -32,5 +33,10 @@ class ProgramUpdate(BaseModel):
 class ProgramOut(ProgramBase):
     id: int
     created_at: Optional[datetime] = None
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def lesson_duration_minutes(self) -> Optional[int]:
+        return canonical_program_duration_minutes(self.name)
 
     model_config = {"from_attributes": True}

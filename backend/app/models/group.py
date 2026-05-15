@@ -60,6 +60,7 @@ class Group(Base):
     teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True)
     language = Column(String(50), nullable=True)
     program_name = Column(String(100), nullable=True)
+    is_individual = Column(Boolean, default=False, nullable=False)
     status = Column(SAEnum(GroupStatus), nullable=False, default=GroupStatus.recruiting)
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)
