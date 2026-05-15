@@ -53,6 +53,8 @@ import AccountNews from '@/pages/account/News.vue'
 import AccountAttendance from '@/pages/account/Attendance.vue'
 import AccountDocuments from '@/pages/account/Documents.vue'
 import AccountProfile from '@/pages/account/Profile.vue'
+import AccountGroups from '@/pages/account/Groups.vue'
+import AccountReports from '@/pages/account/Reports.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -124,7 +126,9 @@ const router = createRouter({
         { path: 'forms', name: 'account-forms', component: AccountForms, meta: { requiresAuth: true, requiresAdmin: true } },
         { path: 'feedback', name: 'account-feedback', component: AccountFeedback, meta: { requiresAuth: true, requiresAdmin: true } },
         { path: 'students', name: 'account-students', component: AccountStudents, meta: { requiresAuth: true, requiresAdmin: true } },
-        { path: 'schedule-admin', name: 'account-schedule-admin', component: AccountScheduleAdmin, meta: { requiresAuth: true, requiresAdmin: true } }
+        { path: 'schedule-admin', name: 'account-schedule-admin', component: AccountScheduleAdmin, meta: { requiresAuth: true, requiresAdmin: true } },
+        { path: 'groups', name: 'account-groups', component: AccountGroups, meta: { requiresAuth: true, requiresAdmin: true } },
+        { path: 'reports', name: 'account-reports', component: AccountReports, meta: { requiresAuth: true, requiresAdmin: true } }
       ]
     }
   ]

@@ -23,9 +23,11 @@
           <RouterLink to="/account/news" class="sidebar-link">📰 Новости</RouterLink>
           <div class="sidebar-section">Управление</div>
           <RouterLink to="/account/students" class="sidebar-link">👥 Ученики</RouterLink>
+          <RouterLink to="/account/groups" class="sidebar-link">📚 Группы</RouterLink>
           <RouterLink to="/account/forms" class="sidebar-link">📝 Анкеты и формы</RouterLink>
           <RouterLink to="/account/feedback" class="sidebar-link">💬 Обратная связь</RouterLink>
           <RouterLink to="/account/schedule-admin" class="sidebar-link">🗓 Расписание (ред.)</RouterLink>
+          <RouterLink to="/account/reports" class="sidebar-link">📊 Отчёты</RouterLink>
         </template>
 
         <div class="sidebar-divider"></div>
