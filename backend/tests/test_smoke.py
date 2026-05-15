@@ -788,6 +788,119 @@ async def test_no_token_groups_is_public(client: AsyncClient):
     assert isinstance(response.json(), list)
 
 
+async def test_admin_create_group_with_language_program_schedule_fields(
+    client: AsyncClient,
+    db_engine,
+    admin_token: str,
+):
+    from sqlalchemy import select
+    from app.models.branch import Branch
+    from app.models.educational_program import EducationalProgram
+    from app.models.group import Course, CourseCategory, CourseLevel, Group
+    from app.models.schedule import Classroom, Lesson
+    from app.models.teacher import Teacher
+
+    suffix = uuid4().hex[:8]
+    SessionLocal = async_sessionmaker(
+        bind=db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    async with SessionLocal() as session:
+        course = Course(
+            name=f"FH1 {suffix}",
+            language="Английский",
+            level=CourseLevel.beginner,
+            category=CourseCategory.school,
+            price_per_month=4200,
+            lessons_per_week=2,
+            duration_months=9,
+            max_students=8,
+            is_active=True,
+        )
+        program = EducationalProgram(
+            name=f"FH1 {suffix}",
+            code=f"fh1-{suffix}",
+            language="Английский",
+            target_group="школьники",
+            duration_months=9,
+            is_active=True,
+        )
+        teacher = Teacher(
+            full_name=f"Преподаватель {suffix}",
+            email=f"teacher-{suffix}@example.com",
+            subject="Английский язык",
+            is_active=True,
+        )
+        branch = Branch(
+            name=f"Филиал {suffix}",
+            address="ул. Тестовая, 1",
+            is_active=True,
+        )
+        session.add_all([course, program, teacher, branch])
+        await session.flush()
+
+        classroom = Classroom(
+            name=f"Кабинет {suffix}",
+            branch_id=branch.id,
+            capacity=10,
+            has_whiteboard=True,
+            is_active=True,
+        )
+        session.add(classroom)
+        await session.commit()
+
+        course_id = course.id
+        program_id = program.id
+        teacher_id = teacher.id
+        branch_id = branch.id
+        classroom_id = classroom.id
+
+    response = await client.post(
+        "/api/v1/groups",
+        headers=auth_headers(admin_token),
+        json={
+            "language": "Английский",
+            "program_id": program_id,
+            "teacher_id": teacher_id,
+            "branch_id": branch_id,
+            "classroom_id": classroom_id,
+            "time_start": "17:20:00",
+            "lesson_days": ["monday", "wednesday"],
+        },
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["language"] == "Английский"
+    assert payload["program_name"] == f"FH1 {suffix}"
+    assert payload["name"] == f"Английский FH1 {suffix}"
+    assert payload["course_id"] == course_id
+    assert payload["teacher_id"] == teacher_id
+
+    async with SessionLocal() as session:
+        group = await session.scalar(select(Group).where(Group.id == payload["id"]))
+        assert group is not None
+        lessons = (
+            await session.execute(
+                select(Lesson).where(Lesson.group_id == group.id).order_by(Lesson.day_of_week)
+            )
+        ).scalars().all()
+
+    assert len(lessons) == 2
+    assert {lesson.day_of_week.value for lesson in lessons} == {"monday", "wednesday"}
+    assert {lesson.branch_id for lesson in lessons} == {branch_id}
+    assert {lesson.classroom_id for lesson in lessons} == {classroom_id}
+    assert {lesson.program_id for lesson in lessons} == {program_id}
+    assert {lesson.time_start.isoformat() for lesson in lessons} == {"17:20:00"}
+    assert {lesson.time_end.isoformat() for lesson in lessons} == {"18:50:00"}
+
+    schedule_response = await client.get("/api/v1/schedule", headers=auth_headers(admin_token))
+    assert schedule_response.status_code == 200
+    created_schedule = [row for row in schedule_response.json() if row["group_id"] == payload["id"]]
+    assert len(created_schedule) == 2
+    assert {row["branch_name"] for row in created_schedule} == {f"Филиал {suffix}"}
+    assert {row["classroom_name"] for row in created_schedule} == {f"Кабинет {suffix}"}
+
+
 async def test_no_token_classrooms_is_public(client: AsyncClient):
     """GET /api/v1/classrooms without a token returns 200 — the endpoint is public."""
     response = await client.get("/api/v1/classrooms")

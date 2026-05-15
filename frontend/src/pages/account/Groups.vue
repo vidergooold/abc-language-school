@@ -14,31 +14,61 @@
     <div v-if="showCreateForm" class="add-form">
       <h3>➕ Создать группу</h3>
       <form @submit.prevent="createGroup">
-        <div class="form-row">
-          <label>Название группы *</label>
-          <input v-model="newGroup.name" required placeholder="Например: Группа А1 2025" />
-        </div>
-        <div class="form-row">
-          <label>Курс *</label>
-          <select v-model.number="newGroup.course_id" required>
-            <option :value="0">— выберите курс —</option>
-            <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Преподаватель</label>
-          <select v-model.number="newGroup.teacher_id">
-            <option :value="null">— не назначен —</option>
-            <option v-for="t in teachers" :key="t.id" :value="t.id">{{ t.full_name }}</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Дата начала</label>
-          <input v-model="newGroup.start_date" type="date" />
-        </div>
-        <div class="form-row">
-          <label>Дата окончания</label>
-          <input v-model="newGroup.end_date" type="date" />
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Язык *</label>
+            <select v-model="newGroup.language" @change="onLanguageChange" required>
+              <option value="">— выберите язык —</option>
+              <option v-for="language in languageOptions" :key="language" :value="language">{{ language }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Программа *</label>
+            <select v-model.number="newGroup.program_id" :disabled="!newGroup.language" required>
+              <option :value="''">{{ newGroup.language ? '— выберите программу —' : 'Сначала выберите язык' }}</option>
+              <option v-for="program in filteredPrograms" :key="program.id" :value="program.id">{{ program.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Преподаватель *</label>
+            <select v-model.number="newGroup.teacher_id" required>
+              <option :value="''">— выберите преподавателя —</option>
+              <option v-for="t in teachers" :key="t.id" :value="t.id">{{ t.full_name }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Филиал *</label>
+            <select v-model.number="newGroup.branch_id" @change="onBranchChange" required>
+              <option :value="''">— выберите филиал —</option>
+              <option v-for="branch in branches" :key="branch.id" :value="branch.id">{{ branch.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Кабинет *</label>
+            <select v-model.number="newGroup.classroom_id" :disabled="!newGroup.branch_id" required>
+              <option :value="''">{{ newGroup.branch_id ? '— выберите кабинет —' : 'Сначала выберите филиал' }}</option>
+              <option v-for="classroom in availableClassrooms" :key="classroom.id" :value="classroom.id">{{ classroom.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Время занятий *</label>
+            <input v-model="newGroup.time_start" type="time" required />
+          </div>
+
+          <div class="form-row full">
+            <label>Дни занятий *</label>
+            <div class="days-checkboxes">
+              <label v-for="day in dayOptions" :key="day.value">
+                <input v-model="newGroup.lesson_days" type="checkbox" :value="day.value" />
+                {{ day.label }}
+              </label>
+            </div>
+          </div>
         </div>
         <div v-if="createError" class="form-error">{{ createError }}</div>
         <div class="form-actions">
@@ -63,23 +93,27 @@
         <thead>
           <tr>
             <th>Название</th>
-            <th>Курс</th>
             <th>Язык</th>
+            <th>Программа</th>
             <th>Преподаватель</th>
+            <th>Филиал</th>
+            <th>Кабинет</th>
+            <th>Время</th>
+            <th>Дни</th>
             <th>Статус</th>
-            <th>Дата начала</th>
-            <th>Дата окончания</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="g in filtered" :key="g.id">
             <td class="col-name">{{ g.name }}</td>
-            <td>{{ g.program_name || '—' }}</td>
             <td>{{ g.language || '—' }}</td>
+            <td>{{ g.program_name || '—' }}</td>
             <td>{{ teacherName(g.teacher_id) }}</td>
+            <td>{{ branchLabel(g.id) }}</td>
+            <td>{{ classroomLabel(g.id) }}</td>
+            <td>{{ lessonTimeLabel(g.id) }}</td>
+            <td>{{ lessonDaysLabel(g.id) }}</td>
             <td><span class="status-badge" :class="g.status">{{ statusLabel(g.status) }}</span></td>
-            <td>{{ formatDate(g.start_date) }}</td>
-            <td>{{ formatDate(g.end_date) }}</td>
           </tr>
         </tbody>
       </table>
@@ -99,20 +133,41 @@ import http from '@/api/http'
 
 const loading = ref(true)
 const groups = ref<any[]>([])
-const courses = ref<any[]>([])
 const teachers = ref<any[]>([])
+const programs = ref<any[]>([])
+const branches = ref<any[]>([])
+const classrooms = ref<any[]>([])
+const schedule = ref<any[]>([])
 const search = ref('')
 const showCreateForm = ref(false)
 const saving = ref(false)
 const createError = ref('')
 
-const newGroup = ref({
-  name: '',
-  course_id: 0 as number,
-  teacher_id: null as number | null,
-  start_date: '',
-  end_date: '',
+const dayOptions = [
+  { value: 'monday', label: 'Пн' },
+  { value: 'tuesday', label: 'Вт' },
+  { value: 'wednesday', label: 'Ср' },
+  { value: 'thursday', label: 'Чт' },
+  { value: 'friday', label: 'Пт' },
+  { value: 'saturday', label: 'Сб' },
+  { value: 'sunday', label: 'Вс' },
+]
+const DAY_ORDER = dayOptions.map((day) => day.value)
+const DAY_LABELS = dayOptions.reduce((acc, day) => {
+  acc[day.value] = day.label
+  return acc
+}, {} as Record<string, string>)
+
+const emptyGroup = () => ({
+  language: '',
+  program_id: '' as number | '',
+  teacher_id: '' as number | '',
+  branch_id: '' as number | '',
+  classroom_id: '' as number | '',
+  time_start: '',
+  lesson_days: [] as string[],
 })
+const newGroup = ref(emptyGroup())
 
 const filtered = computed(() =>
   groups.value.filter(g =>
@@ -120,6 +175,57 @@ const filtered = computed(() =>
     (g.name ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
+
+const languageOptions = computed(() =>
+  [...new Set(programs.value.map((program: any) => program.language).filter(Boolean))]
+    .sort((a, b) => String(a).localeCompare(String(b), 'ru'))
+)
+
+const filteredPrograms = computed(() => {
+  if (!newGroup.value.language) return []
+  return programs.value.filter(
+    (program: any) => normalizeText(program.language) === normalizeText(newGroup.value.language)
+  )
+})
+
+const availableClassrooms = computed(() => {
+  if (!newGroup.value.branch_id) return []
+  return classrooms.value.filter((classroom: any) => classroom.branch_id === newGroup.value.branch_id)
+})
+
+const groupScheduleMeta = computed(() => {
+  const meta = new Map<number, any>()
+  for (const lesson of schedule.value) {
+    const existing = meta.get(lesson.group_id)
+    if (!existing) {
+      meta.set(lesson.group_id, {
+        branch_name: lesson.branch_name || '—',
+        classroom_name: lesson.classroom_name || '—',
+        time_start: lesson.time_start || '',
+        time_end: lesson.time_end || '',
+        days: lesson.day_of_week ? [lesson.day_of_week] : [],
+      })
+      continue
+    }
+    if (lesson.branch_name && existing.branch_name === '—') existing.branch_name = lesson.branch_name
+    if (lesson.classroom_name && existing.classroom_name === '—') existing.classroom_name = lesson.classroom_name
+    if (!existing.time_start && lesson.time_start) existing.time_start = lesson.time_start
+    if (!existing.time_end && lesson.time_end) existing.time_end = lesson.time_end
+    if (lesson.day_of_week && !existing.days.includes(lesson.day_of_week)) {
+      existing.days.push(lesson.day_of_week)
+    }
+  }
+
+  for (const value of meta.values()) {
+    value.days.sort((a: string, b: string) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+  }
+
+  return meta
+})
+
+function normalizeText(value: string | null | undefined) {
+  return (value || '').trim().toLowerCase()
+}
 
 function teacherName(teacherId: number | null) {
   if (!teacherId) return '—'
@@ -131,29 +237,83 @@ function statusLabel(status: string) {
   const labels: Record<string, string> = {
     recruiting: 'Набор',
     active: 'Активна',
+    finished: 'Завершена',
     completed: 'Завершена',
     suspended: 'Приостановлена',
   }
   return labels[status] || status
 }
 
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('ru-RU')
+function groupMeta(groupId: number) {
+  return groupScheduleMeta.value.get(groupId) || {
+    branch_name: '—',
+    classroom_name: '—',
+    time_start: '',
+    time_end: '',
+    days: [],
+  }
+}
+
+function branchLabel(groupId: number) {
+  return groupMeta(groupId).branch_name || '—'
+}
+
+function classroomLabel(groupId: number) {
+  return groupMeta(groupId).classroom_name || '—'
+}
+
+function lessonTimeLabel(groupId: number) {
+  const meta = groupMeta(groupId)
+  if (!meta.time_start || !meta.time_end) return '—'
+  return `${fmtTime(meta.time_start)}–${fmtTime(meta.time_end)}`
+}
+
+function lessonDaysLabel(groupId: number) {
+  const days = groupMeta(groupId).days
+  if (!days.length) return '—'
+  return days.map((day: string) => DAY_LABELS[day] || day).join('/')
+}
+
+function fmtTime(value: string | null) {
+  return value ? value.slice(0, 5) : ''
+}
+
+function onLanguageChange() {
+  if (!filteredPrograms.value.some((program: any) => program.id === newGroup.value.program_id)) {
+    newGroup.value.program_id = ''
+  }
+}
+
+function onBranchChange() {
+  if (!availableClassrooms.value.some((classroom: any) => classroom.id === newGroup.value.classroom_id)) {
+    newGroup.value.classroom_id = ''
+  }
+}
+
+function formatCreateError(detail: any) {
+  if (typeof detail === 'string') return detail
+  if (detail?.message && Array.isArray(detail.conflicts)) {
+    return [detail.message, ...detail.conflicts.map((item: any) => item.message)].join(' ')
+  }
+  return 'Не удалось создать группу'
 }
 
 async function load() {
   try {
-    const [groupsRes, coursesRes, teachersRes] = await Promise.all([
-      http.get('/groups', { params: { active_only: false } }),
-      http.get('/courses'),
-      http.get('/teachers'),
+    const [groupsRes, teachersRes, programsRes, branchesRes, classroomsRes, scheduleRes] = await Promise.all([
+      http.get('/groups', { params: { active_only: false } }).catch(() => ({ data: [] })),
+      http.get('/teachers').catch(() => ({ data: [] })),
+      http.get('/programs').catch(() => ({ data: [] })),
+      http.get('/branches', { params: { for_schedule: true } }).catch(() => ({ data: [] })),
+      http.get('/classrooms').catch(() => ({ data: [] })),
+      http.get('/schedule').catch(() => ({ data: [] })),
     ])
     groups.value = Array.isArray(groupsRes.data) ? groupsRes.data : []
-    courses.value = Array.isArray(coursesRes.data) ? coursesRes.data : []
     teachers.value = Array.isArray(teachersRes.data) ? teachersRes.data : []
-  } catch {
-    groups.value = []
+    programs.value = Array.isArray(programsRes.data) ? programsRes.data : []
+    branches.value = Array.isArray(branchesRes.data) ? branchesRes.data : []
+    classrooms.value = Array.isArray(classroomsRes.data) ? classroomsRes.data : []
+    schedule.value = Array.isArray(scheduleRes.data) ? scheduleRes.data : []
   } finally {
     loading.value = false
   }
@@ -165,28 +325,40 @@ function toggleCreateForm() {
 }
 
 function cancelCreate() {
-  newGroup.value = { name: '', course_id: 0, teacher_id: null, start_date: '', end_date: '' }
+  newGroup.value = emptyGroup()
   createError.value = ''
   showCreateForm.value = false
 }
 
 async function createGroup() {
-  if (!newGroup.value.name || !newGroup.value.course_id) return
+  if (
+    !newGroup.value.language ||
+    !newGroup.value.program_id ||
+    !newGroup.value.teacher_id ||
+    !newGroup.value.branch_id ||
+    !newGroup.value.classroom_id ||
+    !newGroup.value.time_start ||
+    !newGroup.value.lesson_days.length
+  ) {
+    createError.value = 'Заполните все обязательные поля'
+    return
+  }
   saving.value = true
   createError.value = ''
   try {
-    const payload: any = {
-      name: newGroup.value.name,
-      course_id: newGroup.value.course_id,
-      teacher_id: newGroup.value.teacher_id || null,
-      start_date: newGroup.value.start_date || null,
-      end_date: newGroup.value.end_date || null,
-    }
-    const res = await http.post('/groups', payload)
-    groups.value.unshift(res.data)
+    await http.post('/groups', {
+      language: newGroup.value.language,
+      program_id: newGroup.value.program_id,
+      teacher_id: newGroup.value.teacher_id,
+      branch_id: newGroup.value.branch_id,
+      classroom_id: newGroup.value.classroom_id,
+      time_start: newGroup.value.time_start,
+      lesson_days: newGroup.value.lesson_days,
+    })
+    await load()
     cancelCreate()
   } catch (err: any) {
-    createError.value = err.response?.data?.detail || 'Не удалось создать группу'
+    createError.value = formatCreateError(err.response?.data?.detail)
   } finally {
     saving.value = false
   }
@@ -216,10 +388,14 @@ onMounted(load)
 .btn-add:hover { background: #e55a00; transform: scale(1.05); }
 .add-form { background: #fff7f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; border: 2px solid #ffe3cf; }
 .add-form h3 { margin: 0 0 16px 0; color: var(--brand-purple); font-size: 20px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.form-row.full { grid-column: 1 / -1; }
 .form-row label { font-weight: 600; color: var(--brand-purple); font-size: 14px; }
 .form-row input, .form-row select { padding: 10px 12px; border-radius: 8px; border: 1.5px solid #ffe3cf; font-size: 15px; outline: none; font-family: inherit; }
 .form-row input:focus, .form-row select:focus { border-color: var(--brand-orange); }
+.days-checkboxes { display: flex; flex-wrap: wrap; gap: 12px; padding: 10px 12px; border: 1.5px solid #ffe3cf; border-radius: 8px; background: #fff; }
+.days-checkboxes label { display: inline-flex; align-items: center; gap: 6px; color: #444; font-weight: 500; }
 .form-error { color: #b91c1c; font-size: 14px; margin-bottom: 10px; background: #fdeaea; padding: 8px 12px; border-radius: 8px; }
 .form-actions { display: flex; gap: 12px; margin-top: 20px; }
 .btn-primary { background: var(--brand-orange); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
@@ -235,6 +411,11 @@ onMounted(load)
 .status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
 .status-badge.active { background: #d1fae5; color: #065f46; }
 .status-badge.recruiting { background: #dbeafe; color: #1e40af; }
+.status-badge.finished { background: #f3f4f6; color: #6b7280; }
 .status-badge.completed { background: #f3f4f6; color: #6b7280; }
 .status-badge.suspended { background: #fef3c7; color: #92400e; }
+
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
 </style>

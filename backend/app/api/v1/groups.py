@@ -8,13 +8,17 @@ from app.core.database import get_db
 from app.core.security import require_admin, require_staff
 from app.models.branch import Branch
 from app.models.group import Course, Group, StudentGroup, GroupStatus
-from app.models.schedule import Lesson
+from app.models.educational_program import EducationalProgram
+from app.models.schedule import Lesson, Classroom
 from app.models.teacher import Teacher
+from app.schemas.schedule import LessonCreate
 from app.schemas.group import (
     CourseCreate, CourseOut,
     GroupCreate, GroupOut,
     StudentGroupCreate, StudentGroupOut,
 )
+from app.schedule_rules import canonical_program_duration_minutes, derive_time_end, normalize_program_key
+from app.api.v1.schedule import _normalize_lesson_payload, _validate_schedule_payload, check_schedule_conflicts
 
 
 class GroupWithCourseOut(GroupOut):
@@ -23,6 +27,45 @@ class GroupWithCourseOut(GroupOut):
     model_config = {"from_attributes": True}
 
 router = APIRouter(tags=["Groups"])
+
+
+def _build_group_name(language: str, program_name: str) -> str:
+    language_key = normalize_program_key(language)
+    program_key = normalize_program_key(program_name)
+    if program_key.startswith(language_key):
+        return program_name
+    return f"{language} {program_name}".strip()
+
+
+async def _resolve_course_for_program(
+    db: AsyncSession,
+    *,
+    program_name: str,
+    language: str,
+) -> Optional[Course]:
+    exact = await db.scalar(
+        select(Course).where(
+            Course.name == program_name,
+            Course.is_active == True,
+        )
+    )
+    if exact is not None:
+        return exact
+
+    same_language = await db.execute(
+        select(Course).where(
+            Course.language == language,
+            Course.is_active == True,
+        ).order_by(Course.name)
+    )
+    course = same_language.scalars().first()
+    if course is not None:
+        return course
+
+    fallback = await db.execute(
+        select(Course).where(Course.is_active == True).order_by(Course.name)
+    )
+    return fallback.scalars().first()
 
 
 # ─── Курсы ───────────────────────────────────────────────────────────
@@ -128,14 +171,111 @@ async def create_group(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
-    course = await db.execute(select(Course).where(Course.id == data.course_id))
-    if not course.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Курс не найден")
-    if data.teacher_id is not None:
-        teacher = await db.execute(select(Teacher).where(Teacher.id == data.teacher_id, Teacher.is_active == True))
-        if not teacher.scalar_one_or_none():
+    if data.program_id is not None:
+        program = await db.scalar(
+            select(EducationalProgram).where(
+                EducationalProgram.id == data.program_id,
+                EducationalProgram.is_active == True,
+            )
+        )
+        if program is None:
+            raise HTTPException(status_code=404, detail="Программа не найдена")
+
+        if normalize_program_key(program.language) != normalize_program_key(data.language):
+            raise HTTPException(status_code=400, detail="Программа не соответствует выбранному языку")
+
+        teacher = await db.scalar(
+            select(Teacher).where(Teacher.id == data.teacher_id, Teacher.is_active == True)
+        )
+        if teacher is None:
             raise HTTPException(status_code=404, detail="Преподаватель не найден")
-    group = Group(**data.model_dump())
+
+        branch = await db.scalar(
+            select(Branch).where(Branch.id == data.branch_id, Branch.is_active == True)
+        )
+        if branch is None:
+            raise HTTPException(status_code=404, detail="Филиал не найден")
+
+        classroom = await db.scalar(
+            select(Classroom).where(Classroom.id == data.classroom_id, Classroom.is_active == True)
+        )
+        if classroom is None:
+            raise HTTPException(status_code=404, detail="Кабинет не найден")
+        if classroom.branch_id != branch.id:
+            raise HTTPException(status_code=400, detail="Кабинет не относится к выбранному филиалу")
+
+        course = await _resolve_course_for_program(
+            db,
+            program_name=program.name,
+            language=program.language,
+        )
+        if course is None:
+            raise HTTPException(status_code=404, detail="Подходящий курс не найден")
+
+        group = Group(
+            name=(data.name or _build_group_name(data.language, program.name)).strip(),
+            course_id=course.id,
+            teacher_id=teacher.id,
+            language=data.language,
+            program_name=program.name,
+            start_date=data.start_date,
+            end_date=data.end_date,
+        )
+        db.add(group)
+        await db.flush()
+
+        lesson_duration = canonical_program_duration_minutes(program.name) or 90
+        time_end = derive_time_end(data.time_start, lesson_duration)
+        for lesson_day in data.lesson_days:
+            lesson_data = LessonCreate(
+                group_id=group.id,
+                teacher_id=teacher.id,
+                classroom_id=classroom.id,
+                branch_id=branch.id,
+                program_id=program.id,
+                day_of_week=lesson_day,
+                time_start=data.time_start,
+                time_end=time_end,
+                is_recurring=True,
+            )
+            lesson_data = await _normalize_lesson_payload(db, lesson_data)
+            await _validate_schedule_payload(db, lesson_data)
+            conflicts = await check_schedule_conflicts(
+                db=db,
+                group_id=lesson_data.group_id,
+                teacher_id=lesson_data.teacher_id,
+                classroom_id=lesson_data.classroom_id,
+                day_of_week=lesson_day.value,
+                time_start=lesson_data.time_start,
+                time_end=lesson_data.time_end,
+                lesson_date=lesson_data.lesson_date,
+                is_recurring=lesson_data.is_recurring,
+            )
+            if conflicts:
+                raise HTTPException(
+                    status_code=409,
+                    detail={"message": "Обнаружены конфликты расписания", "conflicts": conflicts},
+                )
+            db.add(Lesson(**lesson_data.model_dump()))
+    else:
+        course = await db.scalar(select(Course).where(Course.id == data.course_id))
+        if course is None:
+            raise HTTPException(status_code=404, detail="Курс не найден")
+        if data.teacher_id is not None:
+            teacher = await db.scalar(
+                select(Teacher).where(Teacher.id == data.teacher_id, Teacher.is_active == True)
+            )
+            if teacher is None:
+                raise HTTPException(status_code=404, detail="Преподаватель не найден")
+        group = Group(
+            name=data.name,
+            course_id=course.id,
+            teacher_id=data.teacher_id,
+            language=course.language,
+            program_name=course.name,
+            start_date=data.start_date,
+            end_date=data.end_date,
+        )
     db.add(group)
     await db.commit()
     await db.refresh(group)
