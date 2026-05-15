@@ -386,7 +386,7 @@ async function createGroup() {
   saving.value = true
   createError.value = ''
   try {
-    await http.post('/groups', {
+    const res = await http.post('/groups', {
       language: newGroup.value.language,
       program_id: newGroup.value.program_id,
       teacher_id: newGroup.value.teacher_id,
@@ -396,6 +396,12 @@ async function createGroup() {
       lesson_days: newGroup.value.lesson_days,
       is_individual: newGroup.value.lesson_type === 'individual',
     })
+    window.dispatchEvent(new CustomEvent('group-created', {
+      detail: {
+        group_id: res.data?.id,
+        teacher_id: newGroup.value.teacher_id,
+      },
+    }))
     await load()
     cancelCreate()
   } catch (err: any) {

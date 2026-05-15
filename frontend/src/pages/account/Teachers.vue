@@ -172,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import http from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
 
@@ -240,8 +240,14 @@ async function load() {
 async function loadTeacherGroups(teacherId: number) {
   teacherGroupsLoading.value = true
   try {
-    const res = await http.get(`/teachers/${teacherId}/groups`)
-    teacherGroups.value = res.data
+    const res = await http.get('/groups', { params: { teacher_id: teacherId, active_only: false } })
+    const groups = Array.isArray(res.data) ? res.data : []
+    teacherGroups.value = groups.map((group: any) => ({
+      id: group.id,
+      group_id: group.id,
+      group_name: group.name,
+      course_name: group.program_name || null,
+    }))
   } catch {
     teacherGroups.value = []
   } finally {
@@ -393,7 +399,19 @@ function cancelEdit() {
   showEditForm.value = false
 }
 
+async function onGroupCreated(event: Event) {
+  const customEvent = event as CustomEvent<{ teacher_id?: number }>
+  const createdTeacherId = customEvent.detail?.teacher_id
+  if (!editTeacherId.value || createdTeacherId !== editTeacherId.value) return
+  await Promise.all([
+    loadTeacherGroups(editTeacherId.value),
+    loadAllGroups(),
+  ])
+}
+
 onMounted(load)
+onMounted(() => window.addEventListener('group-created', onGroupCreated as EventListener))
+onUnmounted(() => window.removeEventListener('group-created', onGroupCreated as EventListener))
 </script>
 
 <style scoped>

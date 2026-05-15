@@ -162,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import http from '@/api/http'
 
 const loading = ref(true)
@@ -467,7 +467,13 @@ async function load() {
   }
 }
 
+function onGroupCreated() {
+  load()
+}
+
 onMounted(load)
+onMounted(() => window.addEventListener('group-created', onGroupCreated))
+onUnmounted(() => window.removeEventListener('group-created', onGroupCreated))
 </script>
 
 <style scoped>
