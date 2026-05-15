@@ -471,8 +471,10 @@ function onGroupCreated() {
   load()
 }
 
-onMounted(load)
-onMounted(() => window.addEventListener('group-created', onGroupCreated))
+onMounted(() => {
+  load()
+  window.addEventListener('group-created', onGroupCreated)
+})
 onUnmounted(() => window.removeEventListener('group-created', onGroupCreated))
 </script>
 

@@ -108,7 +108,7 @@
         <div v-else>
           <div v-if="teacherGroups.length === 0" class="groups-empty">Нет назначенных групп</div>
           <ul v-else class="groups-list">
-            <li v-for="tg in teacherGroups" :key="tg.id" class="group-item">
+            <li v-for="tg in teacherGroups" :key="tg.group_id" class="group-item">
               <span class="group-name">{{ tg.group_name }}</span>
               <span v-if="tg.course_name" class="group-course">{{ tg.course_name }}</span>
               <button class="btn-remove-group" @click="removeTeacherGroup(tg.group_id)" title="Убрать из группы">×</button>
@@ -177,6 +177,14 @@ import http from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+type TeacherGroupsApiItem = {
+  id: number
+  name: string
+  program_name?: string | null
+}
+type GroupCreatedEventDetail = {
+  teacher_id?: number
+}
 const loading = ref(true)
 const teachers = ref<any[]>([])
 const search = ref('')
@@ -241,9 +249,8 @@ async function loadTeacherGroups(teacherId: number) {
   teacherGroupsLoading.value = true
   try {
     const res = await http.get('/groups', { params: { teacher_id: teacherId, active_only: false } })
-    const groups = Array.isArray(res.data) ? res.data : []
-    teacherGroups.value = groups.map((group: any) => ({
-      id: group.id,
+    const groups: TeacherGroupsApiItem[] = Array.isArray(res.data) ? res.data : []
+    teacherGroups.value = groups.map((group) => ({
       group_id: group.id,
       group_name: group.name,
       course_name: group.program_name || null,
@@ -400,17 +407,16 @@ function cancelEdit() {
 }
 
 async function onGroupCreated(event: Event) {
-  const customEvent = event as CustomEvent<{ teacher_id?: number }>
+  const customEvent = event as CustomEvent<GroupCreatedEventDetail>
   const createdTeacherId = customEvent.detail?.teacher_id
   if (!editTeacherId.value || createdTeacherId !== editTeacherId.value) return
-  await Promise.all([
-    loadTeacherGroups(editTeacherId.value),
-    loadAllGroups(),
-  ])
+  await loadTeacherGroups(editTeacherId.value)
 }
 
-onMounted(load)
-onMounted(() => window.addEventListener('group-created', onGroupCreated as EventListener))
+onMounted(() => {
+  load()
+  window.addEventListener('group-created', onGroupCreated as EventListener)
+})
 onUnmounted(() => window.removeEventListener('group-created', onGroupCreated as EventListener))
 </script>
 
