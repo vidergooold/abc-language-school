@@ -21,7 +21,7 @@
         <div class="form-row">
           <label>Курс *</label>
           <select v-model.number="newGroup.course_id" required>
-            <option value="">— выберите курс —</option>
+            <option :value="0">— выберите курс —</option>
             <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
@@ -108,7 +108,7 @@ const createError = ref('')
 
 const newGroup = ref({
   name: '',
-  course_id: '' as number | '',
+  course_id: 0 as number,
   teacher_id: null as number | null,
   start_date: '',
   end_date: '',
@@ -165,7 +165,7 @@ function toggleCreateForm() {
 }
 
 function cancelCreate() {
-  newGroup.value = { name: '', course_id: '', teacher_id: null, start_date: '', end_date: '' }
+  newGroup.value = { name: '', course_id: 0, teacher_id: null, start_date: '', end_date: '' }
   createError.value = ''
   showCreateForm.value = false
 }
@@ -177,7 +177,7 @@ async function createGroup() {
   try {
     const payload: any = {
       name: newGroup.value.name,
-      course_id: Number(newGroup.value.course_id),
+      course_id: newGroup.value.course_id,
       teacher_id: newGroup.value.teacher_id || null,
       start_date: newGroup.value.start_date || null,
       end_date: newGroup.value.end_date || null,
