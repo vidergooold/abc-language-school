@@ -396,6 +396,11 @@ async function createGroup() {
       lesson_days: newGroup.value.lesson_days,
       is_individual: newGroup.value.lesson_type === 'individual',
     })
+    window.dispatchEvent(new CustomEvent('group-created', {
+      detail: {
+        teacher_id: newGroup.value.teacher_id,
+      },
+    }))
     await load()
     cancelCreate()
   } catch (err: any) {
