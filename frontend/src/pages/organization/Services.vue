@@ -17,7 +17,7 @@
         </div>
         <div class="price-card__body">
           <div class="price-card__col">
-            <div class="price-card__year">2024–2025</div>
+            <div class="price-card__year">2025–2026</div>
             <div class="price-card__amount">{{ item.price }} ₽</div>
             <div class="price-card__per">{{ item.per }}</div>
           </div>

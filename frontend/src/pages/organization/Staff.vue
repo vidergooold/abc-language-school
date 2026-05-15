@@ -12,7 +12,7 @@
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
-          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
           <p><strong>Ученая степень:</strong> Кандидат педагогических наук</p>
           <p><strong>Ученое звание:</strong> Старший преподаватель</p>
           <p><strong>Стаж работы по специальности:</strong> 12 лет</p>
@@ -25,11 +25,11 @@
 
       <details class="teacher-item">
         <summary class="teacher-title">
-          Арнгольд Валерия Евгеньевна (преподаватель)
+          Арнольд Валерия Евгеньевна (преподаватель)
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
-          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
           <p><strong>Ученая степень:</strong> Магистр</p>
           <p><strong>Ученое звание:</strong> Преподаватель-методист</p>
           <p><strong>Стаж работы по специальности:</strong> 8 лет</p>
@@ -46,7 +46,7 @@
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
-          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
           <p><strong>Ученая степень:</strong> Бакалавр</p>
           <p><strong>Ученое звание:</strong> Преподаватель</p>
           <p><strong>Стаж работы по специальности:</strong> 10 лет</p>
@@ -63,7 +63,7 @@
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
-          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
           <p><strong>Ученая степень:</strong> Кандидат наук</p>
           <p><strong>Ученое звание:</strong> Преподаватель</p>
           <p><strong>Стаж работы по специальности:</strong> 14 лет</p>
@@ -114,7 +114,7 @@
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
-          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
           <p><strong>Ученая степень:</strong> Магистр</p>
           <p><strong>Ученое звание:</strong> Методист</p>
           <p><strong>Стаж работы по специальности:</strong> 13 лет</p>
@@ -250,13 +250,30 @@
         </summary>
         <div class="teacher-details">
           <p><strong>Занимаемая должность:</strong> преподаватель</p>
-          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
           <p><strong>Ученая степень:</strong> Магистр</p>
           <p><strong>Ученое звание:</strong> Преподаватель</p>
           <p><strong>Стаж работы по специальности:</strong> 12 лет</p>
           <p><strong>Опыт работы:</strong> 10 лет</p>
           <p><strong>Уровень образования:</strong> Высшее</p>
           <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Магистр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Воронцова Анна Вадимовна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> китайский язык</p>
+          <p><strong>Ученая степень:</strong> Магистр</p>
+          <p><strong>Ученое звание:</strong> Преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 9 лет</p>
+          <p><strong>Опыт работы:</strong> 10 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель китайского языка</p>
           <p><strong>Квалификация:</strong> Магистр</p>
         </div>
       </details>
@@ -306,6 +323,142 @@
           <p><strong>Ученое звание:</strong> Преподаватель</p>
           <p><strong>Стаж работы по специальности:</strong> 10 лет</p>
           <p><strong>Опыт работы:</strong> 10 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Бакалавр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Зудяева Надежда Андреевна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Бакалавр</p>
+          <p><strong>Ученое звание:</strong> Преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 7 лет</p>
+          <p><strong>Опыт работы:</strong> 5 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Бакалавр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Иванова Мария Петровна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Магистр</p>
+          <p><strong>Ученое звание:</strong> Методист</p>
+          <p><strong>Стаж работы по специальности:</strong> 11 лет</p>
+          <p><strong>Опыт работы:</strong> 10 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Магистр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Караваева Алина Денисовна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Бакалавр</p>
+          <p><strong>Ученое звание:</strong> Преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 6 лет</p>
+          <p><strong>Опыт работы:</strong> 6 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Бакалавр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Козлова Елена Геннадьевна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Магистр</p>
+          <p><strong>Ученое звание:</strong> Старший преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 14 лет</p>
+          <p><strong>Опыт работы:</strong> 10 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Магистр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Походная Алёна Игоревна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Бакалавр</p>
+          <p><strong>Ученое звание:</strong> Преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 8 лет</p>
+          <p><strong>Опыт работы:</strong> 8 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Бакалавр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Родина Татьяна Петровна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Магистр</p>
+          <p><strong>Ученое звание:</strong> Преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 12 лет</p>
+          <p><strong>Опыт работы:</strong> 10 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Магистр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Тихвинская Виктория Олеговна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Кандидат наук</p>
+          <p><strong>Ученое звание:</strong> Старший преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 17 лет</p>
+          <p><strong>Опыт работы:</strong> 10 лет</p>
+          <p><strong>Уровень образования:</strong> Высшее</p>
+          <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
+          <p><strong>Квалификация:</strong> Магистр</p>
+        </div>
+      </details>
+
+      <details class="teacher-item">
+        <summary class="teacher-title">
+          Турабова Диана Джейхуновна (преподаватель)
+        </summary>
+        <div class="teacher-details">
+          <p><strong>Занимаемая должность:</strong> преподаватель</p>
+          <p><strong>Преподаваемые предметы:</strong> английский язык</p>
+          <p><strong>Ученая степень:</strong> Бакалавр</p>
+          <p><strong>Ученое звание:</strong> Преподаватель</p>
+          <p><strong>Стаж работы по специальности:</strong> 5 лет</p>
+          <p><strong>Опыт работы:</strong> 5 лет</p>
           <p><strong>Уровень образования:</strong> Высшее</p>
           <p><strong>Направление подготовки:</strong> учитель английского и немецкого языка</p>
           <p><strong>Квалификация:</strong> Бакалавр</p>
